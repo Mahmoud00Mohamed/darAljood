@@ -379,7 +379,7 @@ const JacketCustomizer: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span>الحد الأدنى:</span>
-                <span className="font-medium">1 وحدات</span>
+                <span className="font-medium">1 وحدة</span>
               </div>
               <div className="flex justify-between">
                 <span>الشحن إلى:</span>
@@ -592,7 +592,7 @@ const JacketCustomizer: React.FC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>الحد الأدنى:</span>
-                    <span className="font-medium">10 وحدات</span>
+                    <span className="font-medium">1 وحدة</span>
                   </div>
                   <div className="flex justify-between">
                     <span>الشحن إلى:</span>
