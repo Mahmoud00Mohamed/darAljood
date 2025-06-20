@@ -92,9 +92,9 @@ export interface JacketContextType {
 }
 
 const defaultColors: Record<JacketPart, string> = {
-  body: "#1B263B",
-  sleeves: "#F5F6F5",
-  trim: "#141414",
+  body: "#5C1A2B", // Burgundy
+  sleeves: "#1B263B", // Navy
+  trim: "#1B263B_stripes", // Navy with two white stripes
 };
 
 const defaultMaterials: Record<JacketPart, JacketMaterial> = {
