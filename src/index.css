@@ -1,0 +1,340 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-gold: #563660;
+  --primary-black: #1a1a1a;
+  --primary-white: #ffffff;
+  --accent-color: #c41e3a;
+}
+
+/* Base Styles */
+html,
+body {
+  font-family: "Tajawal", sans-serif;
+  direction: rtl;
+  @apply bg-white;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* تحسين تحميل الصور */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: optimizeQuality;
+  will-change: transform;
+}
+
+/* تحسين أداء الصور المحملة */
+.logo-overlay img,
+.logo-overlay-container img {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Smooth Transitions */
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Form Elements */
+input,
+select,
+textarea {
+  transition: all 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 0 2px rgba(86, 54, 96, 0.1);
+}
+
+/* Buttons */
+button {
+  outline: none;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* Refined Minimalist Cards */
+.card {
+  @apply bg-white rounded-2xl border border-gray-100 shadow-sm;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  @apply shadow-md border-gray-200;
+}
+
+/* Smooth Page Transitions */
+.page-transition {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 300;
+  letter-spacing: -0.025em;
+}
+
+.font-light {
+  font-weight: 300;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+/* Rotation Controls */
+button[title="تدوير"] {
+  transition: transform 0.2s ease;
+}
+
+button[title="تدوير"]:active {
+  transform: scale(0.95) rotate(90deg);
+}
+
+/* View Buttons */
+button.text-xs {
+  min-width: 50px;
+}
+
+/* Sidebar Enhancements */
+.sidebar-section {
+  @apply bg-white rounded-2xl shadow-sm p-6 mb-4;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-section:hover {
+  @apply shadow-md;
+}
+
+/* Logo Section Enhancements */
+.logo-section-container {
+  @apply w-full overflow-x-hidden;
+}
+
+.logo-section-container input[type="file"] {
+  @apply w-0 h-0 absolute opacity-0;
+}
+
+.logo-section-container label {
+  @apply flex-shrink-0;
+}
+
+/* Mobile Layout Styles */
+@media (max-width: 1250px) {
+  /* Jacket Customizer Container */
+  .jacket-customizer-container {
+    overflow: hidden !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    overscroll-behavior: none !important;
+  }
+
+  /* Mobile Sidebar Styles */
+  .mobile-sidebar {
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+  }
+
+  .mobile-sidebar .sticky {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+  }
+
+  .mobile-sidebar .absolute {
+    z-index: 40;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    max-height: calc(100vh - 16rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Mobile Details Panel */
+  .mobile-details-panel {
+    overflow-y: auto !important;
+    height: calc(
+      100vh - 30px
+    ) !important; /* تعديل الارتفاع ليأخذ في الاعتبار الشريط العلوي */
+    overscroll-behavior: none !important;
+    z-index: 70 !important;
+  }
+
+  /* View Buttons Mobile */
+  .view-buttons-container {
+    @apply max-w-full flex flex-wrap gap-2 px-2;
+    scrollbar-width: none;
+  }
+
+  .view-buttons-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .view-button {
+    @apply flex-shrink-0;
+  }
+
+  /* Logo Section Mobile Adjustments */
+  .logo-section-container {
+    @apply max-w-full;
+  }
+
+  .logo-section-container .text-sm,
+  .logo-section-container .text-xs {
+    @apply truncate;
+  }
+
+  .logo-section-container .flex {
+    @apply flex-wrap gap-2;
+  }
+
+  /* Mobile Bottom Padding */
+  .mobile-bottom-padding {
+    padding-bottom: 4rem;
+  }
+}
+
+/* Custom Utility Classes */
+.gold-gradient {
+  background: linear-gradient(to right, #563660, #7b4e8a);
+}
+
+.gold-text-gradient {
+  background: linear-gradient(to right, #563660, #7b4e8a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Custom Shadows */
+.shadow-gold {
+  box-shadow: 0 4px 6px -1px rgba(86, 54, 96, 0.1),
+    0 2px 4px -1px rgba(86, 54, 96, 0.06);
+}
+
+/* Custom Transitions */
+.transition-smooth {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Accessibility Focus Styles */
+.focus-gold:focus {
+  outline: 2px solid var(--primary-gold);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Refined Minimalist Enhancements */
+.rounded-xl {
+  border-radius: 12px;
+}
+
+.rounded-2xl {
+  border-radius: 16px;
+}
+
+/* Subtle hover effects without scale or transform */
+.hover-lift {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.hover-lift:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border-color: rgba(86, 54, 96, 0.2);
+}
+
+/* Clean button styles */
+.btn-minimal {
+  @apply px-6 py-3 rounded-lg font-medium transition-colors duration-200;
+}
+
+@layer utilities {
+  .sidebar-section.active {
+    background-color: #f9fafb; /* bg-gray-50 */
+    border-left-width: 4px;
+    border-left-color: #563660; /* primary-700 */
+  }
+  .btn-primary {
+    background-color: #563660; /* primary-700 */
+    color: #ffffff;
+  }
+  .btn-primary:hover {
+    background-color: #4b2e55; /* primary-800 */
+  }
+}
+
+.btn-secondary {
+  @apply border border-gray-300 text-gray-700 hover:bg-gray-50;
+}
+
+/* Typography improvements */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Smooth animations */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideInFromBottom 0.6s ease-out;
+}
+
+/* Clean spacing system */
+.space-y-section > * + * {
+  margin-top: 5rem;
+}
+
+.space-y-content > * + * {
+  margin-top: 1.5rem;
+}
