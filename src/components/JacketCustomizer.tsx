@@ -448,7 +448,7 @@ const JacketCustomizer: React.FC = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="fixed top-[30px] left-0 right-0 bottom-0 bg-white shadow-xl z-70 p-4 mobile-details-panel overflow-y-auto"
             >
-              <div className="flex justify-between items-center mb-4 p-4">
+              <div className="flex justify-between items-center mb-0 p-4">
                 <h2 className="text-lg font-bold text-gray-900 gold-text-gradient">
                   تخصيص الجاكيت
                 </h2>
@@ -460,7 +460,7 @@ const JacketCustomizer: React.FC = () => {
                 </button>
               </div>
 
-              <div className="space-y-4 p-4">
+              <div className="space-y-2 p-4">
                 {/* عرض المقاس المحدد للموبايل */}
                 <div className="bg-gray-50 p-3 rounded-xl">
                   <div className="flex items-center justify-between mb-2">
