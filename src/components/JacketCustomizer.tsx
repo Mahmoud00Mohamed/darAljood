@@ -400,6 +400,16 @@ const JacketCustomizer: React.FC = () => {
                   ? "استبدال في السلة"
                   : "أضف إلى السلة"}
               </motion.button>
+
+              {/* زر الانتقال إلى عربة التسوق */}
+              <Link
+                to="/cart"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                الذهاب إلى السلة
+              </Link>
+
               <Link
                 to="/"
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium"
@@ -608,6 +618,16 @@ const JacketCustomizer: React.FC = () => {
                       ? "استبدال في السلة"
                       : "أضف إلى السلة"}
                   </motion.button>
+
+                  {/* زر الانتقال إلى عربة التسوق */}
+                  <Link
+                    to="/cart"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    الذهاب إلى السلة
+                  </Link>
+
                   <Link
                     to="/"
                     className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium"
