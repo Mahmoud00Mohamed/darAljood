@@ -129,8 +129,9 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
 
   const boxWidthPercent = (basePosition.boxWidth / SVG_WIDTH) * 100;
   const boxHeightPercent = (basePosition.boxHeight / SVG_HEIGHT) * 100;
-  const xPercent = (xPos / SVG_WIDTH) * 100;
-  const yPercent = (yPos / SVG_HEIGHT) * 100;
+  // Adjust position to account for centering without transform
+  const xPercent = ((xPos - basePosition.boxWidth / 2) / SVG_WIDTH) * 100;
+  const yPercent = ((yPos - basePosition.boxHeight / 2) / SVG_HEIGHT) * 100;
 
   return (
     <div
@@ -140,8 +141,7 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
         top: `${yPercent}%`,
         width: `${boxWidthPercent}%`,
         height: `${boxHeightPercent}%`,
-        transform: "translate(-50%, -50%)",
-        overflow: "hidden", // تغيير إلى hidden لقص الأطراف
+        overflow: "hidden",
         border: "1px dashed #000000",
       }}
       className="logo-overlay-container"

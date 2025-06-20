@@ -30,12 +30,10 @@ const JacketImageCapture = forwardRef<
   } = useJacket();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // حفظ الحالة الحالية
   const saveCurrentState = () => {
     return { ...jacketState };
   };
 
-  // استعادة الحالة
   const restoreState = (savedState: JacketState) => {
     jacketState.logos.forEach((logo) => removeLogo(logo.id));
     jacketState.texts.forEach((text) => removeText(text.id));
@@ -71,25 +69,18 @@ const JacketImageCapture = forwardRef<
       jacketViewer.style.height = "615px";
     }
 
-    // تحديد العرض الحالي
-    const currentView = view;
+    // تطبيق قص الأجزاء الخارجة عن حدود المستطيل في العروض الأمامية واليمنى واليسرى
+    if (["front", "right", "left"].includes(view)) {
+      logoOverlays.forEach((overlay) => {
+        overlay.style.overflow = "hidden";
+      });
+    }
 
     // تطبيق الرفع المناسب للنصوص بناءً على العرض
     textOverlays.forEach((overlay) => {
-      const offset = currentView === "front" ? "-15px" : "-12px";
+      const offset = view === "front" ? "-15px" : "-12px";
       overlay.style.transform = `translate(-50%, -50%) translateY(${offset})`;
     });
-
-    // إزالة خاصية overflow: hidden من الشعارات في الجوانب والواجهة الأمامية
-    if (
-      currentView === "front" ||
-      currentView === "right" ||
-      currentView === "left"
-    ) {
-      logoOverlays.forEach((overlay) => {
-        overlay.style.overflow = "visible";
-      });
-    }
 
     try {
       const canvas = await html2canvas(container, {
@@ -109,14 +100,12 @@ const JacketImageCapture = forwardRef<
 
       return canvas.toDataURL("image/png", 0.8);
     } finally {
-      // إعادة النصوص إلى حالتها الأصلية
       textOverlays.forEach((overlay) => {
         overlay.style.transform = "translate(-50%, -50%)";
       });
 
-      // إعادة خاصية overflow إلى hidden للشعارات
       logoOverlays.forEach((overlay) => {
-        overlay.style.overflow = "hidden";
+        overlay.style.overflow = "";
       });
 
       if (jacketViewer) {
