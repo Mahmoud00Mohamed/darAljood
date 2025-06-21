@@ -110,7 +110,7 @@ const MaterialSection: React.FC = () => {
       ))}
 
       <div className="p-3 bg-purple-50 rounded-lg text-xs text-purple-700 border border-purple-200">
-        <p>* الأكثر طلبًا: الجسم قطن، الأكمام جلد (الجلد يضيف تكلفة إضافية)</p>
+        <p>* الأكثر طلبًا: الجسم قطن، الأكمام جلد </p>
       </div>
     </div>
   );
