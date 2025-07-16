@@ -1,4 +1,3 @@
-// ملف JacketContext.tsx
 import React, {
   createContext,
   useCallback,
