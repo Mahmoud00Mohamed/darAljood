@@ -410,9 +410,10 @@ const JacketCustomizer: React.FC = () => {
                 الذهاب إلى السلة
               </Link>
 
+              {/* زر العودة للرئيسية */}
               <Link
                 to="/"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
               >
                 <ArrowLeft className="w-4 h-4" />
                 العودة للرئيسية
@@ -628,9 +629,10 @@ const JacketCustomizer: React.FC = () => {
                     الذهاب إلى السلة
                   </Link>
 
+                  {/* زر العودة للرئيسية */}
                   <Link
                     to="/"
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium relative z-10 pointer-events-auto"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     العودة للرئيسية
@@ -645,7 +647,7 @@ const JacketCustomizer: React.FC = () => {
         <div
           className={`${
             window.innerWidth <= 1250 ? "block" : "hidden"
-          } fixed bottom-0 left-0 right-0 z-50 mobile-sidebar transition-all duration-300`}
+          } fixed bottom-0 left-0 right-0 z-40 mobile-sidebar transition-all duration-300`}
         >
           <CustomizationSidebar isMobile setIsSidebarOpen={setIsSidebarOpen} />
         </div>
