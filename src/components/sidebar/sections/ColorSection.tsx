@@ -10,12 +10,12 @@ const ColorSection: React.FC = () => {
     [key in JacketPart]?: { name: string; value: string; pattern: string }[];
   } = {
     body: [
-      { name: "أسود", value: "#141414", pattern: "blackFabricPattern" },
+      { name: "أسود", value: "#161618", pattern: "blackFabricPattern" },
       { name: "كحلي", value: "#1B263B", pattern: "navyWeavePattern" },
       { name: "عنابي", value: "#5C1A2B", pattern: "burgundyVelvetPattern" },
     ],
     sleeves: [
-      { name: "أسود", value: "#141414", pattern: "blackFabricPattern" },
+      { name: "أسود", value: "#161618", pattern: "blackFabricPattern" },
       { name: "كحلي", value: "#1B263B", pattern: "navyWeavePattern" },
       { name: "أبيض", value: "#F5F6F5", pattern: "whiteCottonPattern" },
       { name: "بيج", value: "#E7D7C1", pattern: "beigeLinenPattern" },
@@ -23,11 +23,11 @@ const ColorSection: React.FC = () => {
       { name: "عنابي", value: "#5C1A2B", pattern: "burgundyVelvetPattern" },
     ],
     trim: [
-      { name: "أسود", value: "#141414", pattern: "blackFabricPattern" },
+      { name: "أسود", value: "#161618", pattern: "blackFabricPattern" },
       { name: "كحلي", value: "#1B263B", pattern: "navyWeavePattern" },
       {
         name: "أسود مع خطين أبيض",
-        value: "#141414_stripes",
+        value: "#161618_stripes",
         pattern: "blackWithWhiteStripes",
       },
       {
