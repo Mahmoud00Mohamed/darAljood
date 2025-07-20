@@ -1,6 +1,6 @@
 import { useRef, useImperativeHandle, forwardRef } from "react";
 import { useJacket, JacketView, JacketState } from "../context/JacketContext";
-import html2canvas from "html2canvas";
+import domtoimage from "dom-to-image";
 import JacketViewer from "./jacket/JacketViewer";
 
 export interface JacketImageCaptureRef {
@@ -51,68 +51,40 @@ const JacketImageCapture = forwardRef<
     const container = containerRef.current;
     if (!container) throw new Error("Container not found");
 
-    const jacketViewer = container.querySelector(
-      ".jacket-viewer-mobile"
-    ) as HTMLElement;
-
-    const textOverlays = container.querySelectorAll(
-      ".text-overlay"
-    ) as NodeListOf<HTMLElement>;
-
-    const logoOverlays = container.querySelectorAll(
-      ".logo-overlay-container"
-    ) as NodeListOf<HTMLElement>;
-
-    if (jacketViewer) {
-      jacketViewer.style.transform = "scale(1.5)";
-      jacketViewer.style.width = "480px";
-      jacketViewer.style.height = "615px";
-    }
-
-    // تطبيق قص الأجزاء الخارجة عن حدود المستطيل في العروض الأمامية واليمنى واليسرى
-    if (["front", "right", "left"].includes(view)) {
-      logoOverlays.forEach((overlay) => {
-        overlay.style.overflow = "hidden";
-      });
-    }
-
-    // تطبيق الرفع المناسب للنصوص بناءً على العرض
-    textOverlays.forEach((overlay) => {
-      const offset = view === "front" ? "-15px" : "-12px";
-      overlay.style.transform = `translate(-50%, -50%) translateY(${offset})`;
-    });
+    // Ensure the container is visible during capture
+    container.style.position = "fixed";
+    container.style.top = "0";
+    container.style.left = "0";
+    container.style.zIndex = "1000";
 
     try {
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#f9fafb",
-        width: 480,
-        height: 615,
-        windowWidth: 480,
-        windowHeight: 615,
-        ignoreElements: (element) =>
-          element.classList.contains("jacket-viewer-controls") ||
-          element.classList.contains("mobile-control-buttons") ||
-          element.classList.contains("desktop-control-buttons") ||
-          element.classList.contains("desktop-view-buttons"),
+      const dataUrl = await domtoimage.toPng(container, {
+        quality: 0.8,
+        bgcolor: "#f9fafb",
+        width: 320,
+        height: 410,
+        filter: (node: Node) => {
+          if (node instanceof Element) {
+            return !(
+              node.classList.contains("jacket-viewer-controls") ||
+              node.classList.contains("mobile-control-buttons") ||
+              node.classList.contains("desktop-control-buttons") ||
+              node.classList.contains("desktop-view-buttons")
+            );
+          }
+          return true;
+        },
       });
 
-      return canvas.toDataURL("image/png", 0.8);
+      return dataUrl;
+    } catch {
+      throw new Error(`Error capturing ${view} view`);
     } finally {
-      textOverlays.forEach((overlay) => {
-        overlay.style.transform = "translate(-50%, -50%)";
-      });
-
-      logoOverlays.forEach((overlay) => {
-        overlay.style.overflow = "";
-      });
-
-      if (jacketViewer) {
-        jacketViewer.style.transform = "";
-        jacketViewer.style.width = "";
-        jacketViewer.style.height = "";
-      }
+      // Restore original styles
+      container.style.position = "absolute";
+      container.style.top = "-9999px";
+      container.style.left = "-9999px";
+      container.style.zIndex = "-1";
     }
   };
 
@@ -126,11 +98,10 @@ const JacketImageCapture = forwardRef<
       for (const view of views) {
         try {
           setCurrentView(view);
-          await new Promise((resolve) => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 500)); // Increased delay
           const imageData = await captureView(view);
           images.push(imageData);
-        } catch (error) {
-          console.error(`Error capturing ${view} view:`, error);
+        } catch {
           images.push("");
         }
       }
@@ -149,16 +120,15 @@ const JacketImageCapture = forwardRef<
 
       try {
         restoreState(config);
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Increased delay
 
         for (const view of views) {
           try {
             setCurrentView(view);
-            await new Promise((resolve) => setTimeout(resolve, 200));
+            await new Promise((resolve) => setTimeout(resolve, 500)); // Increased delay
             const imageData = await captureView(view);
             images.push(imageData);
-          } catch (error) {
-            console.error(`Error capturing ${view} view:`, error);
+          } catch {
             images.push("");
           }
         }
@@ -179,8 +149,8 @@ const JacketImageCapture = forwardRef<
         position: "absolute",
         top: "-9999px",
         left: "-9999px",
-        width: "480px",
-        height: "615px",
+        width: "320px",
+        height: "410px",
         overflow: "visible",
         zIndex: -1,
         backgroundColor: "#f9fafb",
