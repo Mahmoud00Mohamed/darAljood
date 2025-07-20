@@ -9,18 +9,23 @@ import LeftLogoSection from "./sections/LeftLogoSection";
 import FrontTextSection from "./sections/FrontTextSection";
 import BackTextSection from "./sections/BackTextSection";
 import SubSidebarSection from "./sections/SubSidebarSection";
-import { Palette, Layers, ImagePlus, RotateCw, Ruler } from "lucide-react";
+import { Palette, Layers, ImagePlus, Ruler, ShoppingCart } from "lucide-react";
 import { useJacket, JacketView } from "../../context/JacketContext";
+import { useCart } from "../../context/CartContext";
 import Logo10 from "/logos/logo10.png";
 
 interface CustomizationSidebarProps {
   isMobile?: boolean;
   setIsSidebarOpen?: (isOpen: boolean) => void;
+  onAddToCart?: () => void;
+  isCapturingImages?: boolean;
 }
 
 const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
   isMobile,
   setIsSidebarOpen,
+  onAddToCart,
+  isCapturingImages = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
@@ -29,6 +34,7 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
     "logos"
   );
   const { setCurrentView } = useJacket();
+  const { items } = useCart();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [lastVisited, setLastVisited] = useState<{
     section: string;
@@ -123,23 +129,10 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
     setLastVisited({ section: activeSection, view: activeView, content });
   };
 
-  const handleRotate = () => {
-    const views: JacketView[] =
-      activeSection === "extras" && activeContent === "texts"
-        ? ["front", "back"]
-        : ["front", "back", "right", "left"];
-    const currentIndex = views.indexOf(activeView);
-    const nextIndex = (currentIndex + 1) % views.length;
-    setActiveView(views[nextIndex]);
-    setCurrentView(views[nextIndex]);
-    if (views[nextIndex] === "right" || views[nextIndex] === "left") {
-      setActiveContent("logos");
+  const handleAddToCartClick = () => {
+    if (onAddToCart) {
+      onAddToCart();
     }
-    setLastVisited({
-      section: activeSection,
-      view: views[nextIndex],
-      content: activeContent,
-    });
   };
 
   const renderViewButtons = () => {
@@ -245,11 +238,24 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
             <span className="text-xs mt-1">الإضافات</span>
           </button>
           <button
-            onClick={handleRotate}
-            className="flex flex-col items-center p-2 text-gray-600"
+            onClick={handleAddToCartClick}
+            disabled={isCapturingImages}
+            className={`flex flex-col items-center p-2 transition-colors ${
+              isCapturingImages
+                ? "text-gray-400 opacity-50"
+                : items.length > 0
+                ? "text-orange-600"
+                : "text-[#563660]"
+            }`}
           >
-            <RotateCw size={18} />
-            <span className="text-xs mt-1">تدوير</span>
+            <ShoppingCart size={18} />
+            <span className="text-xs mt-1">
+              {isCapturingImages
+                ? "جاري الحفظ..."
+                : items.length > 0
+                ? "استبدال"
+                : "أضف للسلة"}
+            </span>
           </button>
         </div>
 

@@ -649,7 +649,12 @@ const JacketCustomizer: React.FC = () => {
             window.innerWidth <= 1250 ? "block" : "hidden"
           } fixed bottom-0 left-0 right-0 z-40 mobile-sidebar transition-all duration-300`}
         >
-          <CustomizationSidebar isMobile setIsSidebarOpen={setIsSidebarOpen} />
+          <CustomizationSidebar
+            isMobile
+            setIsSidebarOpen={setIsSidebarOpen}
+            onAddToCart={handleAddToCart}
+            isCapturingImages={isCapturingImages}
+          />
         </div>
       </div>
     </div>
