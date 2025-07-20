@@ -1,4 +1,4 @@
-import { useRef, useImperativeHandle, forwardRef } from "react";
+import { useRef, useImperativeHandle, forwardRef, useEffect } from "react";
 import { useJacket, JacketView, JacketState } from "../context/JacketContext";
 import * as htmlToImage from "html-to-image";
 import JacketViewer from "./jacket/JacketViewer";
@@ -29,6 +29,23 @@ const JacketImageCapture = forwardRef<
     removeText,
   } = useJacket();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Ensure all images are loaded before capturing
+  const ensureImagesLoaded = async (container: HTMLElement): Promise<void> => {
+    const images = container.querySelectorAll("img");
+    const loadPromises = Array.from(images).map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          if (img.complete) {
+            resolve();
+          } else {
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Continue even if an image fails to load
+          }
+        })
+    );
+    await Promise.all(loadPromises);
+  };
 
   const saveCurrentState = () => {
     return { ...jacketState };
@@ -63,13 +80,15 @@ const JacketImageCapture = forwardRef<
       container.style.opacity = "1";
       container.style.zIndex = "1000";
       container.style.visibility = "visible";
-      container.style.transform = "none"; // Reset transform to avoid positioning issues
+      container.style.transform = "none";
+      container.style.width = "320px";
+      container.style.height = "410px";
     }
 
     if (jacketViewer) {
-      jacketViewer.style.transform = "scale(1)"; // Use scale(1) to maintain original size
-      jacketViewer.style.width = "320px"; // Match SVG_WIDTH from overlays
-      jacketViewer.style.height = "410px"; // Match SVG_HEIGHT from overlays
+      jacketViewer.style.transform = "scale(1)";
+      jacketViewer.style.width = "320px";
+      jacketViewer.style.height = "410px";
       jacketViewer.style.opacity = "1";
       jacketViewer.style.display = "flex";
       jacketViewer.style.visibility = "visible";
@@ -77,16 +96,19 @@ const JacketImageCapture = forwardRef<
       jacketViewer.style.margin = "0 auto";
     }
 
+    // Wait for images to load
+    await ensureImagesLoaded(container);
+
     try {
       const dataUrl = await htmlToImage.toPng(container, {
-        quality: 1.0, // Maximum quality
-        pixelRatio: 3, // Increased pixel ratio for sharper images
+        quality: 1.0,
+        pixelRatio: 3,
         width: 320,
         height: 410,
         backgroundColor: "#f9fafb",
         skipFonts: false,
-        cacheBust: true, // Prevent caching issues
-        imagePlaceholder: undefined, // Ensure original images are used
+        cacheBust: true,
+        imagePlaceholder: undefined,
         filter: (node) =>
           !node.classList?.contains("jacket-viewer-controls") &&
           !node.classList?.contains("mobile-control-buttons") &&
@@ -105,6 +127,8 @@ const JacketImageCapture = forwardRef<
         container.style.zIndex = "-1";
         container.style.visibility = "";
         container.style.transform = "";
+        container.style.width = "";
+        container.style.height = "";
       }
       if (jacketViewer) {
         jacketViewer.style.transform = "";
@@ -129,9 +153,15 @@ const JacketImageCapture = forwardRef<
       for (const view of views) {
         try {
           setCurrentView(view);
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          // Wait longer for rendering on mobile
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           const imageData = await captureView();
-          images.push(imageData);
+          if (imageData && imageData.startsWith("data:image/png;base64,")) {
+            images.push(imageData);
+          } else {
+            console.warn(`Invalid image data for ${view} view`);
+            images.push("");
+          }
         } catch (error) {
           console.error(`Error capturing ${view} view:`, error);
           images.push("");
@@ -152,14 +182,19 @@ const JacketImageCapture = forwardRef<
 
       try {
         restoreState(config);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1500));
 
         for (const view of views) {
           try {
             setCurrentView(view);
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             const imageData = await captureView();
-            images.push(imageData);
+            if (imageData && imageData.startsWith("data:image/png;base64,")) {
+              images.push(imageData);
+            } else {
+              console.warn(`Invalid image data for ${view} view`);
+              images.push("");
+            }
           } catch (error) {
             console.error(`Error capturing ${view} view:`, error);
             images.push("");
@@ -173,6 +208,17 @@ const JacketImageCapture = forwardRef<
       return images;
     },
   }));
+
+  // Ensure container is re-rendered on mount
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.style.display = "none";
+      setTimeout(() => {
+        container.style.display = "flex";
+      }, 0);
+    }
+  }, []);
 
   return (
     <div
