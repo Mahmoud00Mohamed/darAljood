@@ -83,12 +83,16 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
       });
       document.addEventListener("contextmenu", preventContextMenu);
       document.body.style.overflow = "hidden";
+      document.documentElement.style.height = "100dvh"; // Use dvh for mobile
+      document.body.style.height = "100dvh"; // Use dvh for mobile
     }
 
     return () => {
       document.removeEventListener("touchmove", preventPullToRefresh);
       document.removeEventListener("contextmenu", preventContextMenu);
       document.body.style.overflow = "";
+      document.documentElement.style.height = "";
+      document.body.style.height = "";
     };
   }, [isOpen, isMobile]);
 
@@ -336,7 +340,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           right: 0,
           bottom: 0,
           width: "100vw",
-          height: "100dvh",
+          height: "100dvh", // Use 100dvh for mobile viewport height
           zIndex: 9999,
           userSelect: "none",
           WebkitUserSelect: "none",
@@ -384,7 +388,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
           <div
             className={`flex-1 flex flex-col overflow-hidden ${
-              isMobile ? "p-2" : "p-6"
+              isMobile ? "p-2 pb-0" : "p-6"
             }`}
           >
             <div
@@ -528,8 +532,14 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
             <div
               className={`flex-1 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden ${
-                isMobile ? "min-h-[200px] max-h-[calc(100dvh-200px)]" : ""
+                isMobile ? "min-h-[200px]" : ""
               }`}
+              style={{
+                // Adjust max height for mobile to account for controls and bottom bar
+                maxHeight: isMobile
+                  ? "calc(100dvh - 40px - 40px - 140px)"
+                  : "none", // Approx. header+toolbar+bottombar height
+              }}
             >
               {imageSrc && (
                 <ReactCrop
@@ -655,7 +665,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           )}
 
           {isMobile && (
-            <div className="p-3 bg-white border-t border-gray-200 safe-area-inset-bottom">
+            <div className="p-3 bg-white border-t border-gray-200 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              {" "}
+              {/* Add padding-bottom with safe-area-inset-bottom */}
               <div className="space-y-2">
                 <button
                   onClick={handleApplyCrop}
@@ -686,7 +698,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                   إلغاء
                 </button>
               </div>
-
               {completedCrop && (
                 <div className="mt-2 text-center">
                   <p className="text-xs text-gray-600">
