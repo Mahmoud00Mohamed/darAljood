@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CustomizationSidebar from "./sidebar/CustomizationSidebar";
 import JacketViewer from "./jacket/JacketViewer";
@@ -30,39 +30,9 @@ const JacketCustomizer: React.FC = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showReplaceConfirm, setShowReplaceConfirm] = useState(false);
   const [isCapturingImages, setIsCapturingImages] = useState(false);
-  const [hasDesignChanged, setHasDesignChanged] = useState(false);
-  const [lastAddedDesign, setLastAddedDesign] = useState<string | null>(null);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
 
-  // تتبع تغييرات التصميم
-  useEffect(() => {
-    if (lastAddedDesign) {
-      const currentDesignHash = JSON.stringify({
-        colors: jacketState.colors,
-        materials: jacketState.materials,
-        size: jacketState.size,
-        logos: jacketState.logos.map((logo) => ({
-          position: logo.position,
-          image: logo.image,
-          scale: logo.scale,
-          x: logo.x,
-          y: logo.y,
-        })),
-        texts: jacketState.texts.map((text) => ({
-          position: text.position,
-          content: text.content,
-          font: text.font,
-          color: text.color,
-          scale: text.scale,
-          x: text.x,
-          y: text.y,
-        })),
-      });
-
-      setHasDesignChanged(currentDesignHash !== lastAddedDesign);
-    }
-  }, [jacketState, lastAddedDesign]);
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
   };
@@ -86,32 +56,6 @@ const JacketCustomizer: React.FC = () => {
 
       // إضافة إلى السلة مع الصور
       addToCart(jacketState, quantity, jacketImages);
-
-      // حفظ التصميم الحالي كمرجع
-      const designHash = JSON.stringify({
-        colors: jacketState.colors,
-        materials: jacketState.materials,
-        size: jacketState.size,
-        logos: jacketState.logos.map((logo) => ({
-          position: logo.position,
-          image: logo.image,
-          scale: logo.scale,
-          x: logo.x,
-          y: logo.y,
-        })),
-        texts: jacketState.texts.map((text) => ({
-          position: text.position,
-          content: text.content,
-          font: text.font,
-          color: text.color,
-          scale: text.scale,
-          x: text.x,
-          y: text.y,
-        })),
-      });
-      setLastAddedDesign(designHash);
-      setHasDesignChanged(false);
-
       setShowMobileDetails(false);
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 3000);
@@ -119,32 +63,6 @@ const JacketCustomizer: React.FC = () => {
       console.error("Error capturing images:", error);
       // إضافة إلى السلة بدون صور في حالة الخطأ
       addToCart(jacketState, quantity);
-
-      // حفظ التصميم الحالي كمرجع حتى في حالة الخطأ
-      const designHash = JSON.stringify({
-        colors: jacketState.colors,
-        materials: jacketState.materials,
-        size: jacketState.size,
-        logos: jacketState.logos.map((logo) => ({
-          position: logo.position,
-          image: logo.image,
-          scale: logo.scale,
-          x: logo.x,
-          y: logo.y,
-        })),
-        texts: jacketState.texts.map((text) => ({
-          position: text.position,
-          content: text.content,
-          font: text.font,
-          color: text.color,
-          scale: text.scale,
-          x: text.x,
-          y: text.y,
-        })),
-      });
-      setLastAddedDesign(designHash);
-      setHasDesignChanged(false);
-
       setShowMobileDetails(false);
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 3000);
@@ -736,8 +654,6 @@ const JacketCustomizer: React.FC = () => {
             setIsSidebarOpen={setIsSidebarOpen}
             onAddToCart={handleAddToCart}
             isCapturingImages={isCapturingImages}
-            showSuccessMessage={showSuccessMessage}
-            hasDesignChanged={hasDesignChanged}
           />
         </div>
       </div>
