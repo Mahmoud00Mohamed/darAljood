@@ -286,84 +286,86 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
         </div>
 
         {/* Expandable Content Area */}
-        {isOpen && activeSection && (
-          <div
-            ref={sidebarRef}
-            className="absolute bottom-16 left-0 right-0 bg-white overflow-y-auto p-4 border-t border-gray-200 z-40"
-            style={{ height: "40vh", overscrollBehavior: "contain" }}
-          >
-            {activeSection === "colors" && (
-              <SubSidebarSection title="الألوان" isDefaultOpen>
-                <ColorSection />
-              </SubSidebarSection>
-            )}
-            {activeSection === "product-options" && (
-              <SubSidebarSection title="خيارات المنتج" isDefaultOpen>
-                <div className="space-y-4">
-                  {/* Tab Navigation */}
-                  <div className="flex gap-2 mb-4">
-                    <button
-                      onClick={() => handleProductTabChange("materials")}
-                      className={`flex-1 py-2 px-4 text-sm rounded-xl transition-all ${
-                        productOptionsTab === "materials"
-                          ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      الخامات
-                    </button>
-                    <button
-                      onClick={() => handleProductTabChange("sizes")}
-                      className={`flex-1 py-2 px-4 text-sm rounded-xl transition-all ${
-                        productOptionsTab === "sizes"
-                          ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      المقاسات
-                    </button>
-                  </div>
+        {isOpen &&
+          activeSection &&
+          !document.querySelector(".ImageCropModal") && (
+            <div
+              ref={sidebarRef}
+              className="absolute bottom-16 left-0 right-0 bg-white overflow-y-auto p-4 border-t border-gray-200 z-40"
+              style={{ height: "40vh", overscrollBehavior: "contain" }}
+            >
+              {activeSection === "colors" && (
+                <SubSidebarSection title="الألوان" isDefaultOpen>
+                  <ColorSection />
+                </SubSidebarSection>
+              )}
+              {activeSection === "product-options" && (
+                <SubSidebarSection title="خيارات المنتج" isDefaultOpen>
+                  <div className="space-y-4">
+                    {/* Tab Navigation */}
+                    <div className="flex gap-2 mb-4">
+                      <button
+                        onClick={() => handleProductTabChange("materials")}
+                        className={`flex-1 py-2 px-4 text-sm rounded-xl transition-all ${
+                          productOptionsTab === "materials"
+                            ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        الخامات
+                      </button>
+                      <button
+                        onClick={() => handleProductTabChange("sizes")}
+                        className={`flex-1 py-2 px-4 text-sm rounded-xl transition-all ${
+                          productOptionsTab === "sizes"
+                            ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        المقاسات
+                      </button>
+                    </div>
 
-                  {/* Tab Content */}
-                  {productOptionsTab === "materials" && <MaterialSection />}
-                  {productOptionsTab === "sizes" && <SizeSection />}
-                </div>
-              </SubSidebarSection>
-            )}
-            {activeSection === "extras" && (
-              <SubSidebarSection
-                title={`الإضافات - ${
-                  activeView === "front"
-                    ? "أمامي"
-                    : activeView === "back"
-                    ? "خلفي"
-                    : activeView === "right"
-                    ? "يمين"
-                    : "يسار"
-                }`}
-                isDefaultOpen
-              >
-                {renderViewButtons()}
-                {(activeView === "front" || activeView === "back") &&
-                  renderContentButtons()}
-                {activeView === "front" && (
-                  <>
-                    {activeContent === "logos" && <FrontLogoSection />}
-                    {activeContent === "texts" && <FrontTextSection />}
-                  </>
-                )}
-                {activeView === "back" && (
-                  <>
-                    {activeContent === "logos" && <BackLogoSection />}
-                    {activeContent === "texts" && <BackTextSection />}
-                  </>
-                )}
-                {activeView === "right" && <RightLogoSection />}
-                {activeView === "left" && <LeftLogoSection />}
-              </SubSidebarSection>
-            )}
-          </div>
-        )}
+                    {/* Tab Content */}
+                    {productOptionsTab === "materials" && <MaterialSection />}
+                    {productOptionsTab === "sizes" && <SizeSection />}
+                  </div>
+                </SubSidebarSection>
+              )}
+              {activeSection === "extras" && (
+                <SubSidebarSection
+                  title={`الإضافات - ${
+                    activeView === "front"
+                      ? "أمامي"
+                      : activeView === "back"
+                      ? "خلفي"
+                      : activeView === "right"
+                      ? "يمين"
+                      : "يسار"
+                  }`}
+                  isDefaultOpen
+                >
+                  {renderViewButtons()}
+                  {(activeView === "front" || activeView === "back") &&
+                    renderContentButtons()}
+                  {activeView === "front" && (
+                    <>
+                      {activeContent === "logos" && <FrontLogoSection />}
+                      {activeContent === "texts" && <FrontTextSection />}
+                    </>
+                  )}
+                  {activeView === "back" && (
+                    <>
+                      {activeContent === "logos" && <BackLogoSection />}
+                      {activeContent === "texts" && <BackTextSection />}
+                    </>
+                  )}
+                  {activeView === "right" && <RightLogoSection />}
+                  {activeView === "left" && <LeftLogoSection />}
+                </SubSidebarSection>
+              )}
+            </div>
+          )}
       </div>
     );
   }
