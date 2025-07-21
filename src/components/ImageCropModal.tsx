@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactCrop, {
@@ -26,7 +26,7 @@ interface ImageCropModalProps {
   onClose: () => void;
   imageFile: File | null;
   onCropComplete: (croppedImageUrl: string, originalFile: File) => void;
-  aspectRatio?: number; // نسبة العرض إلى الارتفاع المطلوبة
+  aspectRatio?: number;
   title?: string;
 }
 
@@ -52,9 +52,10 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // تحديد ما إذا كان الجهاز محمولاً
-  React.useEffect(() => {
+  useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -63,8 +64,36 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // منع Pull-to-Refresh وتفعيل التغطية الكاملة للشاشة
+  useEffect(() => {
+    const preventPullToRefresh = (e: TouchEvent) => {
+      if (isOpen && isMobile) {
+        e.preventDefault();
+      }
+    };
+
+    const preventContextMenu = (e: Event) => {
+      e.preventDefault();
+    };
+
+    if (isOpen && isMobile) {
+      document.addEventListener("touchmove", preventPullToRefresh, {
+        passive: false,
+      });
+      document.addEventListener("contextmenu", preventContextMenu);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("touchmove", preventPullToRefresh);
+      document.removeEventListener("contextmenu", preventContextMenu);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, isMobile]);
+
   // تحميل الصورة عند فتح المودال
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen && imageFile) {
       const reader = new FileReader();
       reader.onload = () => {
@@ -144,7 +173,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   // إنشاء معاينة للاقتطاع
   const generatePreview = useCallback(async () => {
-    // إخفاء المعاينة في الهواتف
     if (isMobile) return;
 
     if (!completedCrop || !imgRef.current || !canvasRef.current) return;
@@ -172,7 +200,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     const centerY = image.naturalHeight / 2;
 
     ctx.save();
-
     ctx.translate(-cropX, -cropY);
     ctx.translate(centerX, centerY);
     ctx.rotate((rotate * Math.PI) / 180);
@@ -193,7 +220,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
     ctx.restore();
 
-    // إنشاء دائرة للاقتطاع الدائري
     if (cropMode === "circle") {
       const radius = Math.min(canvas.width, canvas.height) / 2;
       ctx.globalCompositeOperation = "destination-in";
@@ -254,7 +280,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
       ctx.restore();
 
-      // تطبيق الاقتطاع الدائري
       if (cropMode === "circle") {
         const radius = Math.min(canvas.width, canvas.height) / 2;
         ctx.globalCompositeOperation = "destination-in";
@@ -288,7 +313,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   };
 
   // تحديث المعاينة عند تغيير الاقتطاع
-  React.useEffect(() => {
+  useEffect(() => {
     if (completedCrop) {
       generatePreview();
     }
@@ -302,7 +327,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-4 modal-portal"
+        className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-0 modal-portal"
         data-modal="true"
         style={{
           position: "fixed",
@@ -311,8 +336,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           right: 0,
           bottom: 0,
           width: "100vw",
-          height: "100vh",
+          height: "100dvh",
           zIndex: 9999,
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          touchAction: "none",
         }}
         onClick={onClose}
       >
@@ -320,15 +348,15 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className={`bg-white rounded-2xl shadow-xl w-full overflow-hidden ${
-            isMobile
-              ? "max-w-full max-h-[85vh] rounded-lg"
-              : "max-w-6xl max-h-[95vh]"
+          className={`bg-white w-full h-full overflow-hidden flex flex-col ${
+            isMobile ? "rounded-none" : "max-w-6xl max-h-[95vh] rounded-2xl"
           }`}
           data-modal="true"
           onClick={(e) => e.stopPropagation()}
+          ref={modalRef}
+          style={{ userSelect: "none", WebkitUserSelect: "none" }}
         >
-          {/* Header */}
+          {/* Toolbar and header */}
           <div
             className={`flex items-center justify-between border-b border-gray-200 bg-gray-50 ${
               isMobile ? "p-3" : "p-6"
@@ -355,361 +383,332 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           </div>
 
           <div
-            className={`flex ${
-              isMobile
-                ? "flex-col"
-                : "flex-col lg:flex-row h-[calc(95vh-120px)]"
+            className={`flex-1 flex flex-col overflow-hidden ${
+              isMobile ? "p-2" : "p-6"
             }`}
           >
-            {/* Main Crop Area */}
-            <div className={`flex-1 overflow-auto ${isMobile ? "p-2" : "p-6"}`}>
-              <div className="flex flex-col h-full">
-                {/* Controls */}
-                <div
-                  className={`flex flex-wrap mb-4 bg-gray-50 rounded-lg ${
-                    isMobile ? "gap-1 p-2" : "gap-4 p-4 mb-6"
+            <div
+              className={`flex flex-wrap mb-4 bg-gray-50 rounded-lg ${
+                isMobile ? "gap-1 p-2" : "gap-4 p-4 mb-6"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className={`font-medium text-gray-700 ${
+                    isMobile ? "text-xs hidden" : "text-sm"
                   }`}
                 >
-                  {/* Crop Mode */}
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`font-medium text-gray-700 ${
-                        isMobile ? "text-xs hidden" : "text-sm"
-                      }`}
-                    >
-                      نمط الاقتطاع:
-                    </span>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleCropModeChange("free")}
-                        className={`rounded-lg transition-colors ${
-                          isMobile ? "p-1" : "p-2"
-                        } ${
-                          cropMode === "free"
-                            ? "bg-[#563660] text-white"
-                            : "bg-white text-gray-600 hover:bg-gray-100"
-                        }`}
-                        title="حر"
-                      >
-                        <Maximize
-                          className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"}
-                        />
-                      </button>
-                      <button
-                        onClick={() => handleCropModeChange("square")}
-                        className={`rounded-lg transition-colors ${
-                          isMobile ? "p-1" : "p-2"
-                        } ${
-                          cropMode === "square"
-                            ? "bg-[#563660] text-white"
-                            : "bg-white text-gray-600 hover:bg-gray-100"
-                        }`}
-                        title="مربع"
-                      >
-                        <Square
-                          className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"}
-                        />
-                      </button>
-                      <button
-                        onClick={() => handleCropModeChange("circle")}
-                        className={`rounded-lg transition-colors ${
-                          isMobile ? "p-1" : "p-2"
-                        } ${
-                          cropMode === "circle"
-                            ? "bg-[#563660] text-white"
-                            : "bg-white text-gray-600 hover:bg-gray-100"
-                        }`}
-                        title="دائري"
-                      >
-                        <Circle
-                          className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"}
-                        />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Scale Control */}
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`font-medium text-gray-700 ${
-                        isMobile ? "text-xs hidden" : "text-sm"
-                      }`}
-                    >
-                      التكبير:
-                    </span>
-                    <button
-                      onClick={() => setScale(Math.max(0.5, scale - 0.1))}
-                      className={`bg-white rounded hover:bg-gray-100 transition-colors ${
-                        isMobile ? "p-0.5" : "p-1"
-                      }`}
-                    >
-                      <ZoomOut
-                        className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"}
-                      />
-                    </button>
-                    <span
-                      className={`text-gray-600 text-center ${
-                        isMobile
-                          ? "text-xs min-w-[2rem]"
-                          : "text-sm min-w-[3rem]"
-                      }`}
-                    >
-                      {Math.round(scale * 100)}%
-                    </span>
-                    <button
-                      onClick={() => setScale(Math.min(3, scale + 0.1))}
-                      className={`bg-white rounded hover:bg-gray-100 transition-colors ${
-                        isMobile ? "p-0.5" : "p-1"
-                      }`}
-                    >
-                      <ZoomIn
-                        className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Rotation Control */}
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`font-medium text-gray-700 ${
-                        isMobile ? "text-xs hidden" : "text-sm"
-                      }`}
-                    >
-                      الدوران:
-                    </span>
-                    <button
-                      onClick={() => setRotate((rotate - 90) % 360)}
-                      className={`bg-white rounded hover:bg-gray-100 transition-colors ${
-                        isMobile ? "p-0.5" : "p-1"
-                      }`}
-                    >
-                      <RotateCw
-                        className={`transform scale-x-[-1] ${
-                          isMobile ? "w-2.5 h-2.5" : "w-4 h-4"
-                        }`}
-                      />
-                    </button>
-                    <span
-                      className={`text-gray-600 text-center ${
-                        isMobile
-                          ? "text-xs min-w-[2rem]"
-                          : "text-sm min-w-[3rem]"
-                      }`}
-                    >
-                      {rotate}°
-                    </span>
-                    <button
-                      onClick={() => setRotate((rotate + 90) % 360)}
-                      className={`bg-white rounded hover:bg-gray-100 transition-colors ${
-                        isMobile ? "p-0.5" : "p-1"
-                      }`}
-                    >
-                      <RotateCw
-                        className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Reset Button */}
+                  نمط الاقتطاع:
+                </span>
+                <div className="flex gap-1">
                   <button
-                    onClick={handleReset}
-                    className={`flex items-center gap-1 bg-white text-gray-600 rounded hover:bg-gray-100 transition-colors ${
-                      isMobile ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1"
+                    onClick={() => handleCropModeChange("free")}
+                    className={`rounded-lg transition-colors ${
+                      isMobile ? "p-1" : "p-2"
+                    } ${
+                      cropMode === "free"
+                        ? "bg-[#563660] text-white"
+                        : "bg-white text-gray-600 hover:bg-gray-100"
                     }`}
+                    title="حر"
                   >
-                    <RefreshCw
+                    <Maximize
                       className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"}
                     />
-                    {isMobile ? "إعادة" : "إعادة تعيين"}
+                  </button>
+                  <button
+                    onClick={() => handleCropModeChange("square")}
+                    className={`rounded-lg transition-colors ${
+                      isMobile ? "p-1" : "p-2"
+                    } ${
+                      cropMode === "square"
+                        ? "bg-[#563660] text-white"
+                        : "bg-white text-gray-600 hover:bg-gray-100"
+                    }`}
+                    title="مربع"
+                  >
+                    <Square className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"} />
+                  </button>
+                  <button
+                    onClick={() => handleCropModeChange("circle")}
+                    className={`rounded-lg transition-colors ${
+                      isMobile ? "p-1" : "p-2"
+                    } ${
+                      cropMode === "circle"
+                        ? "bg-[#563660] text-white"
+                        : "bg-white text-gray-600 hover:bg-gray-100"
+                    }`}
+                    title="دائري"
+                  >
+                    <Circle className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"} />
                   </button>
                 </div>
+              </div>
 
-                {/* Crop Area */}
-                <div
-                  className={`flex-1 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden ${
-                    isMobile ? "min-h-[200px] max-h-[300px]" : ""
+              <div className="flex items-center gap-2">
+                <span
+                  className={`font-medium text-gray-700 ${
+                    isMobile ? "text-xs hidden" : "text-sm"
                   }`}
                 >
-                  {imageSrc && (
-                    <ReactCrop
-                      crop={crop}
-                      onChange={(_, percentCrop) => setCrop(percentCrop)}
-                      onComplete={(c) => setCompletedCrop(c)}
-                      aspect={
-                        cropMode === "square"
-                          ? 1
-                          : cropMode === "circle"
-                          ? 1
-                          : aspectRatio
-                      }
-                      circularCrop={cropMode === "circle"}
-                      className="max-w-full max-h-full"
-                    >
-                      <img
-                        ref={imgRef}
-                        alt="اقتطاع"
-                        src={imageSrc}
-                        style={{
-                          transform: `scale(${scale}) rotate(${rotate}deg)`,
-                          maxWidth: "100%",
-                          maxHeight: "100%",
-                        }}
-                        onLoad={onImageLoad}
-                        className="max-w-full max-h-full object-contain"
-                      />
-                    </ReactCrop>
-                  )}
-                </div>
+                  التكبير:
+                </span>
+                <button
+                  onClick={() => setScale(Math.max(0.5, scale - 0.1))}
+                  className={`bg-white rounded hover:bg-gray-100 transition-colors ${
+                    isMobile ? "p-0.5" : "p-1"
+                  }`}
+                >
+                  <ZoomOut className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"} />
+                </button>
+                <span
+                  className={`text-gray-600 text-center ${
+                    isMobile ? "text-xs min-w-[2rem]" : "text-sm min-w-[3rem]"
+                  }`}
+                >
+                  {Math.round(scale * 100)}%
+                </span>
+                <button
+                  onClick={() => setScale(Math.min(3, scale + 0.1))}
+                  className={`bg-white rounded hover:bg-gray-100 transition-colors ${
+                    isMobile ? "p-0.5" : "p-1"
+                  }`}
+                >
+                  <ZoomIn className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"} />
+                </button>
               </div>
+
+              <div className="flex items-center gap-2">
+                <span
+                  className={`font-medium text-gray-700 ${
+                    isMobile ? "text-xs hidden" : "text-sm"
+                  }`}
+                >
+                  الدوران:
+                </span>
+                <button
+                  onClick={() => setRotate((rotate - 90) % 360)}
+                  className={`bg-white rounded hover:bg-gray-100 transition-colors ${
+                    isMobile ? "p-0.5" : "p-1"
+                  }`}
+                >
+                  <RotateCw
+                    className={`transform scale-x-[-1] ${
+                      isMobile ? "w-2.5 h-2.5" : "w-4 h-4"
+                    }`}
+                  />
+                </button>
+                <span
+                  className={`text-gray-600 text-center ${
+                    isMobile ? "text-xs min-w-[2rem]" : "text-sm min-w-[3rem]"
+                  }`}
+                >
+                  {rotate}°
+                </span>
+                <button
+                  onClick={() => setRotate((rotate + 90) % 360)}
+                  className={`bg-white rounded hover:bg-gray-100 transition-colors ${
+                    isMobile ? "p-0.5" : "p-1"
+                  }`}
+                >
+                  <RotateCw className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"} />
+                </button>
+              </div>
+
+              <button
+                onClick={handleReset}
+                className={`flex items-center gap-1 bg-white text-gray-600 rounded hover:bg-gray-100 transition-colors ${
+                  isMobile ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1"
+                }`}
+              >
+                <RefreshCw className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"} />
+                {isMobile ? "إعادة" : "إعادة تعيين"}
+              </button>
             </div>
 
-            {/* Preview Panel */}
-            {!isMobile && (
-              <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-r border-gray-200 bg-gray-50 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  معاينة النتيجة
-                </h3>
+            <div
+              className={`flex-1 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden ${
+                isMobile ? "min-h-[200px] max-h-[calc(100dvh-200px)]" : ""
+              }`}
+            >
+              {imageSrc && (
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => setCrop(percentCrop)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={
+                    cropMode === "square"
+                      ? 1
+                      : cropMode === "circle"
+                      ? 1
+                      : aspectRatio
+                  }
+                  circularCrop={cropMode === "circle"}
+                  className="max-w-full max-h-full"
+                  style={{ touchAction: "none" }}
+                >
+                  <img
+                    ref={imgRef}
+                    alt="اقتطاع"
+                    src={imageSrc}
+                    style={{
+                      transform: `scale(${scale}) rotate(${rotate}deg)`,
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      userSelect: "none",
+                      WebkitUserSelect: "none",
+                    }}
+                    onLoad={onImageLoad}
+                    className="max-w-full max-h-full object-contain"
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                  />
+                </ReactCrop>
+              )}
+            </div>
+          </div>
 
-                <div className="bg-white rounded-lg p-4 mb-6">
-                  {previewUrl ? (
-                    <div className="flex flex-col items-center">
-                      <img
-                        src={previewUrl}
-                        alt="معاينة الاقتطاع"
-                        className={`max-w-full max-h-48 object-contain ${
-                          cropMode === "circle" ? "rounded-full" : "rounded-lg"
-                        }`}
-                      />
-                      <div className="mt-3 text-sm text-gray-600 text-center">
-                        <p>
-                          الأبعاد: {completedCrop?.width || 0} ×{" "}
-                          {completedCrop?.height || 0}
-                        </p>
-                        <p>
-                          النمط:{" "}
-                          {cropMode === "free"
-                            ? "حر"
-                            : cropMode === "square"
-                            ? "مربع"
-                            : "دائري"}
-                        </p>
-                      </div>
+          {!isMobile && (
+            <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-r border-gray-200 bg-gray-50 p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                معاينة النتيجة
+              </h3>
+
+              <div className="bg-white rounded-lg p-4 mb-6">
+                {previewUrl ? (
+                  <div className="flex flex-col items-center">
+                    <img
+                      src={previewUrl}
+                      alt="معاينة الاقتطاع"
+                      className={`max-w-full max-h-48 object-contain ${
+                        cropMode === "circle" ? "rounded-full" : "rounded-lg"
+                      }`}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                    />
+                    <div className="mt-3 text-sm text-gray-600 text-center">
+                      <p>
+                        الأبعاد: {completedCrop?.width || 0} ×{" "}
+                        {completedCrop?.height || 0}
+                      </p>
+                      <p>
+                        النمط:{" "}
+                        {cropMode === "free"
+                          ? "حر"
+                          : cropMode === "square"
+                          ? "مربع"
+                          : "دائري"}
+                      </p>
                     </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-                      <CropIcon className="w-12 h-12 mb-2" />
-                      <p className="text-sm">قم بتحديد منطقة الاقتطاع</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Tips */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <h4 className="text-sm font-medium text-blue-800 mb-2">
-                    نصائح:
-                  </h4>
-                  <ul className="text-xs text-blue-700 space-y-1">
-                    <li>• اسحب الزوايا لتغيير حجم منطقة الاقتطاع</li>
-                    <li>• اسحب المنطقة لتحريكها</li>
-                    <li>• استخدم أزرار التكبير والدوران للتحكم الدقيق</li>
-                    <li>• اختر النمط المناسب لاستخدامك</li>
-                  </ul>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  <button
-                    onClick={handleApplyCrop}
-                    disabled={!completedCrop || isProcessing}
-                    className={`w-full flex items-center justify-center gap-2 py-3 font-medium rounded-lg transition-all duration-200 ${
-                      completedCrop && !isProcessing
-                        ? "bg-[#563660] text-white hover:bg-[#4b2e55]"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        جاري المعالجة...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-4 h-4" />
-                        تطبيق الاقتطاع
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={onClose}
-                    className="w-full py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    إلغاء
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Mobile Action Buttons - تظهر فقط في الهواتف */}
-            {isMobile && (
-              <div className="p-3 bg-white border-t border-gray-200">
-                <div className="space-y-2">
-                  <button
-                    onClick={handleApplyCrop}
-                    disabled={!completedCrop || isProcessing}
-                    className={`w-full flex items-center justify-center gap-2 py-2 font-medium rounded-lg transition-all duration-200 text-sm ${
-                      completedCrop && !isProcessing
-                        ? "bg-[#563660] text-white hover:bg-[#4b2e55]"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        جاري المعالجة...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-4 h-4" />
-                        تطبيق الاقتطاع
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={onClose}
-                    className="w-full py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm"
-                  >
-                    إلغاء
-                  </button>
-                </div>
-
-                {/* معلومات مبسطة للهاتف */}
-                {completedCrop && (
-                  <div className="mt-2 text-center">
-                    <p className="text-xs text-gray-600">
-                      الأبعاد: {completedCrop.width} × {completedCrop.height} |
-                      النمط:{" "}
-                      {cropMode === "free"
-                        ? "حر"
-                        : cropMode === "square"
-                        ? "مربع"
-                        : "دائري"}
-                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                    <CropIcon className="w-12 h-12 mb-2" />
+                    <p className="text-sm">قم بتحديد منطقة الاقتطاع</p>
                   </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* Hidden Canvas for Processing */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">
+                  نصائح:
+                </h4>
+                <ul className="text-xs text-blue-700 space-y-1">
+                  <li>• اسحب الزوايا لتغيير حجم منطقة الاقتطاع</li>
+                  <li>• اسحب المنطقة لتحريكها</li>
+                  <li>• استخدم أزرار التكبير والدوران للتحكم الدقيق</li>
+                  <li>• اختر النمط المناسب لاستخدامك</li>
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={handleApplyCrop}
+                  disabled={!completedCrop || isProcessing}
+                  className={`w-full flex items-center justify-center gap-2 py-3 font-medium rounded-lg transition-all duration-200 ${
+                    completedCrop && !isProcessing
+                      ? "bg-[#563660] text-white hover:bg-[#4b2e55]"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      جاري المعالجة...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      تطبيق الاقتطاع
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={onClose}
+                  className="w-full py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isMobile && (
+            <div className="p-3 bg-white border-t border-gray-200 safe-area-inset-bottom">
+              <div className="space-y-2">
+                <button
+                  onClick={handleApplyCrop}
+                  disabled={!completedCrop || isProcessing}
+                  className={`w-full flex items-center justify-center gap-2 py-2 font-medium rounded-lg transition-all duration-200 text-sm ${
+                    completedCrop && !isProcessing
+                      ? "bg-[#563660] text-white hover:bg-[#4b2e55]"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      جاري المعالجة...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      تطبيق الاقتطاع
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={onClose}
+                  className="w-full py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm"
+                >
+                  إلغاء
+                </button>
+              </div>
+
+              {completedCrop && (
+                <div className="mt-2 text-center">
+                  <p className="text-xs text-gray-600">
+                    الأبعاد: {completedCrop.width} × {completedCrop.height} |
+                    النمط:{" "}
+                    {cropMode === "free"
+                      ? "حر"
+                      : cropMode === "square"
+                      ? "مربع"
+                      : "دائري"}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           <canvas ref={canvasRef} style={{ display: "none" }} />
         </motion.div>
       </motion.div>
     </AnimatePresence>
   );
 
-  // استخدام Portal لوضع المودال مباشرة في body
   return createPortal(modalContent, document.body);
 };
 
