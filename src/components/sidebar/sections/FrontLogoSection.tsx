@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
-import { Upload, Trash2, Plus, AlertCircle, RefreshCw } from "lucide-react";
+import { Upload, Trash2, AlertCircle, RefreshCw, Crop, X } from "lucide-react";
 import { PRICING_CONFIG } from "../../../constants/pricing";
+import ImageUploadWithCrop from "../../ImageUploadWithCrop";
 
 const FrontLogoSection: React.FC = () => {
   const {
@@ -16,6 +17,7 @@ const FrontLogoSection: React.FC = () => {
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
   const [position, setPosition] = useState<LogoPosition>("chestRight");
   const [showExistingImages, setShowExistingImages] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
 
   const logoPositions: { id: LogoPosition; name: string }[] = [
     { id: "chestRight", name: "الصدر الأيمن" },
@@ -56,70 +58,64 @@ const FrontLogoSection: React.FC = () => {
     }
   }, [jacketState.logos, jacketState.texts]);
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && !isPositionOccupied(position)) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const imageUrl = event.target?.result as string;
+  const handleLogoUpload = (imageUrl: string, originalFile: File) => {
+    if (!isPositionOccupied(position)) {
+      // البحث عن صورة مطابقة موجودة مسبقاً
+      const existingImage = findExistingImage(imageUrl);
 
-        // البحث عن صورة مطابقة موجودة مسبقاً
-        const existingImage = findExistingImage(imageUrl);
+      if (existingImage) {
+        // استخدام الصورة الموجودة
+        console.log("استخدام صورة موجودة مسبقاً:", existingImage.name);
+        const img = new Image();
+        img.src = existingImage.url;
+        img.onload = () => {
+          const boxWidth = position === "chestRight" ? 70 : 70;
+          const boxHeight = position === "chestRight" ? 70 : 70;
+          const scaleX = boxWidth / img.width;
+          const scaleY = boxHeight / img.height;
+          const initialScale = Math.min(scaleX, scaleY);
+          addLogo({
+            id: `logo-${Date.now()}`,
+            image: existingImage.url,
+            position,
+            x: 0,
+            y: 0,
+            scale: initialScale,
+          });
+        };
+      } else {
+        // إضافة صورة جديدة
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = () => {
+          const boxWidth = position === "chestRight" ? 70 : 70;
+          const boxHeight = position === "chestRight" ? 70 : 70;
+          const scaleX = boxWidth / img.width;
+          const scaleY = boxHeight / img.height;
+          const initialScale = Math.min(scaleX, scaleY);
 
-        if (existingImage) {
-          // استخدام الصورة الموجودة
-          console.log("استخدام صورة موجودة مسبقاً:", existingImage.name);
-          const img = new Image();
-          img.src = existingImage.url;
-          img.onload = () => {
-            const boxWidth = position === "chestRight" ? 70 : 70;
-            const boxHeight = position === "chestRight" ? 70 : 70;
-            const scaleX = boxWidth / img.width;
-            const scaleY = boxHeight / img.height;
-            const initialScale = Math.min(scaleX, scaleY);
-            addLogo({
-              id: `logo-${Date.now()}`,
-              image: existingImage.url,
-              position,
-              x: 0,
-              y: 0,
-              scale: initialScale,
-            });
+          // حفظ الصورة في قائمة الصور المرفوعة
+          const newUploadedImage = {
+            id: `uploaded-${Date.now()}`,
+            url: imageUrl,
+            name: originalFile.name,
+            uploadedAt: new Date(),
           };
-        } else {
-          // إضافة صورة جديدة
-          const img = new Image();
-          img.src = imageUrl;
-          img.onload = () => {
-            const boxWidth = position === "chestRight" ? 70 : 70;
-            const boxHeight = position === "chestRight" ? 70 : 70;
-            const scaleX = boxWidth / img.width;
-            const scaleY = boxHeight / img.height;
-            const initialScale = Math.min(scaleX, scaleY);
+          addUploadedImage(newUploadedImage);
 
-            // حفظ الصورة في قائمة الصور المرفوعة
-            const newUploadedImage = {
-              id: `uploaded-${Date.now()}`,
-              url: imageUrl,
-              name: file.name,
-              uploadedAt: new Date(),
-            };
-            addUploadedImage(newUploadedImage);
+          addLogo({
+            id: `logo-${Date.now()}`,
+            image: imageUrl,
+            position,
+            x: 0,
+            y: 0,
+            scale: initialScale,
+          });
 
-            addLogo({
-              id: `logo-${Date.now()}`,
-              image: imageUrl,
-              position,
-              x: 0,
-              y: 0,
-              scale: initialScale,
-            });
-
-            console.log("تم رفع صورة جديدة:", file.name);
-          };
-        }
-      };
-      reader.readAsDataURL(file);
+          console.log("تم رفع صورة جديدة:", originalFile.name);
+        };
+      }
+      setShowImageUpload(false);
     }
   };
 
@@ -250,27 +246,18 @@ const FrontLogoSection: React.FC = () => {
           <span className="text-sm font-medium text-gray-700 truncate">
             الشعارات الحالية
           </span>
-          <div className="relative">
-            <input
-              type="file"
-              id="logo-upload-front"
-              accept="image/*"
-              onChange={handleLogoUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              disabled={isPositionOccupied(position)}
-            />
-            <label
-              htmlFor="logo-upload-front"
-              className={`flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded cursor-pointer transition-colors ${
-                isPositionOccupied(position)
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-            >
-              <Plus size={14} />
-              <span>إضافة شعار</span>
-            </label>
-          </div>
+          <button
+            onClick={() => setShowImageUpload(true)}
+            disabled={isPositionOccupied(position)}
+            className={`flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors ${
+              isPositionOccupied(position)
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+          >
+            <Crop size={14} />
+            <span>إضافة شعار</span>
+          </button>
         </div>
 
         {filteredLogos.length === 0 ? (
@@ -283,25 +270,18 @@ const FrontLogoSection: React.FC = () => {
               العنصر الأول في الأمام مشمول في السعر الأساسي
             </p>
             <div className="mt-3">
-              <input
-                type="file"
-                id="logo-upload-empty-front"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="absolute opacity-0 w-0 h-0"
+              <button
+                onClick={() => setShowImageUpload(true)}
                 disabled={isPositionOccupied(position)}
-              />
-              <label
-                htmlFor="logo-upload-empty-front"
-                className={`inline-flex items-center gap-1 text-sm bg-[#563660] hover:bg-[#7e4a8c] text-white py-2 px-4 rounded cursor-pointer transition-colors w-full justify-center md:w-auto ${
+                className={`inline-flex items-center gap-1 text-sm bg-[#563660] hover:bg-[#7e4a8c] text-white py-2 px-4 rounded transition-colors w-full justify-center md:w-auto ${
                   isPositionOccupied(position)
                     ? "opacity-50 cursor-not-allowed"
                     : ""
                 }`}
               >
-                <Upload size={16} />
+                <Crop size={16} />
                 <span>رفع شعار</span>
-              </label>
+              </button>
             </div>
           </div>
         ) : (
@@ -354,6 +334,44 @@ const FrontLogoSection: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* مودال رفع الصورة مع الاقتطاع */}
+      {showImageUpload && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[150] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                رفع شعار جديد
+              </h3>
+              <button
+                onClick={() => setShowImageUpload(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <ImageUploadWithCrop
+              onImageSelect={handleLogoUpload}
+              acceptedFormats={[
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+              ]}
+              maxFileSize={5}
+              placeholder="اختر صورة الشعار"
+              cropTitle="اقتطاع الشعار"
+              className="mb-4"
+            />
+
+            <div className="text-xs text-gray-500 text-center">
+              <p>• يمكنك اقتطاع الجزء المطلوب من الصورة</p>
+              <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedLogo && (
         <div className="border-t pt-4 mt-4">

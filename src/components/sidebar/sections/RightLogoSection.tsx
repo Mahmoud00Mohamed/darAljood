@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
-import { Upload, Trash2, AlertCircle, RefreshCw } from "lucide-react";
+import { Upload, Trash2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { PRICING_CONFIG } from "../../../constants/pricing";
+import ImageUploadWithCrop from "../../ImageUploadWithCrop";
 
 const RightLogoSection: React.FC = () => {
   const {
@@ -15,85 +16,72 @@ const RightLogoSection: React.FC = () => {
   } = useJacket();
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
   const [showExistingImages, setShowExistingImages] = useState(false);
-  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [uploadPosition, setUploadPosition] =
+    useState<LogoPosition>("rightSide_top");
 
-  const handleLogoUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    position: LogoPosition
-  ) => {
-    const file = e.target.files?.[0];
-    if (file && !isPositionOccupied(position)) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const imageUrl = event.target?.result as string;
+  const handleLogoUpload = (imageUrl: string, originalFile: File) => {
+    if (!isPositionOccupied(uploadPosition)) {
+      // البحث عن صورة مطابقة موجودة مسبقاً
+      const existingImage = findExistingImage(imageUrl);
 
-        // البحث عن صورة مطابقة موجودة مسبقاً
-        const existingImage = findExistingImage(imageUrl);
-
-        if (existingImage) {
-          // استخدام الصورة الموجودة
-          console.log("استخدام صورة موجودة مسبقاً:", existingImage.name);
-          const img = new Image();
-          img.src = existingImage.url;
-          img.onload = () => {
-            const boxWidth = 50;
-            const boxHeight = 25;
-            const scaleX = boxWidth / img.width;
-            const scaleY = boxHeight / img.height;
-            const initialScale = Math.min(scaleX, scaleY);
-            const newLogo = {
-              id: `logo-${Date.now()}`,
-              image: existingImage.url,
-              position,
-              x: 0,
-              y: 0,
-              scale: initialScale,
-            };
-            addLogo(newLogo);
-            setSelectedLogoId(newLogo.id);
-            if (e.target) {
-              e.target.value = "";
-            }
+      if (existingImage) {
+        // استخدام الصورة الموجودة
+        console.log("استخدام صورة موجودة مسبقاً:", existingImage.name);
+        const img = new Image();
+        img.src = existingImage.url;
+        img.onload = () => {
+          const boxWidth = 50;
+          const boxHeight = 25;
+          const scaleX = boxWidth / img.width;
+          const scaleY = boxHeight / img.height;
+          const initialScale = Math.min(scaleX, scaleY);
+          const newLogo = {
+            id: `logo-${Date.now()}`,
+            image: existingImage.url,
+            position: uploadPosition,
+            x: 0,
+            y: 0,
+            scale: initialScale,
           };
-        } else {
-          // إضافة صورة جديدة
-          const img = new Image();
-          img.src = imageUrl;
-          img.onload = () => {
-            const boxWidth = 50;
-            const boxHeight = 25;
-            const scaleX = boxWidth / img.width;
-            const scaleY = boxHeight / img.height;
-            const initialScale = Math.min(scaleX, scaleY);
+          addLogo(newLogo);
+          setSelectedLogoId(newLogo.id);
+        };
+      } else {
+        // إضافة صورة جديدة
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = () => {
+          const boxWidth = 50;
+          const boxHeight = 25;
+          const scaleX = boxWidth / img.width;
+          const scaleY = boxHeight / img.height;
+          const initialScale = Math.min(scaleX, scaleY);
 
-            // حفظ الصورة في قائمة الصور المرفوعة
-            const newUploadedImage = {
-              id: `uploaded-${Date.now()}`,
-              url: imageUrl,
-              name: file.name,
-              uploadedAt: new Date(),
-            };
-            addUploadedImage(newUploadedImage);
-
-            const newLogo = {
-              id: `logo-${Date.now()}`,
-              image: imageUrl,
-              position,
-              x: 0,
-              y: 0,
-              scale: initialScale,
-            };
-            addLogo(newLogo);
-            setSelectedLogoId(newLogo.id);
-            if (e.target) {
-              e.target.value = "";
-            }
-
-            console.log("تم رفع صورة جديدة:", file.name);
+          // حفظ الصورة في قائمة الصور المرفوعة
+          const newUploadedImage = {
+            id: `uploaded-${Date.now()}`,
+            url: imageUrl,
+            name: originalFile.name,
+            uploadedAt: new Date(),
           };
-        }
-      };
-      reader.readAsDataURL(file);
+          addUploadedImage(newUploadedImage);
+
+          const newLogo = {
+            id: `logo-${Date.now()}`,
+            image: imageUrl,
+            position: uploadPosition,
+            x: 0,
+            y: 0,
+            scale: initialScale,
+          };
+          addLogo(newLogo);
+          setSelectedLogoId(newLogo.id);
+
+          console.log("تم رفع صورة جديدة:", originalFile.name);
+        };
+      }
+      setShowImageUpload(false);
     }
   };
 
@@ -249,17 +237,12 @@ const RightLogoSection: React.FC = () => {
           <div className="flex gap-2">
             {logoPositions.map((pos) => (
               <div key={pos.id} className="relative flex-1">
-                <input
-                  type="file"
-                  id={`logo-upload-right-${pos.id}`}
-                  accept="image/*"
-                  onChange={(e) => handleLogoUpload(e, pos.id)}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                <button
+                  onClick={() => {
+                    setUploadPosition(pos.id);
+                    setShowImageUpload(true);
+                  }}
                   disabled={isPositionOccupied(pos.id)}
-                  ref={(el) => (fileInputRefs.current[pos.id] = el)}
-                />
-                <label
-                  htmlFor={`logo-upload-right-${pos.id}`}
                   className={`block py-2 px-4 text-sm rounded-xl transition-all text-center ${
                     isPositionOccupied(pos.id)
                       ? "bg-gray-100 text-gray-600 cursor-not-allowed"
@@ -267,7 +250,7 @@ const RightLogoSection: React.FC = () => {
                   }`}
                 >
                   {pos.name.split(" - ")[1]}
-                </label>
+                </button>
               </div>
             ))}
           </div>
@@ -333,6 +316,47 @@ const RightLogoSection: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* مودال رفع الصورة مع الاقتطاع */}
+      {showImageUpload && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[150] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                رفع شعار -{" "}
+                {logoPositions.find((p) => p.id === uploadPosition)?.name}
+              </h3>
+              <button
+                onClick={() => setShowImageUpload(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <ImageUploadWithCrop
+              onImageSelect={handleLogoUpload}
+              acceptedFormats={[
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+              ]}
+              maxFileSize={5}
+              placeholder="اختر صورة الشعار"
+              cropTitle={`اقتطاع شعار - ${
+                logoPositions.find((p) => p.id === uploadPosition)?.name
+              }`}
+              className="mb-4"
+            />
+
+            <div className="text-xs text-gray-500 text-center">
+              <p>• يمكنك اقتطاع الجزء المطلوب من الصورة</p>
+              <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedLogo && (
         <div className="border-t pt-4 mt-4">
