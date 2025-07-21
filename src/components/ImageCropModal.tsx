@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactCrop, {
   Crop,
@@ -26,7 +25,7 @@ interface ImageCropModalProps {
   onClose: () => void;
   imageFile: File | null;
   onCropComplete: (croppedImageUrl: string, originalFile: File) => void;
-  aspectRatio?: number;
+  aspectRatio?: number; // نسبة العرض إلى الارتفاع المطلوبة
   title?: string;
 }
 
@@ -53,6 +52,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // تحديد ما إذا كان الجهاز محمولاً
   React.useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -62,7 +62,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
+  // تحميل الصورة عند فتح المودال
   React.useEffect(() => {
     if (isOpen && imageFile) {
       const reader = new FileReader();
@@ -78,6 +78,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     }
   }, [isOpen, imageFile]);
 
+  // تحديد الاقتطاع الافتراضي عند تحميل الصورة
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
       const { width, height } = e.currentTarget;
@@ -109,6 +110,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     [aspectRatio, cropMode]
   );
 
+  // تغيير نمط الاقتطاع
   const handleCropModeChange = (mode: "free" | "square" | "circle") => {
     setCropMode(mode);
     if (imgRef.current) {
@@ -139,7 +141,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     }
   };
 
+  // إنشاء معاينة للاقتطاع
   const generatePreview = useCallback(async () => {
+    // إخفاء المعاينة في الهواتف
     if (isMobile) return;
 
     if (!completedCrop || !imgRef.current || !canvasRef.current) return;
@@ -188,6 +192,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
     ctx.restore();
 
+    // إنشاء دائرة للاقتطاع الدائري
     if (cropMode === "circle") {
       const radius = Math.min(canvas.width, canvas.height) / 2;
       ctx.globalCompositeOperation = "destination-in";
@@ -200,6 +205,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     setPreviewUrl(previewDataUrl);
   }, [completedCrop, scale, rotate, cropMode, isMobile]);
 
+  // تطبيق الاقتطاع
   const handleApplyCrop = async () => {
     if (!completedCrop || !imgRef.current || !imageFile) return;
 
@@ -247,6 +253,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
       ctx.restore();
 
+      // تطبيق الاقتطاع الدائري
       if (cropMode === "circle") {
         const radius = Math.min(canvas.width, canvas.height) / 2;
         ctx.globalCompositeOperation = "destination-in";
@@ -266,6 +273,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     }
   };
 
+  // إعادة تعيين الإعدادات
   const handleReset = () => {
     setScale(1);
     setRotate(0);
@@ -278,6 +286,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     }
   };
 
+  // تحديث المعاينة عند تغيير الاقتطاع
   React.useEffect(() => {
     if (completedCrop) {
       generatePreview();
@@ -286,13 +295,13 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   if (!isOpen) return null;
 
-  return createPortal(
+  return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-75 z-[200] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black bg-opacity-75 z-[999999] flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
@@ -306,6 +315,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Header */}
           <div
             className={`flex items-center justify-between border-b border-gray-200 bg-gray-50 ${
               isMobile ? "p-3" : "p-6"
@@ -338,13 +348,16 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                 : "flex-col lg:flex-row h-[calc(95vh-120px)]"
             }`}
           >
+            {/* Main Crop Area */}
             <div className={`flex-1 overflow-auto ${isMobile ? "p-2" : "p-6"}`}>
               <div className="flex flex-col h-full">
+                {/* Controls */}
                 <div
                   className={`flex flex-wrap mb-4 bg-gray-50 rounded-lg ${
                     isMobile ? "gap-1 p-2" : "gap-4 p-4 mb-6"
                   }`}
                 >
+                  {/* Crop Mode */}
                   <div className="flex items-center gap-2">
                     <span
                       className={`font-medium text-gray-700 ${
@@ -402,6 +415,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Scale Control */}
                   <div className="flex items-center gap-2">
                     <span
                       className={`font-medium text-gray-700 ${
@@ -441,6 +455,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                     </button>
                   </div>
 
+                  {/* Rotation Control */}
                   <div className="flex items-center gap-2">
                     <span
                       className={`font-medium text-gray-700 ${
@@ -482,6 +497,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                     </button>
                   </div>
 
+                  {/* Reset Button */}
                   <button
                     onClick={handleReset}
                     className={`flex items-center gap-1 bg-white text-gray-600 rounded hover:bg-gray-100 transition-colors ${
@@ -495,6 +511,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                   </button>
                 </div>
 
+                {/* Crop Area */}
                 <div
                   className={`flex-1 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden ${
                     isMobile ? "min-h-[200px] max-h-[300px]" : ""
@@ -533,6 +550,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
               </div>
             </div>
 
+            {/* Preview Panel */}
             {!isMobile && (
               <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-r border-gray-200 bg-gray-50 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -572,6 +590,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                   )}
                 </div>
 
+                {/* Tips */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <h4 className="text-sm font-medium text-blue-800 mb-2">
                     نصائح:
@@ -584,6 +603,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                   </ul>
                 </div>
 
+                {/* Action Buttons */}
                 <div className="space-y-3">
                   <button
                     onClick={handleApplyCrop}
@@ -617,6 +637,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
               </div>
             )}
 
+            {/* Mobile Action Buttons - تظهر فقط في الهواتف */}
             {isMobile && (
               <div className="p-3 bg-white border-t border-gray-200">
                 <div className="space-y-2">
@@ -650,6 +671,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                   </button>
                 </div>
 
+                {/* معلومات مبسطة للهاتف */}
                 {completedCrop && (
                   <div className="mt-2 text-center">
                     <p className="text-xs text-gray-600">
@@ -667,11 +689,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
             )}
           </div>
 
+          {/* Hidden Canvas for Processing */}
           <canvas ref={canvasRef} style={{ display: "none" }} />
         </motion.div>
       </motion.div>
-    </AnimatePresence>,
-    document.body
+    </AnimatePresence>
   );
 };
 
