@@ -2,16 +2,17 @@ import React, { useState, useEffect, useRef } from "react";
 import ColorSection from "./sections/ColorSection";
 import MaterialSection from "./sections/MaterialSection";
 import SizeSection from "./sections/SizeSection";
+import SubSidebarSection from "./sections/SubSidebarSection";
 import FrontLogoSection from "./sections/FrontLogoSection";
 import BackLogoSection from "./sections/BackLogoSection";
 import RightLogoSection from "./sections/RightLogoSection";
 import LeftLogoSection from "./sections/LeftLogoSection";
 import FrontTextSection from "./sections/FrontTextSection";
 import BackTextSection from "./sections/BackTextSection";
-import SubSidebarSection from "./sections/SubSidebarSection";
-import { Palette, Layers, ImagePlus, Ruler, ShoppingCart } from "lucide-react";
+import { Palette, Settings, ImagePlus, ShoppingCart } from "lucide-react";
 import { useJacket, JacketView } from "../../context/JacketContext";
 import { useCart } from "../../context/CartContext";
+import { Link } from "react-router-dom";
 import Logo10 from "/logos/logo10.png";
 
 interface CustomizationSidebarProps {
@@ -33,6 +34,9 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
   const [activeContent, setActiveContent] = useState<"logos" | "texts">(
     "logos"
   );
+  const [productOptionsTab, setProductOptionsTab] = useState<
+    "materials" | "sizes"
+  >("materials");
   const { setCurrentView } = useJacket();
   const { items } = useCart();
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -40,6 +44,7 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
     section: string;
     view: JacketView;
     content?: "logos" | "texts";
+    productTab?: "materials" | "sizes";
   }>({
     section: "",
     view: "front",
@@ -99,6 +104,7 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
         section: activeSection,
         view: activeView,
         content: activeContent,
+        productTab: productOptionsTab,
       });
     } else {
       setActiveSection(section);
@@ -107,10 +113,15 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
         setActiveView(lastVisited.view);
         setCurrentView(lastVisited.view);
         setActiveContent(lastVisited.content || "logos");
+        if (section === "product-options" && lastVisited.productTab) {
+          setProductOptionsTab(lastVisited.productTab);
+        }
       } else if (section === "extras") {
         setActiveView("front");
         setCurrentView("front");
         setActiveContent("logos");
+      } else if (section === "product-options") {
+        setProductOptionsTab("materials");
       }
     }
   };
@@ -126,7 +137,22 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
 
   const handleContentChange = (content: "logos" | "texts") => {
     setActiveContent(content);
-    setLastVisited({ section: activeSection, view: activeView, content });
+    setLastVisited({
+      section: activeSection,
+      view: activeView,
+      content,
+      productTab: productOptionsTab,
+    });
+  };
+
+  const handleProductTabChange = (tab: "materials" | "sizes") => {
+    setProductOptionsTab(tab);
+    setLastVisited({
+      section: activeSection,
+      view: activeView,
+      content: activeContent,
+      productTab: tab,
+    });
   };
 
   const handleAddToCartClick = () => {
@@ -202,22 +228,15 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
             <span className="text-xs mt-1">الألوان</span>
           </button>
           <button
-            onClick={() => handleSectionClick("materials")}
+            onClick={() => handleSectionClick("product-options")}
             className={`flex flex-col items-center p-2 ${
-              activeSection === "materials" ? "text-[#563660]" : "text-gray-600"
+              activeSection === "product-options"
+                ? "text-[#563660]"
+                : "text-gray-600"
             }`}
           >
-            <Layers size={18} />
-            <span className="text-xs mt-1">الخامات</span>
-          </button>
-          <button
-            onClick={() => handleSectionClick("sizes")}
-            className={`flex flex-col items-center p-2 ${
-              activeSection === "sizes" ? "text-[#563660]" : "text-gray-600"
-            }`}
-          >
-            <Ruler size={18} />
-            <span className="text-xs mt-1">المقاسات</span>
+            <Settings size={18} />
+            <span className="text-xs mt-1">خيارات المنتج</span>
           </button>
           <button
             onClick={() => {
@@ -257,6 +276,13 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
                 : "أضف للسلة"}
             </span>
           </button>
+          <Link
+            to="/cart"
+            className="flex flex-col items-center p-2 text-[#563660] hover:text-[#4b2e55] transition-colors"
+          >
+            <ShoppingCart size={18} />
+            <span className="text-xs mt-1">الذهاب للسلة</span>
+          </Link>
         </div>
 
         {/* Expandable Content Area */}
@@ -271,14 +297,37 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
                 <ColorSection />
               </SubSidebarSection>
             )}
-            {activeSection === "materials" && (
-              <SubSidebarSection title="الخامات" isDefaultOpen>
-                <MaterialSection />
-              </SubSidebarSection>
-            )}
-            {activeSection === "sizes" && (
-              <SubSidebarSection title="المقاسات" isDefaultOpen>
-                <SizeSection />
+            {activeSection === "product-options" && (
+              <SubSidebarSection title="خيارات المنتج" isDefaultOpen>
+                <div className="space-y-4">
+                  {/* Tab Navigation */}
+                  <div className="flex gap-2 mb-4">
+                    <button
+                      onClick={() => handleProductTabChange("materials")}
+                      className={`flex-1 py-2 px-4 text-sm rounded-xl transition-all ${
+                        productOptionsTab === "materials"
+                          ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      الخامات
+                    </button>
+                    <button
+                      onClick={() => handleProductTabChange("sizes")}
+                      className={`flex-1 py-2 px-4 text-sm rounded-xl transition-all ${
+                        productOptionsTab === "sizes"
+                          ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      المقاسات
+                    </button>
+                  </div>
+
+                  {/* Tab Content */}
+                  {productOptionsTab === "materials" && <MaterialSection />}
+                  {productOptionsTab === "sizes" && <SizeSection />}
+                </div>
               </SubSidebarSection>
             )}
             {activeSection === "extras" && (
@@ -344,26 +393,15 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
               <Palette size={18} />
             </button>
             <button
-              onClick={() => handleSectionClick("materials")}
+              onClick={() => handleSectionClick("product-options")}
               className={`p-3 rounded-xl mb-3 ${
-                activeSection === "materials"
+                activeSection === "product-options"
                   ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
                   : "bg-gray-200 text-gray-600"
               } hover:bg-gray-300 transition-all`}
-              title="الخامات"
+              title="خيارات المنتج"
             >
-              <Layers size={18} />
-            </button>
-            <button
-              onClick={() => handleSectionClick("sizes")}
-              className={`p-3 rounded-xl mb-3 ${
-                activeSection === "sizes"
-                  ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
-                  : "bg-gray-200 text-gray-600"
-              } hover:bg-gray-300 transition-all`}
-              title="المقاسات"
-            >
-              <Ruler size={18} />
+              <Settings size={18} />
             </button>
             <button
               onClick={() => {
@@ -404,14 +442,37 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
                   <ColorSection />
                 </SubSidebarSection>
               )}
-              {activeSection === "materials" && (
-                <SubSidebarSection title="الخامات" isDefaultOpen>
-                  <MaterialSection />
-                </SubSidebarSection>
-              )}
-              {activeSection === "sizes" && (
-                <SubSidebarSection title="المقاسات" isDefaultOpen>
-                  <SizeSection />
+              {activeSection === "product-options" && (
+                <SubSidebarSection title="خيارات المنتج" isDefaultOpen>
+                  <div className="space-y-4">
+                    {/* Tab Navigation */}
+                    <div className="flex gap-2 mb-4">
+                      <button
+                        onClick={() => handleProductTabChange("materials")}
+                        className={`flex-1 py-2 px-4 text-sm rounded-xl transition-all ${
+                          productOptionsTab === "materials"
+                            ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        الخامات
+                      </button>
+                      <button
+                        onClick={() => handleProductTabChange("sizes")}
+                        className={`flex-1 py-2 px-4 text-sm rounded-xl transition-all ${
+                          productOptionsTab === "sizes"
+                            ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        المقاسات
+                      </button>
+                    </div>
+
+                    {/* Tab Content */}
+                    {productOptionsTab === "materials" && <MaterialSection />}
+                    {productOptionsTab === "sizes" && <SizeSection />}
+                  </div>
                 </SubSidebarSection>
               )}
               {activeSection === "extras" && (
