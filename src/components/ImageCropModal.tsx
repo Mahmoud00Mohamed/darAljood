@@ -301,7 +301,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-75 z-[2147483647] flex items-center justify-center p-4 overflow-hidden"
+        className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-75 z-[2147483647] flex items-center justify-center p-4 overflow-hidden"
         onClick={onClose}
       >
         <motion.div
