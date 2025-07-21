@@ -9,9 +9,17 @@ import LeftLogoSection from "./sections/LeftLogoSection";
 import FrontTextSection from "./sections/FrontTextSection";
 import BackTextSection from "./sections/BackTextSection";
 import SubSidebarSection from "./sections/SubSidebarSection";
-import { Palette, Layers, ImagePlus, Ruler, ShoppingCart } from "lucide-react";
+import {
+  Palette,
+  Layers,
+  ImagePlus,
+  Ruler,
+  ShoppingCart,
+  ArrowRight,
+} from "lucide-react";
 import { useJacket, JacketView } from "../../context/JacketContext";
 import { useCart } from "../../context/CartContext";
+import { Link } from "react-router-dom";
 import Logo10 from "/logos/logo10.png";
 
 interface CustomizationSidebarProps {
@@ -19,6 +27,8 @@ interface CustomizationSidebarProps {
   setIsSidebarOpen?: (isOpen: boolean) => void;
   onAddToCart?: () => void;
   isCapturingImages?: boolean;
+  showSuccessMessage?: boolean;
+  hasDesignChanged?: boolean;
 }
 
 const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
@@ -26,6 +36,8 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
   setIsSidebarOpen,
   onAddToCart,
   isCapturingImages = false,
+  showSuccessMessage = false,
+  hasDesignChanged = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
@@ -135,6 +147,51 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
     }
   };
 
+  // تحديد حالة الزر بناءً على حالة السلة والتصميم
+  const getCartButtonState = () => {
+    if (isCapturingImages) {
+      return {
+        text: "جاري الحفظ...",
+        icon: ShoppingCart,
+        action: "disabled",
+        color: "text-gray-400 opacity-50",
+      };
+    }
+
+    if (items.length > 0 && !hasDesignChanged && showSuccessMessage) {
+      return {
+        text: "الذهاب إلى السلة",
+        icon: ArrowRight,
+        action: "navigate",
+        color: "text-green-600",
+      };
+    }
+
+    if (items.length > 0 && hasDesignChanged) {
+      return {
+        text: "استبدال",
+        icon: ShoppingCart,
+        action: "replace",
+        color: "text-orange-600",
+      };
+    }
+
+    if (items.length > 0) {
+      return {
+        text: "استبدال",
+        icon: ShoppingCart,
+        action: "replace",
+        color: "text-orange-600",
+      };
+    }
+
+    return {
+      text: "أضف للسلة",
+      icon: ShoppingCart,
+      action: "add",
+      color: "text-[#563660]",
+    };
+  };
   const renderViewButtons = () => {
     const views: { id: JacketView; name: string }[] = [
       { id: "front", name: "أمامي" },
@@ -237,26 +294,33 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
             <ImagePlus size={18} />
             <span className="text-xs mt-1">الإضافات</span>
           </button>
-          <button
-            onClick={handleAddToCartClick}
-            disabled={isCapturingImages}
-            className={`flex flex-col items-center p-2 transition-colors ${
-              isCapturingImages
-                ? "text-gray-400 opacity-50"
-                : items.length > 0
-                ? "text-orange-600"
-                : "text-[#563660]"
-            }`}
-          >
-            <ShoppingCart size={18} />
-            <span className="text-xs mt-1">
-              {isCapturingImages
-                ? "جاري الحفظ..."
-                : items.length > 0
-                ? "استبدال"
-                : "أضف للسلة"}
-            </span>
-          </button>
+          {(() => {
+            const buttonState = getCartButtonState();
+            const ButtonIcon = buttonState.icon;
+
+            if (buttonState.action === "navigate") {
+              return (
+                <Link
+                  to="/cart"
+                  className={`flex flex-col items-center p-2 transition-colors ${buttonState.color}`}
+                >
+                  <ButtonIcon size={18} />
+                  <span className="text-xs mt-1">{buttonState.text}</span>
+                </Link>
+              );
+            }
+
+            return (
+              <button
+                onClick={handleAddToCartClick}
+                disabled={buttonState.action === "disabled"}
+                className={`flex flex-col items-center p-2 transition-colors ${buttonState.color}`}
+              >
+                <ButtonIcon size={18} />
+                <span className="text-xs mt-1">{buttonState.text}</span>
+              </button>
+            );
+          })()}
         </div>
 
         {/* Expandable Content Area */}
