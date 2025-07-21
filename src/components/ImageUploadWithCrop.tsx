@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import {
   Upload,
@@ -249,14 +250,18 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       </div>
 
       {/* مودال الاقتطاع */}
-      <ImageCropModal
-        isOpen={showCropModal}
-        onClose={handleCancel}
-        imageFile={selectedFile}
-        onCropComplete={handleCropComplete}
-        aspectRatio={aspectRatio}
-        title={cropTitle}
-      />
+      {showCropModal &&
+        createPortal(
+          <ImageCropModal
+            isOpen={showCropModal}
+            onClose={handleCancel}
+            imageFile={selectedFile}
+            onCropComplete={handleCropComplete}
+            aspectRatio={aspectRatio}
+            title={cropTitle}
+          />,
+          document.body
+        )}
     </>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Upload, Trash2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { PRICING_CONFIG } from "../../../constants/pricing";
@@ -318,45 +319,69 @@ const LeftLogoSection: React.FC = () => {
       </div>
 
       {/* مودال رفع الصورة مع الاقتطاع */}
-      {showImageUpload && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[150] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                رفع شعار -{" "}
-                {logoPositions.find((p) => p.id === uploadPosition)?.name}
-              </h3>
-              <button
-                onClick={() => setShowImageUpload(false)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
+      {showImageUpload &&
+        createPortal(
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-portal"
+            data-modal="true"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: "100vw",
+              height: "100vh",
+              zIndex: 9999,
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowImageUpload(false);
+              }
+            }}
+          >
+            <div
+              className="bg-white rounded-2xl p-6 max-w-md w-full"
+              data-modal="true"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  رفع شعار -{" "}
+                  {logoPositions.find((p) => p.id === uploadPosition)?.name}
+                </h3>
+                <button
+                  onClick={() => setShowImageUpload(false)}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
 
-            <ImageUploadWithCrop
-              onImageSelect={handleLogoUpload}
-              acceptedFormats={[
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
-              ]}
-              maxFileSize={5}
-              placeholder="اختر صورة الشعار"
-              cropTitle={`اقتطاع شعار - ${
-                logoPositions.find((p) => p.id === uploadPosition)?.name
-              }`}
-              className="mb-4"
-            />
+              <ImageUploadWithCrop
+                onImageSelect={handleLogoUpload}
+                acceptedFormats={[
+                  "image/jpeg",
+                  "image/jpg",
+                  "image/png",
+                  "image/webp",
+                ]}
+                maxFileSize={5}
+                placeholder="اختر صورة الشعار"
+                cropTitle={`اقتطاع شعار - ${
+                  logoPositions.find((p) => p.id === uploadPosition)?.name
+                }`}
+                className="mb-4"
+              />
 
-            <div className="text-xs text-gray-500 text-center">
-              <p>• يمكنك اقتطاع الجزء المطلوب من الصورة</p>
-              <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
+              <div className="text-xs text-gray-500 text-center">
+                <p>• يمكنك اقتطاع الجزء المطلوب من الصورة</p>
+                <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {selectedLogo && (
         <div className="border-t pt-4 mt-4">

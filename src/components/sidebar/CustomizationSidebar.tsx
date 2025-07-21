@@ -73,6 +73,15 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
   useEffect(() => {
     if ((isMobile || window.innerWidth <= 1250) && isOpen) {
       const handleClickOutside = (event: MouseEvent) => {
+        // تجاهل النقرات إذا كانت داخل نافذة modal
+        const target = event.target as Element;
+        if (
+          target.closest('[data-modal="true"]') ||
+          target.closest(".modal-portal")
+        ) {
+          return;
+        }
+
         if (
           sidebarRef.current &&
           !sidebarRef.current.contains(event.target as Node)

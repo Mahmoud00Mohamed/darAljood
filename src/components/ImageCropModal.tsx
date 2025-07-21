@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactCrop, {
   Crop,
@@ -295,13 +296,24 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-75 z-[200] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-4 modal-portal"
+        data-modal="true"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: 9999,
+        }}
         onClick={onClose}
       >
         <motion.div
@@ -313,6 +325,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
               ? "max-w-full max-h-[85vh] rounded-lg"
               : "max-w-6xl max-h-[95vh]"
           }`}
+          data-modal="true"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -695,6 +708,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
       </motion.div>
     </AnimatePresence>
   );
+
+  // استخدام Portal لوضع المودال مباشرة في body
+  return createPortal(modalContent, document.body);
 };
 
 export default ImageCropModal;
