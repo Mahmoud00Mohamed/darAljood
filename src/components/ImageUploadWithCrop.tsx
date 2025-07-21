@@ -147,7 +147,7 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={openFileDialog}
-          className={`relative border-2 border-dashed rounded-xl z-[999999] p-6 transition-all duration-300 cursor-pointer ${
+          className={`relative border-2 border-dashed rounded-xl p-6 transition-all duration-300 cursor-pointer ${
             isDragOver
               ? "border-[#563660] bg-[#563660]/5 scale-[1.02]"
               : error
