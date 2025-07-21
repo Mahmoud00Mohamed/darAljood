@@ -301,14 +301,14 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-75 z-[200] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black bg-opacity-75 z-[99999999999999999999999] flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className={`bg-white rounded-2xl shadow-xl w-full overflow-hidden ${
+          className={`bg-white rounded-2xl shadow-xl w-full overflow-hidden z-[99999999999999999999999] ${
             isMobile
               ? "max-w-full max-h-[85vh] rounded-lg"
               : "max-w-6xl max-h-[95vh]"
