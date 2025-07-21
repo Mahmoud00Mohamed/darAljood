@@ -336,7 +336,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           right: 0,
           bottom: 0,
           width: "100vw",
-          height: "100dvh",
+          height: isMobile ? "100vh" : "100dvh",
           zIndex: 9999,
           userSelect: "none",
           WebkitUserSelect: "none",
@@ -349,12 +349,21 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           className={`bg-white w-full h-full overflow-hidden flex flex-col ${
-            isMobile ? "rounded-none" : "max-w-6xl max-h-[95vh] rounded-2xl"
+            isMobile
+              ? "rounded-none max-h-screen"
+              : "max-w-6xl max-h-[95vh] rounded-2xl"
           }`}
           data-modal="true"
           onClick={(e) => e.stopPropagation()}
           ref={modalRef}
-          style={{ userSelect: "none", WebkitUserSelect: "none" }}
+          style={{
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            ...(isMobile && {
+              height: "calc(100dvh - env(safe-area-inset-bottom, 0px))",
+              maxHeight: "calc(100dvh - env(safe-area-inset-bottom, 0px))",
+            }),
+          }}
         >
           {/* Toolbar and header */}
           <div
@@ -386,6 +395,13 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
             className={`flex-1 flex flex-col overflow-hidden ${
               isMobile ? "p-2" : "p-6"
             }`}
+            style={{
+              ...(isMobile && {
+                maxHeight:
+                  "calc(100dvh - 140px - env(safe-area-inset-bottom, 0px))",
+                overflow: "auto",
+              }),
+            }}
           >
             <div
               className={`flex flex-wrap mb-4 bg-gray-50 rounded-lg ${
@@ -528,7 +544,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
             <div
               className={`flex-1 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden ${
-                isMobile ? "min-h-[200px] max-h-[calc(100dvh-200px)]" : ""
+                isMobile
+                  ? "min-h-[200px] max-h-[calc(100dvh-300px-env(safe-area-inset-bottom,0px))]"
+                  : ""
               }`}
             >
               {imageSrc && (
@@ -655,7 +673,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           )}
 
           {isMobile && (
-            <div className="p-3 bg-white border-t border-gray-200 safe-area-inset-bottom">
+            <div className="p-3 bg-white border-t border-gray-200 flex-shrink-0">
               <div className="space-y-2">
                 <button
                   onClick={handleApplyCrop}

@@ -446,7 +446,7 @@ button.text-xs {
   right: 0 !important;
   bottom: 0 !important;
   width: 100vw !important;
-  height: 100vh !important;
+  height: 100dvh !important;
   z-index: 9999 !important;
   pointer-events: auto !important;
   isolation: isolate !important;
@@ -469,11 +469,27 @@ button.text-xs {
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
-    height: 100vh !important;
+    height: calc(100dvh - env(safe-area-inset-bottom, 0px)) !important;
     max-width: 100vw !important;
-    max-height: 100vh !important;
+    max-height: calc(100dvh - env(safe-area-inset-bottom, 0px)) !important;
     overflow: auto !important;
     touch-action: none !important;
+  }
+
+  /* دعم إضافي للأجهزة التي تدعم safe-area */
+  @supports (padding: max(0px)) {
+    .modal-portal {
+      height: calc(100dvh - env(safe-area-inset-bottom, 0px)) !important;
+      max-height: calc(100dvh - env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+
+  /* دعم خاص لمتصفح Safari على iOS */
+  @supports (-webkit-touch-callout: none) {
+    .modal-portal {
+      height: calc(100dvh - env(safe-area-inset-bottom, 0px)) !important;
+      max-height: calc(100dvh - env(safe-area-inset-bottom, 0px)) !important;
+    }
   }
 }
 
