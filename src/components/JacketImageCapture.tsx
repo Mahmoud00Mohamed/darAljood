@@ -53,11 +53,17 @@ const JacketImageCapture = forwardRef<
       .filter((logo) => logo.image)
       .map(
         (logo) =>
-          new Promise<void>((resolve) => {
+          new Promise<void>((resolve, reject) => {
             const img = new Image();
             img.src = logo.image!;
-            img.onload = () => resolve();
-            img.onerror = () => resolve(); // Continue even if an image fails
+            img.onload = () => {
+              console.log(`Loaded logo: ${logo.id}`);
+              resolve();
+            };
+            img.onerror = () => {
+              console.warn(`Failed to load logo: ${logo.id}`);
+              resolve(); // Continue even if an image fails
+            };
           })
       );
     await Promise.all(loadPromises);
@@ -82,6 +88,8 @@ const JacketImageCapture = forwardRef<
       container.style.transform = "none";
       container.style.width = "320px";
       container.style.height = "410px";
+      container.style.overflow = "visible";
+      container.style.willChange = "transform, opacity";
     }
 
     if (jacketViewer) {
@@ -93,10 +101,21 @@ const JacketImageCapture = forwardRef<
       jacketViewer.style.visibility = "visible";
       jacketViewer.style.position = "relative";
       jacketViewer.style.margin = "0 auto";
+      jacketViewer.style.overflow = "visible";
     }
 
     // Wait for images to load
     await preloadImages(jacketState.logos);
+
+    // Ensure logo containers are isolated
+    const logoContainers = container.querySelectorAll(
+      ".logo-overlay-container, .logo-overlay"
+    );
+    logoContainers.forEach((logoContainer) => {
+      (logoContainer as HTMLElement).style.position = "absolute";
+      (logoContainer as HTMLElement).style.zIndex = "1100";
+      (logoContainer as HTMLElement).style.overflow = "visible";
+    });
 
     try {
       const dataUrl = await htmlToImage.toPng(container, {
@@ -114,8 +133,11 @@ const JacketImageCapture = forwardRef<
           !node.classList?.contains("desktop-control-buttons") &&
           !node.classList?.contains("desktop-view-buttons"),
       });
-
+      console.log(`Captured view successfully`);
       return dataUrl;
+    } catch (error) {
+      console.error(`Capture error:`, error);
+      throw error;
     } finally {
       // Reset styles to initial state
       if (container) {
@@ -128,6 +150,8 @@ const JacketImageCapture = forwardRef<
         container.style.transform = "";
         container.style.width = "";
         container.style.height = "";
+        container.style.overflow = "";
+        container.style.willChange = "";
       }
       if (jacketViewer) {
         jacketViewer.style.transform = "";
@@ -138,6 +162,7 @@ const JacketImageCapture = forwardRef<
         jacketViewer.style.visibility = "";
         jacketViewer.style.position = "";
         jacketViewer.style.margin = "";
+        jacketViewer.style.overflow = "";
       }
     }
   };
@@ -150,12 +175,12 @@ const JacketImageCapture = forwardRef<
       setIsCapturing(true);
 
       // Wait for initial render
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       for (const view of views) {
         try {
           setCurrentView(view);
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // Increased delay
+          await new Promise((resolve) => setTimeout(resolve, 1500)); // Increased delay
           const imageData = await captureView();
           images.push(imageData);
         } catch (error) {
@@ -178,12 +203,12 @@ const JacketImageCapture = forwardRef<
 
       try {
         restoreState(config);
-        await new Promise((resolve) => setTimeout(resolve, 1500)); // Increased delay
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Increased delay
 
         for (const view of views) {
           try {
             setCurrentView(view);
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Increased delay
+            await new Promise((resolve) => setTimeout(resolve, 1500)); // Increased delay
             const imageData = await captureView();
             images.push(imageData);
           } catch (error) {

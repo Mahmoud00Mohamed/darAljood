@@ -68,6 +68,8 @@ const BackLogoOverlay: React.FC<BackLogoOverlayProps> = ({ logo, view }) => {
         maxWidth: `${baseSizePercent * 1.5}%`,
         maxHeight: `${(baseSizePercent * 1.5 * SVG_HEIGHT) / SVG_WIDTH}%`,
         overflow: "visible",
+        zIndex: 1100,
+        isolation: "isolate",
       }}
       className="logo-overlay"
     >
