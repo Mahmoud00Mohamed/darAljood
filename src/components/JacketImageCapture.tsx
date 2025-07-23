@@ -1,4 +1,4 @@
-import { useRef, useImperativeHandle, forwardRef, useState } from "react";
+import { useRef, useImperativeHandle, forwardRef } from "react";
 import { useJacket, JacketView, JacketState } from "../context/JacketContext";
 import * as htmlToImage from "html-to-image";
 import JacketViewer from "./jacket/JacketViewer";
@@ -29,7 +29,6 @@ const JacketImageCapture = forwardRef<
     removeText,
   } = useJacket();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isReady, setIsReady] = useState(false);
 
   const saveCurrentState = () => {
     return { ...jacketState };
@@ -64,7 +63,7 @@ const JacketImageCapture = forwardRef<
     await Promise.all(loadPromises);
   };
 
-  const captureView = async (view: JacketView): Promise<string> => {
+  const captureView = async (): Promise<string> => {
     const container = containerRef.current;
     if (!container) throw new Error("Container not found");
 
@@ -149,7 +148,6 @@ const JacketImageCapture = forwardRef<
       const images: string[] = [];
 
       setIsCapturing(true);
-      setIsReady(false);
 
       // Wait for initial render
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -158,7 +156,7 @@ const JacketImageCapture = forwardRef<
         try {
           setCurrentView(view);
           await new Promise((resolve) => setTimeout(resolve, 1000)); // Increased delay
-          const imageData = await captureView(view);
+          const imageData = await captureView();
           images.push(imageData);
         } catch (error) {
           console.error(`Error capturing ${view} view:`, error);
@@ -167,7 +165,6 @@ const JacketImageCapture = forwardRef<
       }
 
       setIsCapturing(false);
-      setIsReady(true);
       return images;
     },
 
@@ -178,7 +175,6 @@ const JacketImageCapture = forwardRef<
       const currentState = saveCurrentState();
 
       setIsCapturing(true);
-      setIsReady(false);
 
       try {
         restoreState(config);
@@ -188,7 +184,7 @@ const JacketImageCapture = forwardRef<
           try {
             setCurrentView(view);
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Increased delay
-            const imageData = await captureView(view);
+            const imageData = await captureView();
             images.push(imageData);
           } catch (error) {
             console.error(`Error capturing ${view} view:`, error);
@@ -198,7 +194,6 @@ const JacketImageCapture = forwardRef<
       } finally {
         restoreState(currentState);
         setIsCapturing(false);
-        setIsReady(true);
       }
 
       return images;
