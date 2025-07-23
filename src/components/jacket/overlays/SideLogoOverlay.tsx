@@ -150,12 +150,10 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
         top: `${yPercent}%`,
         width: `${boxWidthPercent}%`,
         height: `${boxHeightPercent}%`,
-        overflow: "visible",
+        overflow: "hidden",
         border: "1px dashed #000000",
         transform: `rotate(${rotation}deg)`,
         transformOrigin: "center",
-        zIndex: 1100,
-        isolation: "isolate",
       }}
       className="logo-overlay-container"
     >
