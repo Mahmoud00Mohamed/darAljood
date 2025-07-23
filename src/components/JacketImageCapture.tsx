@@ -1,4 +1,4 @@
-import { useRef, useImperativeHandle, forwardRef } from "react";
+import { useRef, useImperativeHandle, forwardRef, useState } from "react";
 import { useJacket, JacketView, JacketState } from "../context/JacketContext";
 import * as htmlToImage from "html-to-image";
 import JacketViewer from "./jacket/JacketViewer";
@@ -29,6 +29,7 @@ const JacketImageCapture = forwardRef<
     removeText,
   } = useJacket();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isReady, setIsReady] = useState(false);
 
   const saveCurrentState = () => {
     return { ...jacketState };
@@ -47,7 +48,23 @@ const JacketImageCapture = forwardRef<
     savedState.texts.forEach((text) => addText(text));
   };
 
-  const captureView = async (/* view: JacketView */): Promise<string> => {
+  // Preload images to ensure they are ready
+  const preloadImages = async (logos: JacketState["logos"]): Promise<void> => {
+    const loadPromises = logos
+      .filter((logo) => logo.image)
+      .map(
+        (logo) =>
+          new Promise<void>((resolve) => {
+            const img = new Image();
+            img.src = logo.image!;
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Continue even if an image fails
+          })
+      );
+    await Promise.all(loadPromises);
+  };
+
+  const captureView = async (view: JacketView): Promise<string> => {
     const container = containerRef.current;
     if (!container) throw new Error("Container not found");
 
@@ -63,13 +80,15 @@ const JacketImageCapture = forwardRef<
       container.style.opacity = "1";
       container.style.zIndex = "1000";
       container.style.visibility = "visible";
-      container.style.transform = "none"; // Reset transform to avoid positioning issues
+      container.style.transform = "none";
+      container.style.width = "320px";
+      container.style.height = "410px";
     }
 
     if (jacketViewer) {
-      jacketViewer.style.transform = "scale(1)"; // Use scale(1) to maintain original size
-      jacketViewer.style.width = "320px"; // Match SVG_WIDTH from overlays
-      jacketViewer.style.height = "410px"; // Match SVG_HEIGHT from overlays
+      jacketViewer.style.transform = "scale(1)";
+      jacketViewer.style.width = "320px";
+      jacketViewer.style.height = "410px";
       jacketViewer.style.opacity = "1";
       jacketViewer.style.display = "flex";
       jacketViewer.style.visibility = "visible";
@@ -77,16 +96,19 @@ const JacketImageCapture = forwardRef<
       jacketViewer.style.margin = "0 auto";
     }
 
+    // Wait for images to load
+    await preloadImages(jacketState.logos);
+
     try {
       const dataUrl = await htmlToImage.toPng(container, {
-        quality: 1.0, // Maximum quality
-        pixelRatio: 3, // Increased pixel ratio for sharper images
+        quality: 1.0,
+        pixelRatio: 3,
         width: 320,
         height: 410,
         backgroundColor: "#f9fafb",
         skipFonts: false,
-        cacheBust: true, // Prevent caching issues
-        imagePlaceholder: undefined, // Ensure original images are used
+        cacheBust: true,
+        imagePlaceholder: undefined,
         filter: (node) =>
           !node.classList?.contains("jacket-viewer-controls") &&
           !node.classList?.contains("mobile-control-buttons") &&
@@ -105,6 +127,8 @@ const JacketImageCapture = forwardRef<
         container.style.zIndex = "-1";
         container.style.visibility = "";
         container.style.transform = "";
+        container.style.width = "";
+        container.style.height = "";
       }
       if (jacketViewer) {
         jacketViewer.style.transform = "";
@@ -125,12 +149,16 @@ const JacketImageCapture = forwardRef<
       const images: string[] = [];
 
       setIsCapturing(true);
+      setIsReady(false);
+
+      // Wait for initial render
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       for (const view of views) {
         try {
           setCurrentView(view);
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          const imageData = await captureView();
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // Increased delay
+          const imageData = await captureView(view);
           images.push(imageData);
         } catch (error) {
           console.error(`Error capturing ${view} view:`, error);
@@ -139,6 +167,7 @@ const JacketImageCapture = forwardRef<
       }
 
       setIsCapturing(false);
+      setIsReady(true);
       return images;
     },
 
@@ -149,16 +178,17 @@ const JacketImageCapture = forwardRef<
       const currentState = saveCurrentState();
 
       setIsCapturing(true);
+      setIsReady(false);
 
       try {
         restoreState(config);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1500)); // Increased delay
 
         for (const view of views) {
           try {
             setCurrentView(view);
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            const imageData = await captureView();
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // Increased delay
+            const imageData = await captureView(view);
             images.push(imageData);
           } catch (error) {
             console.error(`Error capturing ${view} view:`, error);
@@ -168,6 +198,7 @@ const JacketImageCapture = forwardRef<
       } finally {
         restoreState(currentState);
         setIsCapturing(false);
+        setIsReady(true);
       }
 
       return images;
