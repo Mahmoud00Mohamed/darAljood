@@ -3,7 +3,8 @@ import { createPortal } from "react-dom";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Upload, Trash2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { PRICING_CONFIG } from "../../../constants/pricing";
-import ImageUploadWithCrop from "../../ImageUploadWithCrop";
+import CloudinaryImageUpload from "../../CloudinaryImageUpload";
+import { CloudinaryImageData } from "../../../services/imageUploadService";
 
 const RightLogoSection: React.FC = () => {
   const {
@@ -21,14 +22,14 @@ const RightLogoSection: React.FC = () => {
   const [uploadPosition, setUploadPosition] =
     useState<LogoPosition>("rightSide_top");
 
-  const handleLogoUpload = (imageUrl: string, originalFile: File) => {
+  const handleLogoUpload = (imageData: CloudinaryImageData) => {
     if (!isPositionOccupied(uploadPosition)) {
-      // البحث عن صورة مطابقة موجودة مسبقاً
-      const existingImage = findExistingImage(imageUrl);
+      // البحث عن صورة مطابقة موجودة مسبقاً باستخدام publicId
+      const existingImage = findExistingImage(imageData.url);
 
       if (existingImage) {
         // استخدام الصورة الموجودة
-        console.log("استخدام صورة موجودة مسبقاً:", existingImage.name);
+        console.log("استخدام صورة موجودة مسبقاً:", imageData.publicId);
         const img = new Image();
         img.src = existingImage.url;
         img.onload = () => {
@@ -51,7 +52,7 @@ const RightLogoSection: React.FC = () => {
       } else {
         // إضافة صورة جديدة
         const img = new Image();
-        img.src = imageUrl;
+        img.src = imageData.url;
         img.onload = () => {
           const boxWidth = 50;
           const boxHeight = 25;
@@ -62,15 +63,15 @@ const RightLogoSection: React.FC = () => {
           // حفظ الصورة في قائمة الصور المرفوعة
           const newUploadedImage = {
             id: `uploaded-${Date.now()}`,
-            url: imageUrl,
-            name: originalFile.name,
+            url: imageData.url,
+            name: imageData.publicId.split("/").pop() || "صورة مرفوعة",
             uploadedAt: new Date(),
           };
           addUploadedImage(newUploadedImage);
 
           const newLogo = {
             id: `logo-${Date.now()}`,
-            image: imageUrl,
+            image: imageData.url,
             position: uploadPosition,
             x: 0,
             y: 0,
@@ -79,7 +80,7 @@ const RightLogoSection: React.FC = () => {
           addLogo(newLogo);
           setSelectedLogoId(newLogo.id);
 
-          console.log("تم رفع صورة جديدة:", originalFile.name);
+          console.log("تم رفع صورة جديدة:", imageData.publicId);
         };
       }
       setShowImageUpload(false);
@@ -358,7 +359,7 @@ const RightLogoSection: React.FC = () => {
                 </button>
               </div>
 
-              <ImageUploadWithCrop
+              <CloudinaryImageUpload
                 onImageSelect={handleLogoUpload}
                 acceptedFormats={[
                   "image/jpeg",
@@ -368,14 +369,13 @@ const RightLogoSection: React.FC = () => {
                 ]}
                 maxFileSize={5}
                 placeholder="اختر صورة الشعار"
-                cropTitle={`اقتطاع شعار - ${
-                  logoPositions.find((p) => p.id === uploadPosition)?.name
-                }`}
                 className="mb-4"
+                aspectRatio={1}
+                cropTitle="اقتطاع شعار جانبي أيمن"
               />
 
               <div className="text-xs text-gray-500 text-center">
-                <p>• يمكنك اقتطاع الجزء المطلوب من الصورة</p>
+                <p>• سيتم رفع الصورة مباشرة إلى Cloudinary</p>
                 <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
               </div>
             </div>

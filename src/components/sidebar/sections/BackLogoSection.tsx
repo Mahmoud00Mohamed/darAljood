@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Trash2, Move, Upload, RefreshCw, X, Crop } from "lucide-react";
-import ImageUploadWithCrop from "../../ImageUploadWithCrop";
+import CloudinaryImageUpload from "../../CloudinaryImageUpload";
+import { CloudinaryImageData } from "../../../services/imageUploadService";
 
 const BackLogoSection: React.FC = () => {
   const {
@@ -177,14 +178,14 @@ const BackLogoSection: React.FC = () => {
     }
   };
 
-  const handleLogoUpload = (imageUrl: string, originalFile: File) => {
+  const handleLogoUpload = (imageData: CloudinaryImageData) => {
     if (!isPositionOccupied("backCenter")) {
-      // البحث عن صورة مطابقة موجودة مسبقاً
-      const existingImage = findExistingImage(imageUrl);
+      // البحث عن صورة مطابقة موجودة مسبقاً باستخدام publicId
+      const existingImage = findExistingImage(imageData.url);
 
       if (existingImage) {
         // استخدام الصورة الموجودة
-        console.log("استخدام صورة موجودة مسبقاً:", existingImage.name);
+        console.log("استخدام صورة موجودة مسبقاً:", imageData.publicId);
         const newLogo = {
           id: `logo-${Date.now()}`,
           image: existingImage.url,
@@ -199,15 +200,15 @@ const BackLogoSection: React.FC = () => {
         // إضافة صورة جديدة
         const newUploadedImage = {
           id: `uploaded-${Date.now()}`,
-          url: imageUrl,
-          name: originalFile.name,
+          url: imageData.url,
+          name: imageData.publicId.split("/").pop() || "صورة مرفوعة",
           uploadedAt: new Date(),
         };
         addUploadedImage(newUploadedImage);
 
         const newLogo = {
           id: `logo-${Date.now()}`,
-          image: imageUrl,
+          image: imageData.url,
           position: "backCenter" as LogoPosition,
           x: 0,
           y: 0,
@@ -216,7 +217,7 @@ const BackLogoSection: React.FC = () => {
         addLogo(newLogo);
         setSelectedLogoId(newLogo.id);
 
-        console.log("تم رفع صورة جديدة:", originalFile.name);
+        console.log("تم رفع صورة جديدة:", imageData.publicId);
       }
       setShowImageUpload(false);
     }
@@ -508,7 +509,7 @@ const BackLogoSection: React.FC = () => {
                 </button>
               </div>
 
-              <ImageUploadWithCrop
+              <CloudinaryImageUpload
                 onImageSelect={handleLogoUpload}
                 acceptedFormats={[
                   "image/jpeg",
@@ -518,12 +519,13 @@ const BackLogoSection: React.FC = () => {
                 ]}
                 maxFileSize={5}
                 placeholder="اختر صورة الشعار الخلفي"
-                cropTitle="اقتطاع الشعار الخلفي"
                 className="mb-4"
+                aspectRatio={1}
+                cropTitle="اقتطاع شعار خلفي"
               />
 
               <div className="text-xs text-gray-500 text-center">
-                <p>• يمكنك اقتطاع الجزء المطلوب من الصورة</p>
+                <p>• سيتم رفع الصورة مباشرة إلى Cloudinary</p>
                 <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
               </div>
             </div>

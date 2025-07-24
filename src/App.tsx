@@ -16,6 +16,7 @@ import ContactPage from "./pages/ContactPage";
 import FAQPage from "./pages/FAQPage";
 import TermsPage from "./pages/TermsPage";
 import ReturnPolicyPage from "./pages/ReturnPolicyPage";
+import CloudinaryTestPage from "./pages/CloudinaryTestPage";
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -43,6 +44,7 @@ function App() {
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/return-policy" element={<ReturnPolicyPage />} />
+              <Route path="/cloudinary-test" element={<CloudinaryTestPage />} />
             </Routes>
           </Layout>
         </Router>

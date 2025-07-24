@@ -147,40 +147,71 @@ export const generateOrderPDFWithImages = async (
     },
   ];
 
-  for (let i = 0; i < Math.min(jacketImages.length, 4); i++) {
-    if (
-      !jacketImages[i] ||
-      !jacketImages[i].startsWith("data:image/png;base64,")
-    ) {
-      console.warn(`Skipping invalid image ${i}`);
-      continue;
-    }
+  // إضافة الصور مع معالجة أفضل للأخطاء
+  if (jacketImages && jacketImages.length > 0) {
+    for (let i = 0; i < Math.min(jacketImages.length, 4); i++) {
+      if (
+        !jacketImages[i] ||
+        !jacketImages[i].startsWith("data:image/png;base64,")
+      ) {
+        console.warn(`Skipping invalid image ${i}`);
+        continue;
+      }
 
-    try {
-      pdf.addImage(
-        jacketImages[i],
-        "PNG",
-        imagePositions[i].x,
-        imagePositions[i].y,
-        imageWidth,
-        imageHeight,
-        undefined,
-        "SLOW"
-      );
-      pdf.setTextColor(0, 0, 0);
+      try {
+        pdf.addImage(
+          jacketImages[i],
+          "PNG",
+          imagePositions[i].x,
+          imagePositions[i].y,
+          imageWidth,
+          imageHeight,
+          undefined,
+          "SLOW"
+        );
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(10);
+        const labelWidth =
+          (pdf.getStringUnitWidth(imagePositions[i].label) *
+            pdf.internal.getFontSize()) /
+          pdf.internal.scaleFactor;
+        pdf.text(
+          imagePositions[i].label,
+          imagePositions[i].x + (imageWidth - labelWidth) / 2,
+          imagePositions[i].y + imageHeight + 5
+        );
+      } catch (error) {
+        console.error(`Error adding image ${i}:`, error);
+      }
+    }
+  } else {
+    // إضافة نص بديل إذا لم تكن هناك صور
+    pdf.setTextColor(100, 100, 100);
+    pdf.setFontSize(12);
+    const noImagesText =
+      "لم يتم التقاط صور للجاكيت - سيتم التواصل معك لتأكيد التفاصيل";
+    const textWidth =
+      (pdf.getStringUnitWidth(noImagesText) * pdf.internal.getFontSize()) /
+      pdf.internal.scaleFactor;
+    pdf.text(noImagesText, (pageWidth - textWidth) / 2, imagesStartY + 50);
+
+    // إضافة مربعات فارغة لتوضيح مواقع الصور
+    imagePositions.forEach((pos) => {
+      pdf.setDrawColor(200, 200, 200);
+      pdf.setLineWidth(1);
+      pdf.rect(pos.x, pos.y, imageWidth, imageHeight);
+
+      pdf.setTextColor(150, 150, 150);
       pdf.setFontSize(10);
       const labelWidth =
-        (pdf.getStringUnitWidth(imagePositions[i].label) *
-          pdf.internal.getFontSize()) /
+        (pdf.getStringUnitWidth(pos.label) * pdf.internal.getFontSize()) /
         pdf.internal.scaleFactor;
       pdf.text(
-        imagePositions[i].label,
-        imagePositions[i].x + (imageWidth - labelWidth) / 2,
-        imagePositions[i].y + imageHeight + 5
+        pos.label,
+        pos.x + (imageWidth - labelWidth) / 2,
+        pos.y + imageHeight / 2
       );
-    } catch (error) {
-      console.error(`Error adding image ${i}:`, error);
-    }
+    });
   }
 
   const footerStartY = pageHeight - footerHeight;

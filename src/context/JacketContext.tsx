@@ -57,6 +57,7 @@ export interface UploadedImage {
   url: string;
   name: string;
   uploadedAt: Date;
+  publicId?: string; // إضافة publicId للتكامل مع Cloudinary
 }
 
 export interface JacketState {
@@ -161,10 +162,12 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
               : 220,
           isCapturing: false,
           uploadedImages: Array.isArray(parsedState.uploadedImages)
-            ? parsedState.uploadedImages.map((img: any) => ({
-                ...img,
-                uploadedAt: new Date(img.uploadedAt),
-              }))
+            ? parsedState.uploadedImages.map(
+                (img: UploadedImage & { uploadedAt: string }) => ({
+                  ...img,
+                  uploadedAt: new Date(img.uploadedAt),
+                })
+              )
             : [],
         };
       }

@@ -166,7 +166,10 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
 
   const handleAddToCartClick = () => {
     if (onAddToCart) {
-      onAddToCart();
+      // إضافة تأخير قصير لتجنب مشاكل CSS
+      setTimeout(() => {
+        onAddToCart();
+      }, 100);
     }
   };
 

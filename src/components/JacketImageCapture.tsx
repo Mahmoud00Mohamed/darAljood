@@ -84,14 +84,30 @@ const JacketImageCapture = forwardRef<
         width: 320,
         height: 410,
         backgroundColor: "#f9fafb",
-        skipFonts: false,
+        skipFonts: true, // Skip fonts to avoid CSS access issues
         cacheBust: true, // Prevent caching issues
         imagePlaceholder: undefined, // Ensure original images are used
-        filter: (node) =>
-          !node.classList?.contains("jacket-viewer-controls") &&
-          !node.classList?.contains("mobile-control-buttons") &&
-          !node.classList?.contains("desktop-control-buttons") &&
-          !node.classList?.contains("desktop-view-buttons"),
+        useCORS: true, // Enable CORS for external resources
+        allowTaint: false, // Prevent tainted canvas issues
+        ignoreElements: (element: Element) => {
+          // Ignore elements that might cause CSS access issues
+          const tagName = element.tagName?.toLowerCase();
+          return (
+            tagName === "style" ||
+            tagName === "link" ||
+            tagName === "script" ||
+            element.classList?.contains("jacket-viewer-controls") ||
+            element.classList?.contains("mobile-control-buttons") ||
+            element.classList?.contains("desktop-control-buttons") ||
+            element.classList?.contains("desktop-view-buttons")
+          );
+        },
+        style: {
+          // Apply inline styles to avoid external CSS issues
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          color: "#000000",
+        },
       });
 
       return dataUrl;

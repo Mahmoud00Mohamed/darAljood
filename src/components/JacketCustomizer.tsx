@@ -50,8 +50,21 @@ const JacketCustomizer: React.FC = () => {
     try {
       // التقاط صور الجاكيت الحالي
       let jacketImages: string[] = [];
-      if (jacketImageCaptureRef.current) {
-        jacketImages = await jacketImageCaptureRef.current.captureAllViews();
+
+      // إضافة تأخير قصير للتأكد من تحميل جميع العناصر
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      try {
+        if (jacketImageCaptureRef.current) {
+          jacketImages = await jacketImageCaptureRef.current.captureAllViews();
+        }
+      } catch (captureError) {
+        console.warn(
+          "فشل في التقاط الصور، سيتم المتابعة بدون صور:",
+          captureError
+        );
+        // المتابعة بدون صور في حالة فشل التقاط الصور
+        jacketImages = [];
       }
 
       // إضافة إلى السلة مع الصور

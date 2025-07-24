@@ -145,13 +145,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         try {
           const parsedCart = JSON.parse(savedCart);
           const validatedCart = parsedCart
-            .map((item: any) => ({
+            .map((item: CartItem & { addedAt: string }) => ({
               ...item,
               addedAt: new Date(item.addedAt),
               imageKeys: Array.isArray(item.imageKeys) ? item.imageKeys : [],
             }))
             .filter(
-              (item: any) => item.id && item.jacketConfig && item.quantity
+              (item: CartItem) => item.id && item.jacketConfig && item.quantity
             );
 
           setItems(validatedCart);

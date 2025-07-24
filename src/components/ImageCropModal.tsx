@@ -161,7 +161,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           width,
           height
         );
-      } else if (aspectRatio) {
+      } else if (aspectRatio !== undefined) {
         newCrop = centerCrop(
           makeAspectCrop({ unit: "%", width: 80 }, aspectRatio, width, height),
           width,
@@ -177,7 +177,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
       setCrop(newCrop);
     },
-    [aspectRatio, cropMode, calculateContainerDimensions]
+    [cropMode, calculateContainerDimensions]
   );
 
   // تغيير نمط الاقتطاع
