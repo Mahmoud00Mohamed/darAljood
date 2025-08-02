@@ -124,7 +124,7 @@ const BackLogoSection: React.FC = () => {
     },
     {
       id: "logo20",
-      url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621rew/8_yoay91.png",
+      url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621/8_yoay91.png",
       name: "شعار 20",
     },
     {
