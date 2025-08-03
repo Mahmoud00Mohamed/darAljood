@@ -305,7 +305,7 @@ export const invalidateCache = (keyOrUrl: string): Promise<boolean> => {
 
 // Export types for external use
 export * from "./types";
-export { ImgCacheProConfig } from "./config/settings";
+export type { ImgCacheProConfig } from "./config/settings";
 
 // Default export
 export default ImgCachePro;
