@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Trash2, Move, Upload, RefreshCw, X, Crop } from "lucide-react";
-import CloudinaryImageUpload from "../../CloudinaryImageUpload";
+import CloudinaryImageUpload from "../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../services/imageUploadService";
 
 const BackLogoSection: React.FC = () => {

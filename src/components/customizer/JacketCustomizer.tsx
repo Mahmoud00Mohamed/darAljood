@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import CustomizationSidebar from "./sidebar/CustomizationSidebar";
-import JacketViewer from "./jacket/JacketViewer";
+import CustomizationSidebar from "../sidebar/CustomizationSidebar";
+import JacketViewer from "../jacket/JacketViewer";
 import JacketImageCapture, {
   JacketImageCaptureRef,
-} from "./JacketImageCapture";
-import TopBar from "./TopBar";
-import { useJacket } from "../context/JacketContext";
-import { useCart } from "../context/CartContext";
+} from "../jacket/JacketImageCapture";
+import TopBar from "../ui/TopBar";
+import { useJacket } from "../../context/JacketContext";
+import { useCart } from "../../context/CartContext";
 import {
   Minus,
   Plus,
@@ -18,7 +18,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getPricingBreakdown } from "../constants/pricing";
+import { getPricingBreakdown } from "../../constants/pricing";
 
 const JacketCustomizer: React.FC = () => {
   const [quantity, setQuantity] = useState(1);

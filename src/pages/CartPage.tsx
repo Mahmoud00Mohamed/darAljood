@@ -14,11 +14,11 @@ import {
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { JacketState } from "../context/JacketContext";
-import OrderSummaryModal from "../components/OrderSummaryModal";
+import OrderSummaryModal from "../components/modals/OrderSummaryModal";
 import JacketImageCapture, {
   JacketImageCaptureRef,
-} from "../components/JacketImageCapture";
-import LoadingOverlay from "../components/LoadingOverlay";
+} from "../components/jacket/JacketImageCapture";
+import LoadingOverlay from "../components/ui/LoadingOverlay";
 import {
   generateOrderPDFWithImages,
   PDFGenerationOptions,

@@ -1,5 +1,5 @@
 import React from "react";
-import JacketCustomizer from "../components/JacketCustomizer";
+import JacketCustomizer from "../components/customizer/JacketCustomizer";
 
 const CustomizerPage: React.FC = () => {
   return <JacketCustomizer />;

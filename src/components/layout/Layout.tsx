@@ -12,7 +12,7 @@ import {
   Instagram,
 } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../../context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "/Photo/logo.png";
 

@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { JacketProvider } from "./context/JacketContext";
 import { CartProvider } from "./context/CartContext";
-import Layout from "./components/Layout";
+import Layout from "./components/layout/Layout";
 import HomePage from "./pages/HomePage";
 import CustomizerPage from "./pages/CustomizerPage";
 import AboutPage from "./pages/AboutPage";

@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import CloudinaryImageManager from "../components/CloudinaryImageManager";
+import CloudinaryImageManager from "../components/ui/CloudinaryImageManager";
 import { CloudinaryImageData } from "../services/imageUploadService";
 
 const CloudinaryTestPage: React.FC = () => {

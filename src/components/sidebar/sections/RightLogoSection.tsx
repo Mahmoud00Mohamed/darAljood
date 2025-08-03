@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Upload, Trash2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { PRICING_CONFIG } from "../../../constants/pricing";
-import CloudinaryImageUpload from "../../CloudinaryImageUpload";
+import CloudinaryImageUpload from "../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../services/imageUploadService";
 
 const RightLogoSection: React.FC = () => {
