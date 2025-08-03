@@ -4,6 +4,7 @@ import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Trash2, Move, Upload, RefreshCw, X, Crop } from "lucide-react";
 import CloudinaryImageUpload from "../../CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../services/imageUploadService";
+import { OptimizedImage, preloadImages } from "../../../imgCachePro";
 
 const BackLogoSection: React.FC = () => {
   const {
@@ -150,9 +151,12 @@ const BackLogoSection: React.FC = () => {
   ];
 
   React.useEffect(() => {
-    availableLogos.forEach((logo) => {
-      const img = new Image();
-      img.src = logo.url;
+    // تحميل مسبق للشعارات المتاحة باستخدام imgCachePro
+    const logoUrls = availableLogos.map((logo) => logo.url);
+    preloadImages(logoUrls, {
+      priority: "medium",
+    }).catch((error) => {
+      console.warn("فشل في التحميل المسبق للشعارات:", error);
     });
   }, []);
 
@@ -333,10 +337,30 @@ const BackLogoSection: React.FC = () => {
                     image.name
                   } - ${image.uploadedAt.toLocaleDateString()}`}
                 >
-                  <img
+                  <OptimizedImage
                     src={image.url}
                     alt={image.name}
                     className="w-full h-full object-contain"
+                    options={{
+                      priority: "medium",
+                      resize: {
+                        width: 150,
+                        height: 150,
+                        quality: 80,
+                      },
+                    }}
+                    loadingComponent={
+                      <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
+                        <div className="text-xs text-gray-500">
+                          جاري التحميل...
+                        </div>
+                      </div>
+                    }
+                    errorComponent={
+                      <div className="w-full h-full bg-red-50 border border-red-200 rounded-lg flex items-center justify-center">
+                        <div className="text-xs text-red-500">فشل التحميل</div>
+                      </div>
+                    }
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
                     {image.name}
@@ -379,12 +403,26 @@ const BackLogoSection: React.FC = () => {
               }`}
             >
               {logo.image && (
-                <img
+                <OptimizedImage
                   src={logo.image}
                   alt="شعار"
                   className="w-10 h-10 mr-3 object-contain rounded-full flex-shrink-0"
-                  loading="eager"
-                  decoding="async"
+                  options={{
+                    priority: "high",
+                    resize: {
+                      width: 80,
+                      height: 80,
+                      quality: 90,
+                    },
+                  }}
+                  loadingComponent={
+                    <div className="w-10 h-10 mr-3 bg-gray-200 animate-pulse rounded-full flex-shrink-0"></div>
+                  }
+                  errorComponent={
+                    <div className="w-10 h-10 mr-3 bg-red-50 border border-red-200 rounded-full flex items-center justify-center flex-shrink-0">
+                      <X className="w-4 h-4 text-red-500" />
+                    </div>
+                  }
                 />
               )}
               <div className="flex-1 min-w-0">
@@ -440,12 +478,28 @@ const BackLogoSection: React.FC = () => {
                     disabled={isPositionOccupied("backCenter")}
                     title={logo.name}
                   >
-                    <img
+                    <OptimizedImage
                       src={logo.url}
                       alt={logo.name}
                       className="w-full h-full object-contain"
-                      loading="eager"
-                      decoding="async"
+                      options={{
+                        priority: "high",
+                        resize: {
+                          width: 120,
+                          height: 120,
+                          quality: 85,
+                        },
+                      }}
+                      loadingComponent={
+                        <div className="w-full h-full bg-gray-100 animate-pulse rounded-full flex items-center justify-center">
+                          <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                        </div>
+                      }
+                      errorComponent={
+                        <div className="w-full h-full bg-red-50 border border-red-200 rounded-full flex items-center justify-center">
+                          <X className="w-4 h-4 text-red-500" />
+                        </div>
+                      }
                     />
                   </button>
                 ))}
