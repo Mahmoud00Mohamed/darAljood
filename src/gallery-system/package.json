@@ -1,0 +1,37 @@
+{
+  "name": "react-gallery-system-pro",
+  "version": "2.0.0",
+  "description": "نظام معرض صور عالمي المستوى، يتميز بالأداء الفائق، والتحميل الذكي للصور، والتصميم الواقعي الغامر.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "react",
+    "gallery",
+    "images",
+    "typescript",
+    "masonry",
+    "performance",
+    "lazy-loading",
+    "accessibility"
+  ],
+  "author": "Dualite Alpha",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "framer-motion": "^12.0.0",
+    "lucide-react": "^0.400.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  }
+}
