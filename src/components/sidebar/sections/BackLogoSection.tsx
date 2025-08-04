@@ -4,6 +4,8 @@ import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Trash2, Move, Upload, RefreshCw, X, Crop } from "lucide-react";
 import CloudinaryImageUpload from "../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../services/imageUploadService";
+import { Gallery } from "../../../gallery-system/src";
+import type { Photo } from "../../../gallery-system/src/types";
 
 const BackLogoSection: React.FC = () => {
   const {
@@ -18,6 +20,7 @@ const BackLogoSection: React.FC = () => {
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [showExistingImages, setShowExistingImages] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
   const [logoSource, setLogoSource] = useState<"predefined" | "upload">(
     "predefined"
   );
@@ -156,8 +159,28 @@ const BackLogoSection: React.FC = () => {
     });
   }, []);
 
+  // تحويل الشعارات المتاحة إلى تنسيق Gallery
+  const galleryPhotos: Photo[] = availableLogos.map((logo) => ({
+    id: logo.id,
+    src: logo.url,
+    title: logo.name,
+    category: "شعارات جاهزة",
+    description: `شعار جاهز للاستخدام - ${logo.name}`,
+    alt: logo.name,
+  }));
+
+  const galleryCategories = ["الكل", "شعارات جاهزة"];
+
   const isPositionOccupied = (pos: LogoPosition) => {
     return jacketState.logos.some((logo) => logo.position === pos);
+  };
+
+  const handleGalleryPhotoSelect = (photo: Photo) => {
+    const selectedLogo = availableLogos.find((logo) => logo.id === photo.id);
+    if (selectedLogo && !isPositionOccupied("backCenter")) {
+      handlePredefinedLogoSelect(selectedLogo.url, "backCenter");
+      setShowGallery(false);
+    }
   };
 
   const handlePredefinedLogoSelect = (
@@ -425,30 +448,19 @@ const BackLogoSection: React.FC = () => {
             </p>
 
             {logoSource === "predefined" ? (
-              <div className="mt-3 grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
-                {availableLogos.map((logo) => (
-                  <button
-                    key={logo.id}
-                    onClick={() =>
-                      handlePredefinedLogoSelect(logo.url, "backCenter")
-                    }
-                    className={`w-full h-16 border transition-all rounded-full overflow-hidden ${
-                      isPositionOccupied("backCenter")
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:border-[#563660] hover:shadow-md"
-                    }`}
-                    disabled={isPositionOccupied("backCenter")}
-                    title={logo.name}
-                  >
-                    <img
-                      src={logo.url}
-                      alt={logo.name}
-                      className="w-full h-full object-contain"
-                      loading="eager"
-                      decoding="async"
-                    />
-                  </button>
-                ))}
+              <div className="mt-3">
+                <button
+                  onClick={() => setShowGallery(true)}
+                  disabled={isPositionOccupied("backCenter")}
+                  className={`inline-flex items-center gap-2 text-sm bg-[#563660] hover:bg-[#7e4a8c] text-white py-3 px-6 rounded-xl transition-colors w-full justify-center ${
+                    isPositionOccupied("backCenter")
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  <Upload size={16} />
+                  <span>تصفح الشعارات الجاهزة</span>
+                </button>
               </div>
             ) : (
               <div className="mt-3">
@@ -469,6 +481,71 @@ const BackLogoSection: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* مودال معرض الشعارات */}
+      {showGallery &&
+        createPortal(
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-portal"
+            data-modal="true"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: "100vw",
+              height: "100vh",
+              zIndex: 9999,
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowGallery(false);
+              }
+            }}
+          >
+            <div
+              className="bg-white rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden"
+              data-modal="true"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-xl font-medium text-gray-900">
+                  اختر شعار خلفي
+                </h3>
+                <button
+                  onClick={() => setShowGallery(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <Gallery
+                  photos={galleryPhotos}
+                  categories={galleryCategories}
+                  rtl={true}
+                  onPhotoClick={handleGalleryPhotoSelect}
+                  showCategories={false}
+                  columnsConfig={{
+                    mobile: 2,
+                    tablet: 4,
+                    desktop: 6,
+                  }}
+                  className="gallery-logos-container"
+                />
+              </div>
+
+              <div className="p-4 border-t border-gray-200 bg-gray-50">
+                <p className="text-sm text-gray-600 text-center">
+                  انقر على أي شعار لإضافته إلى الجاكيت
+                </p>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* مودال رفع الصورة مع الاقتطاع */}
       {showImageUpload &&
