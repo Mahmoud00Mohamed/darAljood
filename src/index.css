@@ -552,6 +552,24 @@ button.text-xs {
   @apply border border-gray-300 text-gray-700 hover:bg-gray-50;
 }
 
+/* Gallery System Integration Styles */
+.gallery-logos-container .gallery-photo {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.gallery-logos-container .gallery-photo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(86, 54, 96, 0.15);
+}
+
+.gallery-logos-container img {
+  object-fit: contain;
+  background: white;
+  padding: 8px;
+}
+
 /* Typography improvements */
 .text-balance {
   text-wrap: balance;
