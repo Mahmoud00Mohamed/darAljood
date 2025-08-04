@@ -24,7 +24,7 @@ export const optimizeImageUrl = (
     params.set("fit", "max");
 
     return urlObj.toString();
-  } catch (e) {
+  } catch {
     return url;
   }
 };
