@@ -117,6 +117,7 @@ const initialState: JacketState = {
 
 const JacketContext = createContext<JacketContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useJacket = () => {
   const context = useContext(JacketContext);
   if (context === undefined) {

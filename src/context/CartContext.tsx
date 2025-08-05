@@ -31,6 +31,8 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 class ImageStorageManager {
   private static instance: ImageStorageManager;
   private readonly prefix = "jacket_image_";
+  private readonly storageType: "localStorage" | "sessionStorage" =
+    "localStorage"; // تغيير إلى localStorage
 
   static getInstance(): ImageStorageManager {
     if (!ImageStorageManager.instance) {
@@ -39,9 +41,15 @@ class ImageStorageManager {
     return ImageStorageManager.instance;
   }
 
+  // الحصول على نوع التخزين المناسب
+  private getStorage(): Storage {
+    return this.storageType === "localStorage" ? localStorage : sessionStorage;
+  }
+
   // حفظ الصور وإرجاع مفاتيحها
   storeImages(images: string[]): string[] {
     const keys: string[] = [];
+    const storage = this.getStorage();
 
     images.forEach((image, index) => {
       if (image) {
@@ -49,7 +57,7 @@ class ImageStorageManager {
           .toString(36)
           .substr(2, 9)}`;
         try {
-          sessionStorage.setItem(key, image);
+          storage.setItem(key, image);
           keys.push(key);
         } catch (error) {
           console.warn(`Failed to store image ${index}:`, error);
@@ -65,11 +73,12 @@ class ImageStorageManager {
 
   // استرجاع الصور باستخدام المفاتيح
   retrieveImages(keys: string[]): string[] {
+    const storage = this.getStorage();
     return keys
       .map((key) => {
         try {
-          // محاولة الاسترجاع من sessionStorage أولاً
-          const image = sessionStorage.getItem(key);
+          // محاولة الاسترجاع من التخزين المحدد أولاً
+          const image = storage.getItem(key);
           if (image) return image;
 
           // إذا لم توجد، محاولة الاسترجاع من الذاكرة
@@ -84,9 +93,10 @@ class ImageStorageManager {
 
   // حذف الصور
   deleteImages(keys: string[]): void {
+    const storage = this.getStorage();
     keys.forEach((key) => {
       try {
-        sessionStorage.removeItem(key);
+        storage.removeItem(key);
         this.memoryStorage.delete(key);
       } catch (error) {
         console.warn(`Failed to delete image with key ${key}:`, error);
@@ -100,24 +110,56 @@ class ImageStorageManager {
   // تنظيف الصور القديمة
   cleanup(): void {
     try {
+      const storage = this.getStorage();
       const keysToRemove: string[] = [];
 
-      // تنظيف sessionStorage
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
+      // تنظيف التخزين المحدد
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
         if (key && key.startsWith(this.prefix)) {
           keysToRemove.push(key);
         }
       }
 
       keysToRemove.forEach((key) => {
-        sessionStorage.removeItem(key);
+        storage.removeItem(key);
       });
 
       // تنظيف الذاكرة
       this.memoryStorage.clear();
     } catch (error) {
       console.warn("Failed to cleanup images:", error);
+    }
+  }
+
+  // تنظيف الصور القديمة فقط (أكثر من 7 أيام)
+  cleanupOldImages(): void {
+    try {
+      const storage = this.getStorage();
+      const keysToRemove: string[] = [];
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (key && key.startsWith(this.prefix)) {
+          // استخراج timestamp من المفتاح
+          const timestampMatch = key.match(/_(\d+)_/);
+          if (timestampMatch) {
+            const timestamp = parseInt(timestampMatch[1]);
+            if (timestamp < sevenDaysAgo) {
+              keysToRemove.push(key);
+            }
+          }
+        }
+      }
+
+      keysToRemove.forEach((key) => {
+        storage.removeItem(key);
+      });
+
+      console.log(`تم حذف ${keysToRemove.length} صورة قديمة`);
+    } catch (error) {
+      console.warn("Failed to cleanup old images:", error);
     }
   }
 }
@@ -221,8 +263,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     quantity: number,
     jacketImages?: string[]
   ) => {
-    // تنظيف الصور القديمة قبل إضافة جديدة
-    imageManager.cleanup();
+    // تنظيف الصور القديمة فقط (أكثر من 7 أيام) بدلاً من حذف كل شيء
+    imageManager.cleanupOldImages();
 
     // حفظ الصور الجديدة والحصول على مفاتيحها
     const imageKeys = jacketImages
@@ -278,7 +320,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setItems([]);
     localStorage.removeItem("cart");
-    imageManager.cleanup();
+    // لا نحذف جميع الصور عند مسح السلة، فقط الصور المرتبطة بالعناصر المحذوفة
   };
 
   const getTotalPrice = () => {
@@ -298,8 +340,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // تنظيف الصور عند إغلاق التطبيق
   useEffect(() => {
+    // تنظيف الصور القديمة عند بدء التطبيق
+    imageManager.cleanupOldImages();
+
     const handleBeforeUnload = () => {
-      // لا نحذف الصور هنا لأنها قد تكون مطلوبة في جلسة أخرى
+      // تنظيف الصور القديمة فقط عند إغلاق التطبيق
+      imageManager.cleanupOldImages();
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);

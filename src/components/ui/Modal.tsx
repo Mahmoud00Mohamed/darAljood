@@ -86,8 +86,8 @@ const Modal: React.FC<ModalProps> = ({
           className={`fixed inset-0 flex ${positionClasses[position]} p-4 modal-portal ${backdropClassName}`}
           style={{
             zIndex,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            backdropFilter: "blur(4px)",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backdropFilter: "blur(8px)",
           }}
           onClick={handleBackdropClick}
           data-modal="true"
@@ -99,9 +99,9 @@ const Modal: React.FC<ModalProps> = ({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{
               duration: animationDuration / 1000,
-              ease: [0.4, 0, 0.2, 1],
+              ease: "easeOut",
             }}
-            className={`bg-white rounded-2xl shadow-xl w-full ${sizeClasses[size]} ${contentClassName} ${className}`}
+            className={`bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} ${contentClassName} ${className} border border-gray-100`}
             onClick={handleContentClick}
             data-modal="true"
             tabIndex={-1}

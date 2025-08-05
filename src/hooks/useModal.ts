@@ -19,7 +19,7 @@ const defaultOptions: Required<ModalOptions> = {
   closeOnBackdropClick: true,
   preventBodyScroll: true,
   animationDuration: 300,
-  zIndex: 9999,
+  zIndex: 9990,
 };
 
 export const useModal = (options: ModalOptions = {}) => {

@@ -1,5 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle } from "lucide-react";
 
 interface LoadingOverlayProps {
   isVisible: boolean;
@@ -55,7 +56,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
     if (stage === "completed" && onComplete) {
       const timer = setTimeout(() => {
         onComplete();
-      }, 2000); // زيادة الوقت قليلاً لإظهار رسالة النجاح
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [stage, onComplete]);
@@ -68,19 +69,19 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 bg-black bg-opacity-60 z-[2000] flex items-center justify-center backdrop-blur-sm"
+          className="fixed inset-0 bg-black bg-opacity-70 z-[9999] flex items-center justify-center backdrop-blur-sm p-4"
         >
           <motion.div
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 20 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="bg-white rounded-3xl p-8 w-96 max-w-[90vw] shadow-2xl border border-gray-100"
+            className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl border border-gray-100"
           >
             {/* Animated circles */}
             <div className="relative flex justify-center mb-6">
-              <div className="relative w-20 h-20 rounded-2xl flex items-center justify-center bg-gradient-to-r from-blue-200 to-purple-200">
-                <div className="flex items-center justify-center gap-2">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center bg-gradient-to-r from-blue-200 to-purple-200">
+                <div className="flex items-center justify-center gap-1 sm:gap-2">
                   <motion.div
                     animate={{
                       scale: [1, 1.4, 1],
@@ -92,7 +93,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
-                    className="w-5 h-5 rounded-full"
+                    className="w-3 h-3 sm:w-4 sm:h-4 rounded-full"
                   />
                   <motion.div
                     animate={{
@@ -106,7 +107,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                       ease: "easeInOut",
                       delay: 0.4,
                     }}
-                    className="w-5 h-5 rounded-full"
+                    className="w-3 h-3 sm:w-4 sm:h-4 rounded-full"
                   />
                   <motion.div
                     animate={{
@@ -120,13 +121,12 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                       ease: "easeInOut",
                       delay: 0.8,
                     }}
-                    className="w-5 h-5 rounded-full"
+                    className="w-3 h-3 sm:w-4 sm:h-4 rounded-full"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Title and subtitle */}
             <motion.div
               key={stage}
               initial={{ opacity: 0, y: 10 }}
@@ -134,10 +134,12 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
               transition={{ duration: 0.5 }}
               className="text-center mb-6"
             >
-              <h2 className={`text-xl font-semibold mb-2 ${stageInfo.color}`}>
+              <h2
+                className={`text-lg sm:text-xl font-semibold mb-2 ${stageInfo.color}`}
+              >
                 {stageInfo.title}
               </h2>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
                 {stageInfo.subtitle}
               </p>
             </motion.div>
@@ -152,7 +154,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                   {stageInfo.progress}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 overflow-hidden">
                 <motion.div
                   className={`h-full rounded-full bg-gradient-to-r ${stageInfo.bgColor}`}
                   initial={{ width: "0%" }}
@@ -176,7 +178,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                 }`}
               >
                 <motion.div
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                     stageInfo.progress >= 33
                       ? "bg-blue-500 scale-110"
                       : "bg-gray-300"
@@ -187,7 +189,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                     repeat: stage === "capturing" ? Infinity : 0,
                   }}
                 />
-                <span>التقاط</span>
+                <span className="text-xs">التقاط</span>
               </div>
               <div
                 className={`flex items-center gap-1 transition-all duration-300 ${
@@ -197,7 +199,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                 }`}
               >
                 <motion.div
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                     stageInfo.progress >= 66
                       ? "bg-purple-500 scale-110"
                       : "bg-gray-300"
@@ -208,7 +210,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                     repeat: stage === "generating" ? Infinity : 0,
                   }}
                 />
-                <span>إنشاء</span>
+                <span className="text-xs">إنشاء</span>
               </div>
               <div
                 className={`flex items-center gap-1 transition-all duration-300 ${
@@ -218,7 +220,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                 }`}
               >
                 <motion.div
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                     stageInfo.progress >= 100
                       ? "bg-green-500 scale-110"
                       : "bg-gray-300"
@@ -229,7 +231,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                     repeat: stage === "completed" ? 3 : 0,
                   }}
                 />
-                <span>اكتمال</span>
+                <span className="text-xs">اكتمال</span>
               </div>
             </div>
 
@@ -239,17 +241,17 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="p-4 bg-green-50 border border-green-200 rounded-xl text-center"
+                className="p-3 sm:p-4 bg-green-50 border-2 border-green-200 rounded-xl text-center"
               >
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.4, delay: 0.5, type: "spring" }}
-                  className="text-2xl mb-2"
+                  className="text-xl sm:text-2xl mb-2"
                 >
                   ✨
                 </motion.div>
-                <p className="text-green-800 text-sm font-medium">
+                <p className="text-green-800 text-xs sm:text-sm font-medium">
                   تم إنشاء ملف PDF بنجاح وبدء التحميل
                 </p>
               </motion.div>
