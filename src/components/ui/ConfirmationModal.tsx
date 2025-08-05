@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 import Modal from "./Modal";
 import { useModal } from "../../hooks/useModal";
 

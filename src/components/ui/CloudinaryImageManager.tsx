@@ -6,7 +6,6 @@ import {
   Info,
   AlertCircle,
   CheckCircle,
-  X,
 } from "lucide-react";
 import imageUploadService, {
   CloudinaryImageData,

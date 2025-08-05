@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
-import { Upload, Trash2, AlertCircle, RefreshCw, Crop, X } from "lucide-react";
+import { Upload, Trash2, AlertCircle, RefreshCw, Crop } from "lucide-react";
 import { PRICING_CONFIG } from "../../../constants/pricing";
 import CloudinaryImageUpload from "../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../services/imageUploadService";

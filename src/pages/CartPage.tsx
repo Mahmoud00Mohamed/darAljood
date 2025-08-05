@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ShoppingCart,
   Plus,
@@ -10,7 +10,6 @@ import {
   Package,
   CreditCard,
   Truck,
-  AlertTriangle,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { JacketState } from "../context/JacketContext";

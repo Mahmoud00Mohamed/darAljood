@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
-import { Trash2, Move, Upload, RefreshCw, X, Crop } from "lucide-react";
+import { Trash2, Move, Upload, RefreshCw, Crop } from "lucide-react";
 import CloudinaryImageUpload from "../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../services/imageUploadService";
 import { Gallery } from "../../../gallery-system/src";
