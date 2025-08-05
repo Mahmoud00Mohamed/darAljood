@@ -12,7 +12,6 @@ import imageUploadService, {
 } from "../../services/imageUploadService";
 import CloudinaryImageUpload from "../forms/CloudinaryImageUpload";
 import Modal from "./Modal";
-import ImageModal from "./ImageModal";
 import { useModal } from "../../hooks/useModal";
 
 interface CloudinaryImageManagerProps {
@@ -157,7 +156,7 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
                 <div className="aspect-square overflow-hidden">
                   <img
                     src={imageData.url}
-                    alt={`صورة ${index + 1}`}
+                    alt={`صورة مرفوعة`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                   />
                 </div>

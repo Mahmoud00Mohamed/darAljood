@@ -19,9 +19,7 @@ const BackLogoSection: React.FC = () => {
     getUploadedImages,
   } = useJacket();
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
-  const [showImageUpload, setShowImageUpload] = useState(false);
   const [showExistingImages, setShowExistingImages] = useState(false);
-  const [showGallery, setShowGallery] = useState(false);
   const [logoSource, setLogoSource] = useState<"predefined" | "upload">(
     "predefined"
   );
@@ -155,13 +153,6 @@ const BackLogoSection: React.FC = () => {
       name: "شعار 24",
     },
   ];
-
-  React.useEffect(() => {
-    availableLogos.forEach((logo) => {
-      const img = new Image();
-      img.src = logo.url;
-    });
-  }, []);
 
   // تحويل الشعارات المتاحة إلى تنسيق Gallery
   const galleryPhotos: Photo[] = availableLogos.map((logo) => ({
@@ -382,7 +373,7 @@ const BackLogoSection: React.FC = () => {
           </span>
           {logoSource === "upload" && (
             <button
-              onClick={() => setShowImageUpload(true)}
+              onClick={uploadModal.openModal}
               disabled={isPositionOccupied("backCenter")}
               className={`flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors ${
                 isPositionOccupied("backCenter")

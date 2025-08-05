@@ -1,3 +1,5 @@
+import { Photo } from "../types";
+
 export const getGridColumns = (columnsConfig?: {
   mobile: number;
   tablet: number;

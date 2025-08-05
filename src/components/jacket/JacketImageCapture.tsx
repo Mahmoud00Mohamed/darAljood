@@ -91,21 +91,6 @@ const JacketImageCapture = forwardRef<
         skipFonts: true, // Skip fonts to avoid CSS access issues
         cacheBust: true, // Prevent caching issues
         imagePlaceholder: undefined, // Ensure original images are used
-        useCORS: true, // Enable CORS for external resources
-        allowTaint: false, // Prevent tainted canvas issues
-        ignoreElements: (element: Element) => {
-          // Ignore elements that might cause CSS access issues
-          const tagName = element.tagName?.toLowerCase();
-          return (
-            tagName === "style" ||
-            tagName === "link" ||
-            tagName === "script" ||
-            element.classList?.contains("jacket-viewer-controls") ||
-            element.classList?.contains("mobile-control-buttons") ||
-            element.classList?.contains("desktop-control-buttons") ||
-            element.classList?.contains("desktop-view-buttons")
-          );
-        },
         style: {
           // Apply inline styles to avoid external CSS issues
           fontFamily: "Arial, sans-serif",

@@ -210,18 +210,24 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
       if (e.touches.length === 1 && isDragging && !isZooming) {
         const touch = e.touches[0];
+        const newX = touch.clientX - dragStart.x;
+        const newY = touch.clientY - dragStart.y;
+
+        // تحسين الحساسية للهواتف
         setImagePosition({
-          x: touch.clientX - dragStart.x,
-          y: touch.clientY - dragStart.y,
+          x: newX,
+          y: newY,
         });
       } else if (e.touches.length === 2 && touchState && isZooming) {
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const distance = getDistance(touch1, touch2);
         const scaleChange = distance / touchState.initialDistance;
+
+        // تحسين حساسية التكبير للهواتف
         const newScale = Math.max(
-          0.3,
-          Math.min(5, touchState.initialScale * scaleChange)
+          0.5, // حد أدنى أكبر
+          Math.min(4, touchState.initialScale * scaleChange) // حد أقصى أقل
         );
 
         setScale(newScale);
@@ -597,54 +603,82 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                     draggable={false}
                   />
                 ) : (
-                  <ReactCrop
-                    crop={crop}
-                    onChange={(_, percentCrop) => setCrop(percentCrop)}
-                    onComplete={(c) => setCompletedCrop(c)}
-                    aspect={cropMode === "circle" ? 1 : undefined}
-                    circularCrop={cropMode === "circle"}
-                    className="flex items-center justify-center crop-container"
-                    style={{
-                      touchAction: "none",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    ruleOfThirds={true}
-                    keepSelection={true}
-                    minWidth={20}
-                    minHeight={20}
-                  >
-                    <img
-                      ref={imgRef}
-                      alt="اقتطاع"
-                      src={imageSrc}
+                  <div className="relative">
+                    <ReactCrop
+                      crop={crop}
+                      onChange={(_, percentCrop) => setCrop(percentCrop)}
+                      onComplete={(c) => setCompletedCrop(c)}
+                      aspect={cropMode === "circle" ? 1 : undefined}
+                      circularCrop={cropMode === "circle"}
+                      className="flex items-center justify-center crop-container"
                       style={{
-                        ...getImageDisplayStyle(),
-                        transform: `scale(${scale}) rotate(${rotate}deg) translate(${
-                          imagePosition.x / scale
-                        }px, ${imagePosition.y / scale}px)`,
-                        userSelect: "none",
-                        WebkitUserSelect: "none",
-                        cursor: isDragging
-                          ? "grabbing"
-                          : isZooming
-                          ? "zoom-in"
-                          : "grab",
-                        transition:
-                          isDragging || isZooming
-                            ? "none"
-                            : "transform 0.1s ease",
-                        display: "block",
-                        margin: "auto",
+                        touchAction: "manipulation",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
-                      onLoad={onImageLoad}
-                      onContextMenu={(e) => e.preventDefault()}
-                      draggable={false}
-                    />
-                  </ReactCrop>
+                      ruleOfThirds={true}
+                      keepSelection={true}
+                      minWidth={50} // حد أدنى أكبر للهواتف
+                      minHeight={50}
+                      // إعدادات محسنة للهواتف
+                      disabled={false}
+                      locked={false}
+                      renderSelectionAddon={() => (
+                        <div className="absolute inset-0 pointer-events-none">
+                          {/* مقابض مخصصة للهواتف */}
+                          <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          {/* مقابض جانبية إضافية للهواتف */}
+                          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                        </div>
+                      )}
+                    >
+                      <img
+                        ref={imgRef}
+                        alt="اقتطاع"
+                        src={imageSrc}
+                        style={{
+                          ...getImageDisplayStyle(),
+                          transform: `scale(${scale}) rotate(${rotate}deg) translate(${
+                            imagePosition.x / scale
+                          }px, ${imagePosition.y / scale}px)`,
+                          userSelect: "none",
+                          WebkitUserSelect: "none",
+                          cursor: isDragging
+                            ? "grabbing"
+                            : isZooming
+                            ? "zoom-in"
+                            : "grab",
+                          transition:
+                            isDragging || isZooming
+                              ? "none"
+                              : "transform 0.1s ease",
+                          display: "block",
+                          margin: "auto",
+                        }}
+                        onLoad={onImageLoad}
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                      />
+                    </ReactCrop>
+                  </div>
                 )}
               </div>
+
+              {/* مساعدات بصرية للهواتف */}
+              {(isDragging || isZooming) && (
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm md:hidden">
+                  {isZooming
+                    ? `تكبير: ${Math.round(scale * 100)}%`
+                    : "سحب الصورة"}
+                </div>
+              )}
             </div>
           )}
         </div>

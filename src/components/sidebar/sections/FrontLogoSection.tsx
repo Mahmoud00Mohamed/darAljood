@@ -206,7 +206,7 @@ const FrontLogoSection: React.FC = () => {
               الصور المرفوعة سابقاً ({uploadedImages.length})
             </span>
             <button
-              onClick={() => setShowExistingImages(!showExistingImages)}
+              onClick={uploadModal.openModal}
               className="flex items-center gap-1 text-xs text-[#563660] hover:text-[#4b2e55] transition-colors"
             >
               <RefreshCw size={12} />
@@ -251,7 +251,7 @@ const FrontLogoSection: React.FC = () => {
             الشعارات الحالية
           </span>
           <button
-            onClick={() => setShowImageUpload(true)}
+            onClick={uploadModal.openModal}
             disabled={isPositionOccupied(position)}
             className={`flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors ${
               isPositionOccupied(position)
