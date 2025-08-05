@@ -59,6 +59,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [touchState, setTouchState] = useState<TouchState | null>(null);
   const [isZooming, setIsZooming] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -78,6 +79,18 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
       reader.readAsDataURL(imageFile);
     }
   }, [isOpen, imageFile]);
+
+  // كشف وضع الهاتف المحمول
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -140,12 +153,15 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.05 : 0.05;
-    setScale((prev) => Math.max(0.3, Math.min(5, prev + delta)));
+    const delta = e.deltaY > 0 ? -0.1 : 0.1; // خطوات أكبر
+    setScale((prev) => Math.max(0.5, Math.min(4, prev + delta)));
   }, []);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      // تعطيل السحب على الهواتف
+      if (isMobile) return;
+
       if (e.target === imgRef.current) {
         setIsDragging(true);
         setDragStart({
@@ -155,11 +171,14 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         e.preventDefault();
       }
     },
-    [imagePosition]
+    [imagePosition, isMobile]
   );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
+      // تعطيل السحب على الهواتف
+      if (isMobile) return;
+
       if (isDragging) {
         e.preventDefault();
         setImagePosition({
@@ -168,7 +187,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         });
       }
     },
-    [isDragging, dragStart]
+    [isDragging, dragStart, isMobile]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -415,11 +434,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   };
 
   const handleZoomIn = () => {
-    setScale((prev) => Math.min(5, prev + 0.1));
+    setScale((prev) => Math.min(4, prev + 0.2)); // خطوات أكبر للهواتف
   };
 
   const handleZoomOut = () => {
-    setScale((prev) => Math.max(0.3, prev - 0.1));
+    setScale((prev) => Math.max(0.5, prev - 0.2)); // خطوات أكبر للهواتف
   };
 
   const getImageDisplayStyle = () => {
