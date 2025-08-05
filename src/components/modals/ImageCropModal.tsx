@@ -198,14 +198,8 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     (e: React.TouchEvent) => {
       e.preventDefault();
 
-      if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        setIsDragging(true);
-        setDragStart({
-          x: touch.clientX - imagePosition.x,
-          y: touch.clientY - imagePosition.y,
-        });
-      } else if (e.touches.length === 2) {
+      // في وضع الهاتف: فقط التكبير بإصبعين، بدون سحب الصورة
+      if (e.touches.length === 2) {
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const distance = getDistance(touch1, touch2);
@@ -219,25 +213,17 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         setIsZooming(true);
         setIsDragging(false);
       }
+      // إلغاء السحب بإصبع واحد على الهواتف
     },
-    [imagePosition, scale]
+    [scale]
   );
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       e.preventDefault();
 
-      if (e.touches.length === 1 && isDragging && !isZooming) {
-        const touch = e.touches[0];
-        const newX = touch.clientX - dragStart.x;
-        const newY = touch.clientY - dragStart.y;
-
-        // تحسين الحساسية للهواتف
-        setImagePosition({
-          x: newX,
-          y: newY,
-        });
-      } else if (e.touches.length === 2 && touchState && isZooming) {
+      // في وضع الهاتف: فقط التكبير، بدون سحب
+      if (e.touches.length === 2 && touchState && isZooming) {
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const distance = getDistance(touch1, touch2);
@@ -252,29 +238,17 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         setScale(newScale);
       }
     },
-    [isDragging, dragStart, touchState, isZooming]
+    [touchState, isZooming]
   );
 
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      if (e.touches.length === 0) {
-        setIsDragging(false);
-        setIsZooming(false);
-        setTouchState(null);
-      } else if (e.touches.length === 1 && isZooming) {
-        setIsZooming(false);
-        setTouchState(null);
-
-        const touch = e.touches[0];
-        setIsDragging(true);
-        setDragStart({
-          x: touch.clientX - imagePosition.x,
-          y: touch.clientY - imagePosition.y,
-        });
-      }
-    },
-    [isZooming, imagePosition]
-  );
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 0) {
+      setIsDragging(false);
+      setIsZooming(false);
+      setTouchState(null);
+    }
+    // إزالة منطق السحب بإصبع واحد للهواتف
+  }, []);
 
   const handleCropModeChange = (mode: CropMode) => {
     setCropMode(mode);
@@ -574,7 +548,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
               className="relative w-full h-full flex items-center justify-center p-2 md:p-4"
               style={{
                 cursor:
-                  cropMode === "full"
+                  !isMobile && cropMode === "full"
                     ? isDragging
                       ? "grabbing"
                       : "grab"
@@ -600,12 +574,12 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                     style={{
                       ...getImageDisplayStyle(),
                       transform: `scale(${scale}) rotate(${rotate}deg) translate(${
-                        imagePosition.x / scale
-                      }px, ${imagePosition.y / scale}px)`,
+                        !isMobile ? imagePosition.x / scale : 0
+                      }px, ${!isMobile ? imagePosition.y / scale : 0}px)`,
                       userSelect: "none",
                       WebkitUserSelect: "none",
                       cursor:
-                        cropMode === "full"
+                        !isMobile && cropMode === "full"
                           ? isDragging
                             ? "grabbing"
                             : "grab"
@@ -665,15 +639,17 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                         style={{
                           ...getImageDisplayStyle(),
                           transform: `scale(${scale}) rotate(${rotate}deg) translate(${
-                            imagePosition.x / scale
-                          }px, ${imagePosition.y / scale}px)`,
+                            !isMobile ? imagePosition.x / scale : 0
+                          }px, ${!isMobile ? imagePosition.y / scale : 0}px)`,
                           userSelect: "none",
                           WebkitUserSelect: "none",
-                          cursor: isDragging
-                            ? "grabbing"
-                            : isZooming
-                            ? "zoom-in"
-                            : "grab",
+                          cursor: !isMobile
+                            ? isDragging
+                              ? "grabbing"
+                              : isZooming
+                              ? "zoom-in"
+                              : "grab"
+                            : "default",
                           transition:
                             isDragging || isZooming
                               ? "none"
@@ -691,11 +667,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
               </div>
 
               {/* مساعدات بصرية للهواتف */}
-              {(isDragging || isZooming) && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm md:hidden">
-                  {isZooming
-                    ? `تكبير: ${Math.round(scale * 100)}%`
-                    : "سحب الصورة"}
+              {isZooming && isMobile && (
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm">
+                  تكبير: {Math.round(scale * 100)}%
                 </div>
               )}
             </div>
