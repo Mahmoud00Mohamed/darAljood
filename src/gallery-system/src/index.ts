@@ -1,11 +1,11 @@
 // Components
-export { Gallery } from './components/Gallery';
-export { CategoryFilter } from './components/CategoryFilter';
-export { PhotoGrid } from './components/PhotoGrid';
-export { PhotoModal } from './components/PhotoModal';
+export { Gallery } from "./components/Gallery";
+export { CategoryFilter } from "./components/CategoryFilter";
+export { PhotoGrid } from "./components/PhotoGrid";
+export { PhotoModal } from "./components/PhotoModal";
 
 // Hooks
-export { useGallery } from './hooks/useGallery';
+export { useGallery } from "./hooks/useGallery";
 
 // Types
 export type {
@@ -13,13 +13,13 @@ export type {
   GalleryProps,
   PhotoModalProps,
   CategoryFilterProps,
-  PhotoGridProps
-} from './types';
+  PhotoGridProps,
+} from "./types";
 
 // Utils
 export {
   getGridColumns,
   generatePhotoId,
   optimizeImageUrl,
-  validatePhoto
-} from './utils';
+  validatePhoto,
+} from "./utils";

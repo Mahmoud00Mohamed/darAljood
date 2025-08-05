@@ -430,14 +430,16 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
       />
 
       {/* مودال القص */}
-      <ImageCropModal
-        isOpen={showCropModal}
-        onClose={handleCropCancel}
-        imageFile={selectedFileForCrop}
-        onCropComplete={handleCropComplete}
-        aspectRatio={aspectRatio}
-        title={cropTitle}
-      />
+      {showCropModal && (
+        <ImageCropModal
+          isOpen={showCropModal}
+          onClose={handleCropCancel}
+          imageFile={selectedFileForCrop}
+          onCropComplete={handleCropComplete}
+          aspectRatio={aspectRatio}
+          title={cropTitle}
+        />
+      )}
     </div>
   );
 };

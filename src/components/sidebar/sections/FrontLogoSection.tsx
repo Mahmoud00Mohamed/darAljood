@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Upload, Trash2, AlertCircle, RefreshCw, Crop, X } from "lucide-react";
 import { PRICING_CONFIG } from "../../../constants/pricing";
 import CloudinaryImageUpload from "../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../services/imageUploadService";
+import Modal from "../../ui/Modal";
+import { useModal } from "../../../hooks/useModal";
 
 const FrontLogoSection: React.FC = () => {
   const {
@@ -19,7 +20,8 @@ const FrontLogoSection: React.FC = () => {
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
   const [position, setPosition] = useState<LogoPosition>("chestRight");
   const [showExistingImages, setShowExistingImages] = useState(false);
-  const [showImageUpload, setShowImageUpload] = useState(false);
+
+  const uploadModal = useModal();
 
   const logoPositions: { id: LogoPosition; name: string }[] = [
     { id: "chestRight", name: "الصدر الأيمن" },
@@ -117,7 +119,7 @@ const FrontLogoSection: React.FC = () => {
           console.log("تم رفع صورة جديدة:", imageData.publicId);
         };
       }
-      setShowImageUpload(false);
+      uploadModal.closeModal();
     }
   };
 
@@ -273,7 +275,7 @@ const FrontLogoSection: React.FC = () => {
             </p>
             <div className="mt-3">
               <button
-                onClick={() => setShowImageUpload(true)}
+                onClick={uploadModal.openModal}
                 disabled={isPositionOccupied(position)}
                 className={`inline-flex items-center gap-1 text-sm bg-[#563660] hover:bg-[#7e4a8c] text-white py-2 px-4 rounded transition-colors w-full justify-center md:w-auto ${
                   isPositionOccupied(position)
@@ -338,67 +340,34 @@ const FrontLogoSection: React.FC = () => {
       </div>
 
       {/* مودال رفع الصورة مع الاقتطاع */}
-      {showImageUpload &&
-        createPortal(
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-portal"
-            data-modal="true"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: "100vw",
-              height: "100vh",
-              zIndex: 9999,
-            }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setShowImageUpload(false);
-              }
-            }}
-          >
-            <div
-              className="bg-white rounded-2xl p-6 max-w-md w-full"
-              data-modal="true"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  رفع شعار جديد
-                </h3>
-                <button
-                  onClick={() => setShowImageUpload(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
+      <Modal
+        isOpen={uploadModal.isOpen}
+        shouldRender={uploadModal.shouldRender}
+        onClose={uploadModal.closeModal}
+        title="رفع شعار جديد"
+        size="sm"
+        options={uploadModal.options}
+      >
+        <CloudinaryImageUpload
+          onImageSelect={handleLogoUpload}
+          acceptedFormats={[
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp",
+          ]}
+          maxFileSize={5}
+          placeholder="اختر صورة الشعار"
+          className="mb-4"
+          aspectRatio={1}
+          cropTitle="اقتطاع شعار أمامي"
+        />
 
-              <CloudinaryImageUpload
-                onImageSelect={handleLogoUpload}
-                acceptedFormats={[
-                  "image/jpeg",
-                  "image/jpg",
-                  "image/png",
-                  "image/webp",
-                ]}
-                maxFileSize={5}
-                placeholder="اختر صورة الشعار"
-                className="mb-4"
-                aspectRatio={1}
-                cropTitle="اقتطاع شعار أمامي"
-              />
-
-              <div className="text-xs text-gray-500 text-center">
-                <p>• سيتم رفع الصورة مباشرة إلى Cloudinary</p>
-                <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+        <div className="text-xs text-gray-500 text-center">
+          <p>• سيتم رفع الصورة مباشرة إلى Cloudinary</p>
+          <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
+        </div>
+      </Modal>
 
       {selectedLogo && (
         <div className="border-t pt-4 mt-4">

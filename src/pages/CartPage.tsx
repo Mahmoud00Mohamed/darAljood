@@ -23,6 +23,8 @@ import {
   generateOrderPDFWithImages,
   PDFGenerationOptions,
 } from "../utils/pdfGenerator";
+import ConfirmationModal from "../components/ui/ConfirmationModal";
+import { useModal } from "../hooks/useModal";
 
 const CartPage: React.FC = () => {
   const {
@@ -41,11 +43,11 @@ const CartPage: React.FC = () => {
     "capturing" | "generating" | "completed"
   >("capturing");
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
-    null
-  );
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
+
+  const deleteConfirmModal = useModal();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("ar-SA", {
@@ -74,18 +76,16 @@ const CartPage: React.FC = () => {
   };
 
   const handleDeleteClick = (itemId: string) => {
-    setShowDeleteConfirm(itemId);
+    setDeleteItemId(itemId);
+    deleteConfirmModal.openModal();
   };
 
   const handleConfirmDelete = () => {
-    if (showDeleteConfirm) {
-      removeFromCart(showDeleteConfirm);
-      setShowDeleteConfirm(null);
+    if (deleteItemId) {
+      removeFromCart(deleteItemId);
+      setDeleteItemId(null);
+      deleteConfirmModal.closeModal();
     }
-  };
-
-  const handleCancelDelete = () => {
-    setShowDeleteConfirm(null);
   };
 
   const handleGeneratePDF = async (customerInfo: {
@@ -389,57 +389,16 @@ const CartPage: React.FC = () => {
       </div>
 
       {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-            onClick={handleCancelDelete}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    تأكيد الحذف
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    هل أنت متأكد أنك تريد الحذف؟
-                  </p>
-                </div>
-              </div>
-              <p className="text-gray-600 mb-6">
-                سيتم حذف هذا المنتج من عربة التسوق نهائياً. لا يمكن التراجع عن
-                هذا الإجراء.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleConfirmDelete}
-                  className="flex-1 py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  نعم، احذف
-                </button>
-                <button
-                  onClick={handleCancelDelete}
-                  className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ConfirmationModal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={deleteConfirmModal.closeModal}
+        onConfirm={handleConfirmDelete}
+        title="تأكيد الحذف"
+        message="سيتم حذف هذا المنتج من عربة التسوق نهائياً. لا يمكن التراجع عن هذا الإجراء."
+        confirmText="نعم، احذف"
+        cancelText="إلغاء"
+        type="danger"
+      />
 
       {/* Hidden Jacket Image Capture Component - للحالات الطارئة فقط */}
       <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>

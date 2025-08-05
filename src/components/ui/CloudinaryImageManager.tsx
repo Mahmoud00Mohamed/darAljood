@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Cloud,
   Trash2,
@@ -13,6 +12,9 @@ import imageUploadService, {
   CloudinaryImageData,
 } from "../../services/imageUploadService";
 import CloudinaryImageUpload from "../forms/CloudinaryImageUpload";
+import Modal from "./Modal";
+import ImageModal from "./ImageModal";
+import { useModal } from "../../hooks/useModal";
 
 interface CloudinaryImageManagerProps {
   onImageSelect?: (imageData: CloudinaryImageData) => void;
@@ -32,7 +34,8 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
   const [error, setError] = useState<string>("");
   const [selectedImage, setSelectedImage] =
     useState<CloudinaryImageData | null>(null);
-  const [showImageDetails, setShowImageDetails] = useState(false);
+
+  const imageDetailsModal = useModal();
 
   // معالجة رفع صورة جديدة
   const handleImageUpload = (imageData: CloudinaryImageData) => {
@@ -72,7 +75,7 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
   // عرض تفاصيل الصورة
   const handleShowImageDetails = (imageData: CloudinaryImageData) => {
     setSelectedImage(imageData);
-    setShowImageDetails(true);
+    imageDetailsModal.openModal();
   };
 
   // تحميل الصورة
@@ -118,14 +121,10 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
 
       {/* عرض رسائل الخطأ */}
       {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2"
-        >
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
           <span className="text-red-700">{error}</span>
-        </motion.div>
+        </div>
       )}
 
       {/* قائمة الصور المرفوعة */}
@@ -151,12 +150,9 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {uploadedImages.map((imageData, index) => (
-              <motion.div
+            {uploadedImages.map((imageData) => (
+              <div
                 key={imageData.publicId}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
                 className="relative group bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
                 <div className="aspect-square overflow-hidden">
@@ -216,121 +212,93 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
                     اختيار هذه الصورة
                   </button>
                 )}
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
 
       {/* نافذة تفاصيل الصورة */}
-      <AnimatePresence>
-        {showImageDetails && selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-            onClick={() => setShowImageDetails(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+      {selectedImage && (
+        <Modal
+          isOpen={imageDetailsModal.isOpen}
+          shouldRender={imageDetailsModal.shouldRender}
+          onClose={imageDetailsModal.closeModal}
+          title="تفاصيل الصورة"
+          size="lg"
+          className="max-h-[90vh] overflow-y-auto"
+          options={imageDetailsModal.options}
+        >
+          <div className="aspect-video mb-6 rounded-lg overflow-hidden bg-gray-100">
+            <img
+              src={selectedImage.url}
+              alt="معاينة الصورة"
+              className="w-full h-full object-contain"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="font-medium text-gray-700">Public ID:</span>
+              <p className="text-gray-600 break-all">
+                {selectedImage.publicId}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">التنسيق:</span>
+              <p className="text-gray-600">
+                {selectedImage.format.toUpperCase()}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">الأبعاد:</span>
+              <p className="text-gray-600">
+                {selectedImage.width} × {selectedImage.height}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">الحجم:</span>
+              <p className="text-gray-600">
+                {formatFileSize(selectedImage.size)}
+              </p>
+            </div>
+            <div className="col-span-2">
+              <span className="font-medium text-gray-700">تاريخ الرفع:</span>
+              <p className="text-gray-600">
+                {new Date(selectedImage.createdAt).toLocaleString("ar-SA")}
+              </p>
+            </div>
+            <div className="col-span-2">
+              <span className="font-medium text-gray-700">الرابط:</span>
+              <p className="text-gray-600 break-all text-xs">
+                {selectedImage.url}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => handleDownloadImage(selectedImage)}
+              className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
             >
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">
-                  تفاصيل الصورة
-                </h3>
-                <button
-                  onClick={() => setShowImageDetails(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-
-              <div className="p-6">
-                <div className="aspect-video mb-6 rounded-lg overflow-hidden bg-gray-100">
-                  <img
-                    src={selectedImage.url}
-                    alt="معاينة الصورة"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium text-gray-700">
-                      Public ID:
-                    </span>
-                    <p className="text-gray-600 break-all">
-                      {selectedImage.publicId}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">التنسيق:</span>
-                    <p className="text-gray-600">
-                      {selectedImage.format.toUpperCase()}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">الأبعاد:</span>
-                    <p className="text-gray-600">
-                      {selectedImage.width} × {selectedImage.height}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">الحجم:</span>
-                    <p className="text-gray-600">
-                      {formatFileSize(selectedImage.size)}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="font-medium text-gray-700">
-                      تاريخ الرفع:
-                    </span>
-                    <p className="text-gray-600">
-                      {new Date(selectedImage.createdAt).toLocaleString(
-                        "ar-SA"
-                      )}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="font-medium text-gray-700">الرابط:</span>
-                    <p className="text-gray-600 break-all text-xs">
-                      {selectedImage.url}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => handleDownloadImage(selectedImage)}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    تحميل
-                  </button>
-                  {onImageSelect && (
-                    <button
-                      onClick={() => {
-                        onImageSelect(selectedImage);
-                        setShowImageDetails(false);
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      اختيار
-                    </button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <Download className="w-4 h-4" />
+              تحميل
+            </button>
+            {onImageSelect && (
+              <button
+                onClick={() => {
+                  onImageSelect(selectedImage);
+                  imageDetailsModal.closeModal();
+                }}
+                className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
+              >
+                <CheckCircle className="w-4 h-4" />
+                اختيار
+              </button>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

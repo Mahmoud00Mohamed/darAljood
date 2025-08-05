@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getPricingBreakdown } from "../../constants/pricing";
+import ConfirmationModal from "../ui/ConfirmationModal";
+import { useModal } from "../../hooks/useModal";
 
 const JacketCustomizer: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
@@ -28,10 +30,11 @@ const JacketCustomizer: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showPricingDetails, setShowPricingDetails] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [showReplaceConfirm, setShowReplaceConfirm] = useState(false);
   const [isCapturingImages, setIsCapturingImages] = useState(false);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
+
+  const replaceConfirmModal = useModal();
 
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
@@ -39,7 +42,7 @@ const JacketCustomizer: React.FC = () => {
 
   const handleAddToCart = async () => {
     if (items.length > 0) {
-      setShowReplaceConfirm(true);
+      replaceConfirmModal.openModal();
     } else {
       await addToCartWithImages();
     }
@@ -85,7 +88,7 @@ const JacketCustomizer: React.FC = () => {
   };
 
   const handleConfirmReplace = async () => {
-    setShowReplaceConfirm(false);
+    replaceConfirmModal.closeModal();
     await addToCartWithImages();
   };
 
@@ -149,48 +152,17 @@ const JacketCustomizer: React.FC = () => {
         </AnimatePresence>
 
         {/* Replace Confirmation Modal */}
-        <AnimatePresence>
-          {showReplaceConfirm && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4"
-              onClick={() => setShowReplaceConfirm(false)}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  استبدال المنتج في السلة
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  يوجد منتج واحد في السلة بالفعل. هل تريد استبداله بالتصميم
-                  الجديد؟
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleConfirmReplace}
-                    disabled={isCapturingImages}
-                    className="flex-1 py-2 px-4 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50"
-                  >
-                    {isCapturingImages ? "جاري الحفظ..." : "نعم، استبدل"}
-                  </button>
-                  <button
-                    onClick={() => setShowReplaceConfirm(false)}
-                    className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    إلغاء
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <ConfirmationModal
+          isOpen={replaceConfirmModal.isOpen}
+          onClose={replaceConfirmModal.closeModal}
+          onConfirm={handleConfirmReplace}
+          title="استبدال المنتج في السلة"
+          message="يوجد منتج واحد في السلة بالفعل. هل تريد استبداله بالتصميم الجديد؟"
+          confirmText={isCapturingImages ? "جاري الحفظ..." : "نعم، استبدل"}
+          cancelText="إلغاء"
+          type="warning"
+          isLoading={isCapturingImages}
+        />
 
         {/* Mobile Back to Home Button */}
         <Link

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { createPortal } from "react-dom";
 import { useJacket, LogoPosition } from "../../../context/JacketContext";
 import { Trash2, Move, Upload, RefreshCw, X, Crop } from "lucide-react";
 import CloudinaryImageUpload from "../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../services/imageUploadService";
 import { Gallery } from "../../../gallery-system/src";
 import type { Photo } from "../../../gallery-system/src/types";
+import Modal from "../../ui/Modal";
+import { useModal } from "../../../hooks/useModal";
 
 const BackLogoSection: React.FC = () => {
   const {
@@ -24,6 +25,9 @@ const BackLogoSection: React.FC = () => {
   const [logoSource, setLogoSource] = useState<"predefined" | "upload">(
     "predefined"
   );
+
+  const galleryModal = useModal();
+  const uploadModal = useModal();
 
   const logoPositions: { id: LogoPosition; name: string }[] = [
     { id: "backCenter", name: "منتصف الظهر" },
@@ -179,7 +183,7 @@ const BackLogoSection: React.FC = () => {
     const selectedLogo = availableLogos.find((logo) => logo.id === photo.id);
     if (selectedLogo && !isPositionOccupied("backCenter")) {
       handlePredefinedLogoSelect(selectedLogo.url, "backCenter");
-      setShowGallery(false);
+      galleryModal.closeModal();
     }
   };
 
@@ -242,7 +246,7 @@ const BackLogoSection: React.FC = () => {
 
         console.log("تم رفع صورة جديدة:", imageData.publicId);
       }
-      setShowImageUpload(false);
+      uploadModal.closeModal();
     }
   };
 
@@ -450,7 +454,7 @@ const BackLogoSection: React.FC = () => {
             {logoSource === "predefined" ? (
               <div className="mt-3">
                 <button
-                  onClick={() => setShowGallery(true)}
+                  onClick={galleryModal.openModal}
                   disabled={isPositionOccupied("backCenter")}
                   className={`inline-flex items-center gap-2 text-sm bg-[#563660] hover:bg-[#7e4a8c] text-white py-3 px-6 rounded-xl transition-colors w-full justify-center ${
                     isPositionOccupied("backCenter")
@@ -465,7 +469,7 @@ const BackLogoSection: React.FC = () => {
             ) : (
               <div className="mt-3">
                 <button
-                  onClick={() => setShowImageUpload(true)}
+                  onClick={uploadModal.openModal}
                   disabled={isPositionOccupied("backCenter")}
                   className={`inline-flex items-center gap-1 text-sm bg-[#563660] hover:bg-[#7e4a8c] text-white py-2 px-4 rounded transition-colors w-full justify-center md:w-auto ${
                     isPositionOccupied("backCenter")
@@ -483,132 +487,67 @@ const BackLogoSection: React.FC = () => {
       </div>
 
       {/* مودال معرض الشعارات */}
-      {showGallery &&
-        createPortal(
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-portal"
-            data-modal="true"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: "100vw",
-              height: "100vh",
-              zIndex: 9999,
+      <Modal
+        isOpen={galleryModal.isOpen}
+        shouldRender={galleryModal.shouldRender}
+        onClose={galleryModal.closeModal}
+        title="اختر شعار خلفي"
+        size="md"
+        className="max-h-[70vh] md:max-h-[80vh]"
+        options={galleryModal.options}
+      >
+        <div className="overflow-y-auto max-h-[calc(70vh-120px)] md:max-h-[calc(80vh-120px)]">
+          <Gallery
+            photos={galleryPhotos}
+            categories={galleryCategories}
+            rtl={true}
+            onPhotoClick={handleGalleryPhotoSelect}
+            showCategories={false}
+            columnsConfig={{
+              mobile: 3,
+              tablet: 4,
+              desktop: 5,
             }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setShowGallery(false);
-              }
-            }}
-          >
-            <div
-              className="bg-white rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden"
-              data-modal="true"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 className="text-xl font-medium text-gray-900">
-                  اختر شعار خلفي
-                </h3>
-                <button
-                  onClick={() => setShowGallery(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
+            className="gallery-logos-container"
+          />
+        </div>
 
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                <Gallery
-                  photos={galleryPhotos}
-                  categories={galleryCategories}
-                  rtl={true}
-                  onPhotoClick={handleGalleryPhotoSelect}
-                  showCategories={false}
-                  columnsConfig={{
-                    mobile: 2,
-                    tablet: 4,
-                    desktop: 6,
-                  }}
-                  className="gallery-logos-container"
-                />
-              </div>
-
-              <div className="p-4 border-t border-gray-200 bg-gray-50">
-                <p className="text-sm text-gray-600 text-center">
-                  انقر على أي شعار لإضافته إلى الجاكيت
-                </p>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+        <div className="p-4 border-t border-gray-200 bg-gray-50 mt-4 rounded-lg">
+          <p className="text-sm text-gray-600 text-center">
+            انقر على أي شعار لإضافته إلى الجاكيت
+          </p>
+        </div>
+      </Modal>
 
       {/* مودال رفع الصورة مع الاقتطاع */}
-      {showImageUpload &&
-        createPortal(
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-portal"
-            data-modal="true"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: "100vw",
-              height: "100vh",
-              zIndex: 9999,
-            }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setShowImageUpload(false);
-              }
-            }}
-          >
-            <div
-              className="bg-white rounded-2xl p-6 max-w-md w-full"
-              data-modal="true"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  رفع شعار خلفي
-                </h3>
-                <button
-                  onClick={() => setShowImageUpload(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
+      <Modal
+        isOpen={uploadModal.isOpen}
+        shouldRender={uploadModal.shouldRender}
+        onClose={uploadModal.closeModal}
+        title="رفع شعار خلفي"
+        size="sm"
+        options={uploadModal.options}
+      >
+        <CloudinaryImageUpload
+          onImageSelect={handleLogoUpload}
+          acceptedFormats={[
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp",
+          ]}
+          maxFileSize={5}
+          placeholder="اختر صورة الشعار الخلفي"
+          className="mb-4"
+          aspectRatio={1}
+          cropTitle="اقتطاع شعار خلفي"
+        />
 
-              <CloudinaryImageUpload
-                onImageSelect={handleLogoUpload}
-                acceptedFormats={[
-                  "image/jpeg",
-                  "image/jpg",
-                  "image/png",
-                  "image/webp",
-                ]}
-                maxFileSize={5}
-                placeholder="اختر صورة الشعار الخلفي"
-                className="mb-4"
-                aspectRatio={1}
-                cropTitle="اقتطاع شعار خلفي"
-              />
-
-              <div className="text-xs text-gray-500 text-center">
-                <p>• سيتم رفع الصورة مباشرة إلى Cloudinary</p>
-                <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+        <div className="text-xs text-gray-500 text-center">
+          <p>• سيتم رفع الصورة مباشرة إلى Cloudinary</p>
+          <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
+        </div>
+      </Modal>
 
       {selectedLogo && (
         <div className="border-t pt-4 mt-4">
