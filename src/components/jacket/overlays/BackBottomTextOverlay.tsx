@@ -32,10 +32,23 @@ const positionMappings: Record<
     maxY: 340,
     minScale: 0.3,
     maxScale: 1.5,
-    maxWidth: 280, // تحديد الحد الأقصى للعرض لمنع التجاوز
+    maxWidth: 280,
   },
 };
 
+// دالة للحصول على الخط مع fallbacks
+const getFontFamily = (font?: string): string => {
+  const fontMap: { [key: string]: string } = {
+    'Katibeh': "'Katibeh', 'Tajawal', 'Arial', sans-serif",
+    'Amiri': "'Amiri', 'Tajawal', 'Arial', sans-serif",
+    'Noto Naskh Arabic': "'Noto Naskh Arabic', 'Tajawal', 'Arial', sans-serif",
+    'Noto Kufi Arabic': "'Noto Kufi Arabic', 'Tajawal', 'Arial', sans-serif",
+    'Scheherazade New': "'Scheherazade New', 'Tajawal', 'Arial', sans-serif",
+    'Tajawal': "'Tajawal', 'Arial', sans-serif"
+  };
+  
+  return fontMap[font || 'Katibeh'] || "'Tajawal', 'Arial', sans-serif";
+};
 const BackBottomTextOverlay: React.FC<BackBottomTextOverlayProps> = ({
   text,
   view,
@@ -73,28 +86,37 @@ const BackBottomTextOverlay: React.FC<BackBottomTextOverlayProps> = ({
   const yPercent = (yPos / SVG_HEIGHT) * 100;
   const maxWidthPercent = (basePosition.maxWidth / SVG_WIDTH) * 100;
 
+  // الحصول على الخط مع fallbacks
+  const fontFamily = getFontFamily(text.font);
   return (
     <div
       style={{
         position: "absolute",
         left: `${xPercent}%`,
         top: `${yPercent}%`,
-        fontFamily: text.font || "Katibeh",
+        fontFamily: fontFamily,
         fontSize: `${fontSize}rem`,
         color: text.color || "#000000",
         textAlign: "center",
         transform: "translate(-50%, -50%)",
         direction: "rtl",
-        whiteSpace: "normal", // تغيير إلى normal للسماح بكسر النص
+        whiteSpace: "normal",
         overflow: "visible",
         textOverflow: "clip",
         fontWeight: "bold",
-        overflowWrap: "break-word", // كسر الكلمات عند الحاجة
-        wordBreak: "break-word", // كسر الكلمات لمنع التجاوز
-        maxWidth: `${maxWidthPercent}%`, // تحديد الحد الأقصى للعرض
-        lineHeight: "1.2", // تحسين المسافة بين الأسطر
+        overflowWrap: "break-word",
+        wordBreak: "break-word",
+        maxWidth: `${maxWidthPercent}%`,
+        lineHeight: "1.2",
+        textRendering: "optimizeLegibility",
+        fontKerning: "normal",
+        fontVariantLigatures: "normal",
+        fontFeatureSettings: "normal",
+        WebkitFontSmoothing: "antialiased",
+        MozOsxFontSmoothing: "grayscale",
       }}
       className="text-overlay"
+      data-font={text.font || "Katibeh"}
     >
       {text.content}
     </div>

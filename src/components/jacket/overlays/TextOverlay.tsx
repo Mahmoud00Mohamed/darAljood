@@ -44,6 +44,19 @@ const positionMappings: Record<
   },
 };
 
+// دالة للحصول على الخط مع fallbacks
+const getFontFamily = (font?: string): string => {
+  const fontMap: { [key: string]: string } = {
+    'Katibeh': "'Katibeh', 'Tajawal', 'Arial', sans-serif",
+    'Amiri': "'Amiri', 'Tajawal', 'Arial', sans-serif",
+    'Noto Naskh Arabic': "'Noto Naskh Arabic', 'Tajawal', 'Arial', sans-serif",
+    'Noto Kufi Arabic': "'Noto Kufi Arabic', 'Tajawal', 'Arial', sans-serif",
+    'Scheherazade New': "'Scheherazade New', 'Tajawal', 'Arial', sans-serif",
+    'Tajawal': "'Tajawal', 'Arial', sans-serif"
+  };
+  
+  return fontMap[font || 'Katibeh'] || "'Tajawal', 'Arial', sans-serif";
+};
 const TextOverlay: React.FC<TextOverlayProps> = ({ text, view }) => {
   const shouldDisplay = () =>
     view === "front" && ["chestRight", "chestLeft"].includes(text.position);
@@ -91,6 +104,8 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ text, view }) => {
         );
         const fontSize = (12 * scale * 3) / 16;
 
+        // الحصول على الخط مع fallbacks
+        const fontFamily = getFontFamily(charStyle.font || text.font);
         return (
           <div
             key={index}
@@ -98,7 +113,7 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ text, view }) => {
               position: "absolute",
               left: `${(xPos / SVG_WIDTH) * 100}%`,
               top: `${(yPos / SVG_HEIGHT) * 100}%`,
-              fontFamily: charStyle.font || text.font || "Katibeh",
+              fontFamily: fontFamily,
               fontSize: `${fontSize}rem`,
               color: charStyle.color || text.color || "#000000",
               textAlign: "center",
@@ -117,8 +132,13 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ text, view }) => {
               transformOrigin: "center",
               maxWidth: "none",
               minWidth: "max-content",
+              fontVariantLigatures: "normal",
+              fontFeatureSettings: "normal",
+              WebkitFontSmoothing: "antialiased",
+              MozOsxFontSmoothing: "grayscale",
             }}
             className="text-overlay"
+            data-font={charStyle.font || text.font || "Katibeh"}
           >
             {char}
           </div>
