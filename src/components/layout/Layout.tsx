@@ -15,6 +15,7 @@ import { FaTiktok } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "/Photo/logo.png";
+import fontPreloader from "../../utils/fontPreloader";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,6 +35,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
 
     window.addEventListener("scroll", handleScroll);
+
+    // تحميل الخطوط في الخلفية عند تحميل Layout
+    fontPreloader.preloadAllFonts().catch(console.warn);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

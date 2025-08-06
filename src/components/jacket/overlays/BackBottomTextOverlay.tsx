@@ -1,5 +1,6 @@
 import React from "react";
 import { CustomText, JacketView } from "../../../context/JacketContext";
+import fontPreloader from "../../../utils/fontPreloader";
 
 interface BackBottomTextOverlayProps {
   text: CustomText;
@@ -38,16 +39,32 @@ const positionMappings: Record<
 
 // دالة للحصول على الخط مع fallbacks
 const getFontFamily = (font?: string): string => {
+  // التأكد من تحميل الخط المطلوب
+  if (font && fontPreloader.isFontLoaded(font)) {
+    const fontMap: { [key: string]: string } = {
+      Katibeh: "'Katibeh', 'Tajawal', 'Arial', sans-serif",
+      Amiri: "'Amiri', 'Tajawal', 'Arial', sans-serif",
+      "Noto Naskh Arabic":
+        "'Noto Naskh Arabic', 'Tajawal', 'Arial', sans-serif",
+      "Noto Kufi Arabic": "'Noto Kufi Arabic', 'Tajawal', 'Arial', sans-serif",
+      "Scheherazade New": "'Scheherazade New', 'Tajawal', 'Arial', sans-serif",
+      Tajawal: "'Tajawal', 'Arial', sans-serif",
+    };
+
+    return fontMap[font] || "'Tajawal', 'Arial', sans-serif";
+  }
+
+  // fallback إذا لم يكن الخط محمل
   const fontMap: { [key: string]: string } = {
-    'Katibeh': "'Katibeh', 'Tajawal', 'Arial', sans-serif",
-    'Amiri': "'Amiri', 'Tajawal', 'Arial', sans-serif",
-    'Noto Naskh Arabic': "'Noto Naskh Arabic', 'Tajawal', 'Arial', sans-serif",
-    'Noto Kufi Arabic': "'Noto Kufi Arabic', 'Tajawal', 'Arial', sans-serif",
-    'Scheherazade New': "'Scheherazade New', 'Tajawal', 'Arial', sans-serif",
-    'Tajawal': "'Tajawal', 'Arial', sans-serif"
+    Katibeh: "'Katibeh', 'Tajawal', 'Arial', sans-serif",
+    Amiri: "'Amiri', 'Tajawal', 'Arial', sans-serif",
+    "Noto Naskh Arabic": "'Noto Naskh Arabic', 'Tajawal', 'Arial', sans-serif",
+    "Noto Kufi Arabic": "'Noto Kufi Arabic', 'Tajawal', 'Arial', sans-serif",
+    "Scheherazade New": "'Scheherazade New', 'Tajawal', 'Arial', sans-serif",
+    Tajawal: "'Tajawal', 'Arial', sans-serif",
   };
-  
-  return fontMap[font || 'Katibeh'] || "'Tajawal', 'Arial', sans-serif";
+
+  return fontMap[font || "Katibeh"] || "'Tajawal', 'Arial', sans-serif";
 };
 const BackBottomTextOverlay: React.FC<BackBottomTextOverlayProps> = ({
   text,

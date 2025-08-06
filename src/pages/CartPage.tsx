@@ -24,6 +24,7 @@ import {
 } from "../utils/pdfGenerator";
 import ConfirmationModal from "../components/ui/ConfirmationModal";
 import { useModal } from "../hooks/useModal";
+import fontPreloader from "../utils/fontPreloader";
 
 const CartPage: React.FC = () => {
   const {
@@ -96,6 +97,9 @@ const CartPage: React.FC = () => {
     setLoadingStage("capturing");
 
     try {
+      // التأكد من تحميل الخطوط قبل بدء العملية
+      await fontPreloader.preloadAllFonts();
+
       let jacketImages: string[] = [];
 
       // استخدام الصور المحفوظة في السلة إذا كانت متوفرة
@@ -104,8 +108,8 @@ const CartPage: React.FC = () => {
 
         if (jacketImages.length > 0) {
           console.log("Using saved images from cart");
-          // الانتقال مباشرة لمرحلة إنشاء PDF مع تأخير للمتزامن
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          // الانتقال مباشرة لمرحلة إنشاء PDF مع تأخير مختصر
+          await new Promise((resolve) => setTimeout(resolve, 500));
           setLoadingStage("generating");
         } else {
           // إذا لم تكن الصور محفوظة، التقط صور جديدة
@@ -124,8 +128,8 @@ const CartPage: React.FC = () => {
         }
       }
 
-      // إضافة تأخير لإظهار مرحلة إنشاء PDF
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // تأخير مختصر لإظهار مرحلة إنشاء PDF
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
       const pdfOptions: PDFGenerationOptions = {
         cartItems: items,

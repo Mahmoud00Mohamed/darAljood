@@ -6,6 +6,7 @@ import {
 } from "../../context/JacketContext";
 import * as htmlToImage from "html-to-image";
 import JacketViewer from "./JacketViewer";
+import fontPreloader from "../../utils/fontPreloader";
 
 export interface JacketImageCaptureRef {
   captureAllViews: () => Promise<string[]>;
@@ -16,65 +17,6 @@ interface JacketImageCaptureProps {
   className?: string;
 }
 
-// تحميل الخطوط مسبقاً
-const preloadFonts = async (): Promise<void> => {
-  const fonts = [
-    {
-      family: "Katibeh",
-      url: "https://fonts.googleapis.com/css2?family=Katibeh&display=swap",
-    },
-    {
-      family: "Amiri",
-      url: "https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap",
-    },
-    {
-      family: "Noto Naskh Arabic",
-      url: "https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap",
-    },
-    {
-      family: "Noto Kufi Arabic",
-      url: "https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;700&display=swap",
-    },
-    {
-      family: "Scheherazade New",
-      url: "https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap",
-    },
-    {
-      family: "Tajawal",
-      url: "https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap",
-    },
-  ];
-
-  const fontPromises = fonts.map((font) => {
-    return new Promise<void>((resolve) => {
-      const link = document.createElement("link");
-      link.href = font.url;
-      link.rel = "stylesheet";
-      link.onload = () => {
-        // التأكد من تحميل الخط
-        document.fonts
-          .load(`16px "${font.family}"`)
-          .then(() => {
-            resolve();
-          })
-          .catch(() => {
-            console.warn(`Failed to load font: ${font.family}`);
-            resolve();
-          });
-      };
-      link.onerror = () => {
-        console.warn(`Failed to load font stylesheet: ${font.family}`);
-        resolve();
-      };
-      document.head.appendChild(link);
-    });
-  });
-
-  await Promise.all(fontPromises);
-
-  // انتظار إضافي للتأكد من تحميل جميع الخطوط
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-};
 const JacketImageCapture = forwardRef<
   JacketImageCaptureRef,
   JacketImageCaptureProps
@@ -114,8 +56,10 @@ const JacketImageCapture = forwardRef<
     const container = containerRef.current;
     if (!container) throw new Error("Container not found");
 
-    // تحميل الخطوط مسبقاً
-    await preloadFonts();
+    // التأكد من تحميل الخطوط (سريع لأنها محملة مسبقاً)
+    if (!fontPreloader.isFontLoaded("Tajawal")) {
+      await fontPreloader.preloadAllFonts();
+    }
 
     const jacketViewer = container.querySelector(
       ".jacket-viewer-mobile"
@@ -240,12 +184,10 @@ const JacketImageCapture = forwardRef<
 
       setIsCapturing(true);
 
-      // تحميل الخطوط مسبقاً قبل بدء التقاط الصور
-      await preloadFonts();
       for (const view of views) {
         try {
           setCurrentView(view);
-          await new Promise((resolve) => setTimeout(resolve, 800)); // زيادة وقت الانتظار
+          await new Promise((resolve) => setTimeout(resolve, 300)); // تقليل وقت الانتظار
           const imageData = await captureView();
           images.push(imageData);
         } catch (error) {
@@ -266,16 +208,14 @@ const JacketImageCapture = forwardRef<
 
       setIsCapturing(true);
 
-      // تحميل الخطوط مسبقاً
-      await preloadFonts();
       try {
         restoreState(config);
-        await new Promise((resolve) => setTimeout(resolve, 1500)); // زيادة وقت الانتظار
+        await new Promise((resolve) => setTimeout(resolve, 500)); // تقليل وقت الانتظار
 
         for (const view of views) {
           try {
             setCurrentView(view);
-            await new Promise((resolve) => setTimeout(resolve, 800)); // زيادة وقت الانتظار
+            await new Promise((resolve) => setTimeout(resolve, 300)); // تقليل وقت الانتظار
             const imageData = await captureView();
             images.push(imageData);
           } catch (error) {

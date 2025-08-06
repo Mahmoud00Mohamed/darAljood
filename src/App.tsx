@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { JacketProvider } from "./context/JacketContext";
 import { CartProvider } from "./context/CartContext";
+import fontPreloader from "./utils/fontPreloader";
 import Layout from "./components/layout/Layout";
 import HomePage from "./pages/HomePage";
 import CustomizerPage from "./pages/CustomizerPage";
@@ -29,6 +30,22 @@ const ScrollToTop: React.FC = () => {
 };
 
 function App() {
+  // تحميل الخطوط عند بدء التطبيق
+  useEffect(() => {
+    const initializeFonts = async () => {
+      try {
+        console.log("بدء تحميل الخطوط في الخلفية...");
+        await fontPreloader.preloadAllFonts();
+        console.log("تم تحميل جميع الخطوط بنجاح");
+      } catch (error) {
+        console.warn("خطأ في تحميل الخطوط:", error);
+      }
+    };
+
+    // تحميل الخطوط في الخلفية دون انتظار
+    initializeFonts();
+  }, []);
+
   return (
     <JacketProvider>
       <CartProvider>

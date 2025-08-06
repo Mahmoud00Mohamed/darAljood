@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { getPricingBreakdown } from "../../constants/pricing";
 import ConfirmationModal from "../ui/ConfirmationModal";
 import { useModal } from "../../hooks/useModal";
+import fontPreloader from "../../utils/fontPreloader";
 
 const JacketCustomizer: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
@@ -51,11 +52,14 @@ const JacketCustomizer: React.FC = () => {
   const addToCartWithImages = async () => {
     setIsCapturingImages(true);
     try {
+      // التأكد من تحميل الخطوط قبل بدء التقاط الصور
+      await fontPreloader.preloadAllFonts();
+
       // التقاط صور الجاكيت الحالي
       let jacketImages: string[] = [];
 
-      // إضافة تأخير قصير للتأكد من تحميل جميع العناصر
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // تأخير مختصر للتأكد من تحديث العرض
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       try {
         if (jacketImageCaptureRef.current) {
