@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useJacket, LogoPosition } from "../../../../context/JacketContext";
-import { Upload, Trash2, AlertCircle, RefreshCw, Crop } from "lucide-react";
+import { Upload, Trash2, AlertCircle, Crop } from "lucide-react";
 import CloudinaryImageUpload from "../../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../../services/imageUploadService";
 import { Gallery } from "../../../../gallery-system/src";
@@ -41,7 +41,6 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
   } = useJacket();
   const { selectedImages } = useImageLibrary();
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
-  const [showExistingImages, setShowExistingImages] = useState(false);
   const [logoSource, setLogoSource] = useState<"predefined" | "upload">(
     showPredefinedLogos ? "predefined" : "upload"
   );
@@ -310,7 +309,6 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
         addLogo(newLogo);
         setSelectedLogoId(newLogo.id);
       };
-      setShowExistingImages(false);
     }
   };
 
@@ -439,9 +437,9 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
         </div>
       )}
 
-      {/* عرض الصور المرفوعة سابقاً */}
+      {/* عرض الصور المحددة من المكتبة */}
       {(!showPredefinedLogos || logoSource === "upload") &&
-        (uploadedImages.length > 0 || selectedImages.length > 0) && (
+        selectedImages.length > 0 && (
           <div className="mb-4">
             <SelectedImagesSection
               onImageSelect={(imageUrl) => {
@@ -454,122 +452,6 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
                 }
               }}
             />
-
-            {/* الصور المرفوعة محلياً (للتوافق مع النظام القديم) */}
-            {uploadedImages.length > 0 && (
-              <div className="mt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    الصور المحلية ({uploadedImages.length})
-                  </span>
-                  <button
-                    onClick={() => setShowExistingImages(!showExistingImages)}
-                    className="flex items-center gap-1 text-xs text-[#563660] hover:text-[#4b2e55] transition-colors"
-                  >
-                    <RefreshCw size={12} />
-                    {showExistingImages ? "إخفاء" : "عرض"}
-                  </button>
-                </div>
-
-                {showExistingImages && (
-                  <div className="space-y-3">
-                    {view === "front" ? (
-                      <div className="grid grid-cols-4 gap-2 p-3 bg-gray-50 rounded-lg max-h-40 overflow-y-auto">
-                        {uploadedImages.map((image) => (
-                          <button
-                            key={image.id}
-                            onClick={() => handleExistingImageSelect(image.url)}
-                            disabled={isPositionOccupied(uploadPosition)}
-                            className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                              isPositionOccupied(uploadPosition)
-                                ? "opacity-50 cursor-not-allowed border-gray-200"
-                                : "hover:border-[#563660] border-gray-200"
-                            }`}
-                            title={`${
-                              image.name
-                            } - ${image.uploadedAt.toLocaleDateString()}`}
-                          >
-                            <img
-                              src={image.url}
-                              alt={image.name}
-                              className="w-full h-full object-contain"
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
-                              {image.name}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : view === "back" ? (
-                      <div className="grid grid-cols-4 gap-2 p-3 bg-gray-50 rounded-lg max-h-40 overflow-y-auto">
-                        {uploadedImages.map((image) => (
-                          <button
-                            key={image.id}
-                            onClick={() => handleExistingImageSelect(image.url)}
-                            disabled={isPositionOccupied(positions[0].id)}
-                            className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                              isPositionOccupied(positions[0].id)
-                                ? "opacity-50 cursor-not-allowed border-gray-200"
-                                : "hover:border-[#563660] border-gray-200"
-                            }`}
-                            title={`${
-                              image.name
-                            } - ${image.uploadedAt.toLocaleDateString()}`}
-                          >
-                            <img
-                              src={image.url}
-                              alt={image.name}
-                              className="w-full h-full object-contain"
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
-                              {image.name}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {positions.map((pos) => (
-                          <div key={pos.id}>
-                            <p className="text-xs text-gray-600 mb-2">
-                              {pos.name}:
-                            </p>
-                            <div className="grid grid-cols-3 gap-2 p-2 bg-gray-50 rounded-lg">
-                              {uploadedImages.map((image) => (
-                                <button
-                                  key={`${pos.id}-${image.id}`}
-                                  onClick={() =>
-                                    handleExistingImageSelect(image.url, pos.id)
-                                  }
-                                  disabled={isPositionOccupied(pos.id)}
-                                  className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                                    isPositionOccupied(pos.id)
-                                      ? "opacity-50 cursor-not-allowed border-gray-200"
-                                      : "hover:border-[#563660] border-gray-200"
-                                  }`}
-                                  title={`${
-                                    image.name
-                                  } - ${image.uploadedAt.toLocaleDateString()}`}
-                                >
-                                  <img
-                                    src={image.url}
-                                    alt={image.name}
-                                    className="w-full h-full object-contain"
-                                  />
-                                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
-                                    {image.name}
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         )}
 
@@ -888,11 +770,6 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
       {/* معلومات التسعير */}
       <div className="p-3 bg-purple-50 rounded-lg text-xs text-purple-700 border border-purple-200">
         <p>{pricingInfo?.description || "* شعار مخصص"}</p>
-        {uploadedImages.length > 0 && (
-          <p className="mt-1">
-            * يتم إعادة استخدام الصور المرفوعة سابقاً تلقائياً لتوفير المساحة
-          </p>
-        )}
       </div>
     </div>
   );
