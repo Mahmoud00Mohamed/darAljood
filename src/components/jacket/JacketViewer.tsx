@@ -82,45 +82,6 @@ const JacketViewer: React.FC<JacketViewerProps> = ({
     }
   }, [isCapturing]);
 
-  // فرض ظهور الشعارات عند التقاط الصور
-  useEffect(() => {
-    if (isCapturing && jacketRef.current) {
-      const forceLogoVisibility = () => {
-        const logoElements = jacketRef.current?.querySelectorAll(
-          ".logo-overlay, .logo-overlay-container"
-        );
-        logoElements?.forEach((element) => {
-          const htmlElement = element as HTMLElement;
-          htmlElement.style.opacity = "1";
-          htmlElement.style.visibility = "visible";
-          htmlElement.style.display = "block";
-          htmlElement.style.zIndex = "1000";
-          htmlElement.style.pointerEvents = "none";
-
-          const imgElement = htmlElement.querySelector(
-            "img"
-          ) as HTMLImageElement;
-          if (imgElement) {
-            imgElement.style.opacity = "1";
-            imgElement.style.visibility = "visible";
-            imgElement.style.display = "block";
-            imgElement.style.imageRendering = "high-quality";
-            imgElement.loading = "eager";
-            imgElement.decoding = "sync";
-          }
-        });
-      };
-
-      // تطبيق فوري
-      forceLogoVisibility();
-
-      // تطبيق متكرر للتأكد
-      const interval = setInterval(forceLogoVisibility, 100);
-
-      return () => clearInterval(interval);
-    }
-  }, [isCapturing, currentView, jacketState.logos]);
-
   const renderJacketView = () => {
     switch (currentView) {
       case "front":
