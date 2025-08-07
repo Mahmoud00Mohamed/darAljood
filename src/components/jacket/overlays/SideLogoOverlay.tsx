@@ -150,11 +150,10 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
         top: `${yPercent}%`,
         width: `${boxWidthPercent}%`,
         height: `${boxHeightPercent}%`,
-        overflow: "visible",
-        border: "1px dashed #000000", // إعادة المربع
+        overflow: "hidden",
+        border: "1px dashed #000000",
         transform: `rotate(${rotation}deg)`,
         transformOrigin: "center",
-        willChange: "transform, width, height",
       }}
       className="logo-overlay-container"
     >
@@ -167,11 +166,10 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
           objectFit: "contain",
           transform: `scale(${scale})`,
           transformOrigin: "center",
-          willChange: "transform",
         }}
         className="logo-overlay"
         loading="eager"
-        decoding="sync"
+        decoding="async"
       />
     </div>
   );
