@@ -67,7 +67,7 @@ class FontPreloader {
       return this.loadingPromises.get(fontKey)!;
     }
 
-    const loadingPromise = new Promise<void>((resolve, reject) => {
+    const loadingPromise = new Promise<void>((resolve) => {
       // التحقق من وجود الخط في النظام أولاً
       if (document.fonts.check(`16px "${fontConfig.family}"`)) {
         this.loadedFonts.add(fontKey);
