@@ -1,11 +1,12 @@
 import React from "react";
 import LogoUploadSection from "./shared/LogoUploadSection";
+import SelectedImagesSection from "./shared/SelectedImagesSection";
 import { LogoPosition } from "../../../context/JacketContext";
 import { useJacket } from "../../../context/JacketContext";
 import { PRICING_CONFIG } from "../../../constants/pricing";
 
 const FrontLogoSection: React.FC = () => {
-  const { jacketState } = useJacket();
+  const { jacketState, addLogo } = useJacket();
 
   const logoPositions: { id: LogoPosition; name: string }[] = [
     { id: "chestRight", name: "الصدر الأيمن" },
@@ -25,19 +26,49 @@ const FrontLogoSection: React.FC = () => {
   const isExtraItem =
     totalFrontItems >= PRICING_CONFIG.includedItems.frontItems;
 
+  const handleSelectedImageUse = (imageUrl: string) => {
+    // البحث عن أول موقع متاح
+    const availablePosition = logoPositions.find(
+      (pos) =>
+        !jacketState.logos.some((logo) => logo.position === pos.id) &&
+        !jacketState.texts.some((text) => text.position === pos.id)
+    );
+
+    if (availablePosition) {
+      const newLogo = {
+        id: `logo-${Date.now()}`,
+        image: imageUrl,
+        position: availablePosition.id,
+        x: 0,
+        y: 0,
+        scale: 1,
+      };
+      addLogo(newLogo);
+    }
+  };
+
   return (
-    <LogoUploadSection
-      positions={logoPositions}
-      title="إضافة الشعارات (أمامي)"
-      view="front"
-      showPredefinedLogos={false}
-      pricingInfo={{
-        isExtraItem,
-        extraCost: PRICING_CONFIG.additionalCosts.frontExtraItem,
-        includedCount: PRICING_CONFIG.includedItems.frontItems,
-        description: `* العنصر الأول في الأمام مشمول في السعر الأساسي، يتم إضافة ${PRICING_CONFIG.additionalCosts.frontExtraItem} ريال لكل عنصر إضافي`,
-      }}
-    />
+    <div className="space-y-6">
+      {/* قسم الصور المحددة من المكتبة */}
+      <SelectedImagesSection
+        onImageSelect={handleSelectedImageUse}
+        title="الصور المحددة من المكتبة"
+      />
+
+      {/* قسم رفع الشعارات التقليدي */}
+      <LogoUploadSection
+        positions={logoPositions}
+        title="إضافة الشعارات (أمامي)"
+        view="front"
+        showPredefinedLogos={false}
+        pricingInfo={{
+          isExtraItem,
+          extraCost: PRICING_CONFIG.additionalCosts.frontExtraItem,
+          includedCount: PRICING_CONFIG.includedItems.frontItems,
+          description: `* العنصر الأول في الأمام مشمول في السعر الأساسي، يتم إضافة ${PRICING_CONFIG.additionalCosts.frontExtraItem} ريال لكل عنصر إضافي`,
+        }}
+      />
+    </div>
   );
 };
 

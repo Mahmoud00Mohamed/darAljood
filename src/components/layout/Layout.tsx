@@ -12,6 +12,7 @@ import {
   Instagram,
 } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
+import { Images } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "/Photo/logo.png";
@@ -68,6 +69,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigation = [
     { name: "الرئيسية", href: "/", icon: Home },
     { name: "التخصيص", href: "/customizer", icon: Palette },
+    { name: "مكتبة الصور", href: "/image-library", icon: Images },
     { name: "معلومات عنا", href: "/about", icon: Info },
     {
       name: "عربة التسوق",

@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { JacketProvider } from "./context/JacketContext";
 import { CartProvider } from "./context/CartContext";
+import { ImageLibraryProvider } from "./context/ImageLibraryContext";
 import fontPreloader from "./utils/fontPreloader";
 import Layout from "./components/layout/Layout";
 import HomePage from "./pages/HomePage";
@@ -18,6 +19,7 @@ import FAQPage from "./pages/FAQPage";
 import TermsPage from "./pages/TermsPage";
 import ReturnPolicyPage from "./pages/ReturnPolicyPage";
 import CloudinaryTestPage from "./pages/CloudinaryTestPage";
+import ImageLibraryPage from "./pages/ImageLibraryPage";
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -45,22 +47,28 @@ function App() {
   return (
     <JacketProvider>
       <CartProvider>
-        <Router>
-          <Layout>
-            <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/customizer" element={<CustomizerPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/return-policy" element={<ReturnPolicyPage />} />
-              <Route path="/cloudinary-test" element={<CloudinaryTestPage />} />
-            </Routes>
-          </Layout>
-        </Router>
+        <ImageLibraryProvider>
+          <Router>
+            <Layout>
+              <ScrollToTop />
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/customizer" element={<CustomizerPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/return-policy" element={<ReturnPolicyPage />} />
+                <Route
+                  path="/cloudinary-test"
+                  element={<CloudinaryTestPage />}
+                />
+                <Route path="/image-library" element={<ImageLibraryPage />} />
+              </Routes>
+            </Layout>
+          </Router>
+        </ImageLibraryProvider>
       </CartProvider>
     </JacketProvider>
   );
