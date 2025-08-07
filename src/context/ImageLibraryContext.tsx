@@ -46,6 +46,7 @@ const ImageLibraryContext = createContext<ImageLibraryContextType | undefined>(
   undefined
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useImageLibrary = () => {
   const context = useContext(ImageLibraryContext);
   if (!context) {
@@ -292,14 +293,18 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     image: PredefinedImage | CloudinaryImageData,
     source: "predefined" | "user"
   ) => {
+    // استخدام type guard للتمييز بين النوعين
     const imageId =
       source === "predefined"
-        ? image.id
+        ? (image as PredefinedImage).id
         : (image as CloudinaryImageData).publicId;
+
     const imageName =
       source === "predefined"
         ? (image as PredefinedImage).name
-        : (image as CloudinaryImageData).publicId.split("/").pop() || "صورة";
+        : (image as CloudinaryImageData).originalName ||
+          (image as CloudinaryImageData).publicId.split("/").pop() ||
+          "صورة";
 
     setSelectedImages((prev) => {
       const exists = prev.some((img) => img.id === imageId);
