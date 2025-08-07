@@ -166,10 +166,11 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
           objectFit: "contain",
           transform: `scale(${scale})`,
           transformOrigin: "center",
+          willChange: "transform",
         }}
         className="logo-overlay"
         loading="eager"
-        decoding="async"
+        decoding="sync"
       />
     </div>
   );
