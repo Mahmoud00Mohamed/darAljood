@@ -34,15 +34,11 @@ function App() {
   useEffect(() => {
     const initializeFonts = async () => {
       try {
-        console.log("بدء تحميل الخطوط في الخلفية...");
         await fontPreloader.preloadAllFonts();
-        console.log("تم تحميل جميع الخطوط بنجاح");
-      } catch (error) {
-        console.warn("خطأ في تحميل الخطوط:", error);
+      } catch {
+        // خطأ في تحميل الخطوط
       }
     };
-
-    // تحميل الخطوط في الخلفية دون انتظار
     initializeFonts();
   }, []);
 

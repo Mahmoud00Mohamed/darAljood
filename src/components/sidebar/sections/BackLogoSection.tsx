@@ -203,7 +203,6 @@ const BackLogoSection: React.FC = () => {
 
       if (existingImage) {
         // استخدام الصورة الموجودة
-        console.log("استخدام صورة موجودة مسبقاً:", imageData.publicId);
         const newLogo = {
           id: `logo-${Date.now()}`,
           image: existingImage.url,
@@ -234,8 +233,6 @@ const BackLogoSection: React.FC = () => {
         };
         addLogo(newLogo);
         setSelectedLogoId(newLogo.id);
-
-        console.log("تم رفع صورة جديدة:", imageData.publicId);
       }
       uploadModal.closeModal();
     }

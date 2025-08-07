@@ -82,7 +82,6 @@ class FontPreloader {
       link.crossOrigin = "anonymous";
 
       const timeout = setTimeout(() => {
-        console.warn(`Font loading timeout: ${fontConfig.family}`);
         this.loadedFonts.add(fontKey); // اعتبر الخط محمل لتجنب المحاولات المتكررة
         resolve();
       }, 5000); // timeout بعد 5 ثوان
@@ -99,14 +98,9 @@ class FontPreloader {
         Promise.allSettled(fontPromises)
           .then(() => {
             this.loadedFonts.add(fontKey);
-            console.log(`Font loaded successfully: ${fontConfig.family}`);
             resolve();
           })
-          .catch((error) => {
-            console.warn(
-              `Failed to load font weights for ${fontConfig.family}:`,
-              error
-            );
+          .catch(() => {
             this.loadedFonts.add(fontKey); // اعتبر الخط محمل لتجنب المحاولات المتكررة
             resolve();
           });
@@ -114,7 +108,6 @@ class FontPreloader {
 
       link.onerror = () => {
         clearTimeout(timeout);
-        console.warn(`Failed to load font stylesheet: ${fontConfig.family}`);
         this.loadedFonts.add(fontKey); // اعتبر الخط محمل لتجنب المحاولات المتكررة
         resolve(); // لا نرفض Promise لتجنب توقف العملية
       };
@@ -150,8 +143,6 @@ class FontPreloader {
    * تحميل جميع الخطوط مسبقاً
    */
   async preloadAllFonts(): Promise<void> {
-    console.log("بدء تحميل الخطوط مسبقاً...");
-
     try {
       // تحميل جميع الخطوط بشكل متوازي
       const loadingPromises = this.fonts.map((font) =>
@@ -161,10 +152,8 @@ class FontPreloader {
 
       // انتظار إضافي للتأكد من تحميل جميع الخطوط
       await document.fonts.ready;
-
-      console.log(`تم تحميل ${this.loadedFonts.size} خط بنجاح`);
-    } catch (error) {
-      console.warn("خطأ في تحميل بعض الخطوط:", error);
+    } catch {
+      // خطأ في تحميل بعض الخطوط
     }
   }
 

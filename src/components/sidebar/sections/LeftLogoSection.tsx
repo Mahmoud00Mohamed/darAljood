@@ -31,7 +31,6 @@ const LeftLogoSection: React.FC = () => {
 
       if (existingImage) {
         // استخدام الصورة الموجودة
-        console.log("استخدام صورة موجودة مسبقاً:", imageData.publicId);
         const img = new Image();
         img.src = existingImage.url;
         img.onload = () => {
@@ -81,8 +80,6 @@ const LeftLogoSection: React.FC = () => {
           };
           addLogo(newLogo);
           setSelectedLogoId(newLogo.id);
-
-          console.log("تم رفع صورة جديدة:", imageData.publicId);
         };
       }
       uploadModal.closeModal();

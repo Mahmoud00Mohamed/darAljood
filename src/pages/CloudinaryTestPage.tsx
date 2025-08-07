@@ -5,7 +5,6 @@ import { CloudinaryImageData } from "../services/imageUploadService";
 
 const CloudinaryTestPage: React.FC = () => {
   const handleImageSelect = (imageData: CloudinaryImageData) => {
-    console.log("تم اختيار الصورة:", imageData);
     alert(`تم اختيار الصورة: ${imageData.publicId}`);
   };
 

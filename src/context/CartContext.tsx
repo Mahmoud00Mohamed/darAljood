@@ -59,8 +59,7 @@ class ImageStorageManager {
         try {
           storage.setItem(key, image);
           keys.push(key);
-        } catch (error) {
-          console.warn(`Failed to store image ${index}:`, error);
+        } catch {
           // في حالة فشل التخزين، نحتفظ بالصورة في الذاكرة مؤقتاً
           this.memoryStorage.set(key, image);
           keys.push(key);
@@ -83,8 +82,7 @@ class ImageStorageManager {
 
           // إذا لم توجد، محاولة الاسترجاع من الذاكرة
           return this.memoryStorage.get(key) || "";
-        } catch (error) {
-          console.warn(`Failed to retrieve image with key ${key}:`, error);
+        } catch {
           return this.memoryStorage.get(key) || "";
         }
       })
@@ -98,8 +96,8 @@ class ImageStorageManager {
       try {
         storage.removeItem(key);
         this.memoryStorage.delete(key);
-      } catch (error) {
-        console.warn(`Failed to delete image with key ${key}:`, error);
+      } catch {
+        // تم إزالة رسالة التحذير
       }
     });
   }
@@ -127,8 +125,8 @@ class ImageStorageManager {
 
       // تنظيف الذاكرة
       this.memoryStorage.clear();
-    } catch (error) {
-      console.warn("Failed to cleanup images:", error);
+    } catch {
+      // تم إزالة رسالة التحذير
     }
   }
 
@@ -156,10 +154,8 @@ class ImageStorageManager {
       keysToRemove.forEach((key) => {
         storage.removeItem(key);
       });
-
-      console.log(`تم حذف ${keysToRemove.length} صورة قديمة`);
-    } catch (error) {
-      console.warn("Failed to cleanup old images:", error);
+    } catch {
+      // تم إزالة رسالة التحذير
     }
   }
 }
@@ -197,8 +193,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
             );
 
           setItems(validatedCart);
-        } catch (error) {
-          console.error("Error loading cart from localStorage:", error);
+        } catch {
           localStorage.removeItem("cart");
         }
       }
@@ -222,8 +217,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
         localStorage.setItem("cart", JSON.stringify(cartData));
       } catch (error) {
-        console.error("Error saving cart to localStorage:", error);
-
         // في حالة تجاوز الحد المسموح، احتفظ بعنصر واحد فقط
         if (
           error instanceof DOMException &&
@@ -249,8 +242,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
               // تحديث الحالة للاحتفاظ بالعنصر الأخير فقط
               setItems([lastItem]);
             }
-          } catch (fallbackError) {
-            console.error("Fallback save also failed:", fallbackError);
+          } catch {
             localStorage.removeItem("cart");
           }
         }
@@ -352,7 +344,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [imageManager]);
 
   return (
     <CartContext.Provider

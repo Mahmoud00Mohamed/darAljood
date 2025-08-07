@@ -107,13 +107,11 @@ const CartPage: React.FC = () => {
         jacketImages = getItemImages(items[0].id);
 
         if (jacketImages.length > 0) {
-          console.log("Using saved images from cart");
           // الانتقال مباشرة لمرحلة إنشاء PDF مع تأخير مختصر
           await new Promise((resolve) => setTimeout(resolve, 500));
           setLoadingStage("generating");
         } else {
           // إذا لم تكن الصور محفوظة، التقط صور جديدة
-          console.log("No saved images found, capturing new ones");
           if (!jacketImageCaptureRef.current) {
             throw new Error("Jacket image capture ref not available");
           }
@@ -160,8 +158,7 @@ const CartPage: React.FC = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
+    } catch {
       setShowLoadingOverlay(false);
       alert("حدث خطأ أثناء إنشاء ملف PDF. يرجى المحاولة مرة أخرى.");
     } finally {
