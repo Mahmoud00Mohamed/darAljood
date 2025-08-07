@@ -73,7 +73,7 @@ const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
           className="flex items-center gap-1 text-xs text-[#563660] hover:text-[#4b2e55] transition-colors"
         >
           <Plus className="w-3 h-3" />
-          إدارة المكتبة
+          المكتبة
         </Link>
       </div>
 

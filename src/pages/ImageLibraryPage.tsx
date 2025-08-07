@@ -15,7 +15,10 @@ import {
   User,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useImageLibrary } from "../context/ImageLibraryContext";
+import {
+  useImageLibrary,
+  PredefinedImage,
+} from "../context/ImageLibraryContext";
 import CloudinaryImageUpload from "../components/forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../services/imageUploadService";
 import imageUploadService from "../services/imageUploadService";
@@ -87,9 +90,16 @@ const ImageLibraryPage: React.FC = () => {
     }
   };
 
-  const handleImageSelect = (image: any, source: "predefined" | "user") => {
-    if (isImageSelected(source === "predefined" ? image.id : image.publicId)) {
-      unselectImage(source === "predefined" ? image.id : image.publicId);
+  const handleImageSelect = (
+    image: PredefinedImage | CloudinaryImageData,
+    source: "predefined" | "user"
+  ) => {
+    const imageId =
+      source === "predefined"
+        ? (image as PredefinedImage).id
+        : (image as CloudinaryImageData).publicId;
+    if (isImageSelected(imageId)) {
+      unselectImage(imageId);
     } else {
       selectImage(image, source);
     }
@@ -502,7 +512,11 @@ const ImageLibraryPage: React.FC = () => {
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                   <button
-                    onClick={() => setSelectedImages([])}
+                    onClick={() => {
+                      selectedImages.forEach((image) =>
+                        unselectImage(image.id)
+                      );
+                    }}
                     className="w-full py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                   >
                     مسح التحديد

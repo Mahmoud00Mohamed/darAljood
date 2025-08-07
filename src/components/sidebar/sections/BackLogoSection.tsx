@@ -34,7 +34,7 @@ const BackLogoSection: React.FC = () => {
       {/* قسم الصور المحددة من المكتبة */}
       <SelectedImagesSection
         onImageSelect={handleSelectedImageUse}
-        title="الصور المحددة من المكتبة"
+        title="الصور المحددة"
       />
 
       {/* قسم رفع الشعارات التقليدي */}
