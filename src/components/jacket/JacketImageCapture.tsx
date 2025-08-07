@@ -52,20 +52,51 @@ const JacketImageCapture = forwardRef<
     savedState.texts.forEach((text) => addText(text));
   };
 
+  const ensureImagesLoaded = (container: HTMLElement): Promise<void> => {
+    const images = container.querySelectorAll(
+      "img.logo-overlay"
+    ) as NodeListOf<HTMLImageElement>;
+    const promises = Array.from(images).map((img) => {
+      if (img.complete && img.naturalHeight !== 0) {
+        return Promise.resolve();
+      }
+      return new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () =>
+          reject(new Error(`Failed to load image: ${img.src}`));
+      });
+    });
+    return Promise.all(promises).then(() => Promise.resolve());
+  };
+
+  const forceRepaint = (element: HTMLElement) => {
+    const originalDisplay = element.style.display;
+    element.style.display = "none";
+    void element.offsetHeight; // إجبار إعادة الرسم
+    element.style.display = originalDisplay;
+  };
+
   const captureView = async (): Promise<string> => {
     const container = containerRef.current;
     if (!container) throw new Error("Container not found");
 
-    // التأكد من تحميل الخطوط (سريع لأنها محملة مسبقاً)
+    // إجبار إعادة الرسم
+    forceRepaint(container);
+
+    // التأكد من تحميل الخطوط
     if (!fontPreloader.isFontLoaded("Tajawal")) {
       await fontPreloader.preloadAllFonts();
     }
+    await document.fonts.ready;
 
+    // التأكد من تحميل جميع الشعارات
+    await ensureImagesLoaded(container);
+
+    // إعدادات الحاوية والعارض
     const jacketViewer = container.querySelector(
       ".jacket-viewer-mobile"
     ) as HTMLElement;
 
-    // التأكد من أن الحاوية والعارض مرئيان ومنسقان بشكل صحيح
     if (container) {
       container.style.position = "relative";
       container.style.top = "0";
@@ -95,51 +126,35 @@ const JacketImageCapture = forwardRef<
       const htmlElement = element as HTMLElement;
       const currentFont = htmlElement.style.fontFamily;
 
-      // التأكد من تطبيق الخط الصحيح
       if (currentFont) {
         htmlElement.style.fontFamily = `${currentFont}, 'Tajawal', 'Arial', sans-serif`;
       } else {
         htmlElement.style.fontFamily = "'Tajawal', 'Arial', sans-serif";
       }
 
-      // إضافة خصائص إضافية لضمان عرض الخط بشكل صحيح
       htmlElement.style.fontWeight = "bold";
       htmlElement.style.textRendering = "optimizeLegibility";
       htmlElement.style.fontKerning = "normal";
       htmlElement.style.fontVariantLigatures = "normal";
     });
 
-    // انتظار تحميل جميع الخطوط
-    await document.fonts.ready;
+    // انتظار إضافي بسيط لاستقرار الـ DOM
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // انتظار إضافي للتأكد من تطبيق الخطوط
-    await new Promise((resolve) => setTimeout(resolve, 500));
     try {
       const dataUrl = await htmlToImage.toPng(container, {
         quality: 1.0,
-        pixelRatio: 3,
+        pixelRatio: 2,
         width: 320,
         height: 410,
         backgroundColor: "#f9fafb",
-        skipFonts: false, // تغيير إلى false لتضمين الخطوط
+        skipFonts: false,
         cacheBust: true,
-        imagePlaceholder: undefined,
         includeQueryParams: true,
         fetchRequestInit: {
           mode: "cors",
         },
-        style: {
-          fontFamily:
-            "'Tajawal', 'Katibeh', 'Amiri', 'Noto Naskh Arabic', 'Noto Kufi Arabic', 'Scheherazade New', 'Arial', sans-serif",
-          fontSize: "14px",
-          color: "#000000",
-          fontWeight: "bold",
-          textRendering: "optimizeLegibility",
-          fontKerning: "normal",
-          fontVariantLigatures: "normal",
-        },
         filter: (node) => {
-          // تصفية العناصر غير المرغوب فيها
           if (
             node.classList &&
             node.classList.contains("jacket-viewer-controls")
@@ -152,7 +167,6 @@ const JacketImageCapture = forwardRef<
 
       return dataUrl;
     } finally {
-      // إعادة تعيين الأنماط إلى الحالة الأولية
       if (container) {
         container.style.position = "absolute";
         container.style.top = "-9999px";
@@ -187,7 +201,7 @@ const JacketImageCapture = forwardRef<
       for (const view of views) {
         try {
           setCurrentView(view);
-          await new Promise((resolve) => setTimeout(resolve, 300)); // تقليل وقت الانتظار
+          await new Promise((resolve) => setTimeout(resolve, 500));
           const imageData = await captureView();
           images.push(imageData);
         } catch (error) {
@@ -210,12 +224,12 @@ const JacketImageCapture = forwardRef<
 
       try {
         restoreState(config);
-        await new Promise((resolve) => setTimeout(resolve, 500)); // تقليل وقت الانتظار
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         for (const view of views) {
           try {
             setCurrentView(view);
-            await new Promise((resolve) => setTimeout(resolve, 300)); // تقليل وقت الانتظار
+            await new Promise((resolve) => setTimeout(resolve, 500));
             const imageData = await captureView();
             images.push(imageData);
           } catch (error) {

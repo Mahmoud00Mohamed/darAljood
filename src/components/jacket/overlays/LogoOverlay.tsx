@@ -80,7 +80,6 @@ const LogoOverlay: React.FC<LogoOverlayProps> = ({ logo, view }) => {
 
   const boxWidthPercent = (basePosition.boxWidth / SVG_WIDTH) * 100;
   const boxHeightPercent = (basePosition.boxHeight / SVG_HEIGHT) * 100;
-  // Adjust position to account for centering without transform
   const xPercent = ((xPos - basePosition.boxWidth / 2) / SVG_WIDTH) * 100;
   const yPercent = ((yPos - basePosition.boxHeight / 2) / SVG_HEIGHT) * 100;
 
@@ -92,8 +91,8 @@ const LogoOverlay: React.FC<LogoOverlayProps> = ({ logo, view }) => {
         top: `${yPercent}%`,
         width: `${boxWidthPercent}%`,
         height: `${boxHeightPercent}%`,
-        overflow: "hidden",
-        border: "1px dashed #000000",
+        overflow: "visible",
+        willChange: "transform, width, height",
       }}
       className="logo-overlay-container"
     >
@@ -106,10 +105,11 @@ const LogoOverlay: React.FC<LogoOverlayProps> = ({ logo, view }) => {
           objectFit: "contain",
           transform: `scale(${scale})`,
           transformOrigin: "center",
+          willChange: "transform",
         }}
         className="logo-overlay"
         loading="eager"
-        decoding="async"
+        decoding="sync"
       />
     </div>
   );
