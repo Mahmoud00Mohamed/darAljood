@@ -23,9 +23,13 @@ const BackLogoSection: React.FC = () => {
   const [logoSource, setLogoSource] = useState<"predefined" | "upload">(
     "predefined"
   );
+  const [isUploading, setIsUploading] = useState(false);
 
   const galleryModal = useModal();
-  const uploadModal = useModal();
+  const uploadModal = useModal({
+    closeOnEscape: !isUploading,
+    closeOnBackdropClick: !isUploading,
+  });
 
   const logoPositions: { id: LogoPosition; name: string }[] = [
     { id: "backCenter", name: "منتصف الظهر" },
@@ -511,9 +515,10 @@ const BackLogoSection: React.FC = () => {
       <Modal
         isOpen={uploadModal.isOpen}
         shouldRender={uploadModal.shouldRender}
-        onClose={uploadModal.closeModal}
+        onClose={isUploading ? () => {} : uploadModal.closeModal}
         title="رفع شعار خلفي"
         size="sm"
+        showCloseButton={!isUploading}
         options={uploadModal.options}
       >
         <CloudinaryImageUpload
@@ -529,6 +534,7 @@ const BackLogoSection: React.FC = () => {
           className="mb-4"
           aspectRatio={1}
           cropTitle="اقتطاع شعار خلفي"
+          onUploadStateChange={setIsUploading}
         />
 
         <div className="text-xs text-gray-500 text-center">

@@ -20,8 +20,12 @@ const FrontLogoSection: React.FC = () => {
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
   const [position, setPosition] = useState<LogoPosition>("chestRight");
   const [showExistingImages, setShowExistingImages] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const uploadModal = useModal();
+  const uploadModal = useModal({
+    closeOnEscape: !isUploading,
+    closeOnBackdropClick: !isUploading,
+  });
 
   const logoPositions: { id: LogoPosition; name: string }[] = [
     { id: "chestRight", name: "الصدر الأيمن" },
@@ -203,7 +207,7 @@ const FrontLogoSection: React.FC = () => {
               الصور المرفوعة سابقاً ({uploadedImages.length})
             </span>
             <button
-              onClick={uploadModal.openModal}
+              onClick={() => setShowExistingImages(!showExistingImages)} // تعديل هنا
               className="flex items-center gap-1 text-xs text-[#563660] hover:text-[#4b2e55] transition-colors"
             >
               <RefreshCw size={12} />
@@ -340,9 +344,10 @@ const FrontLogoSection: React.FC = () => {
       <Modal
         isOpen={uploadModal.isOpen}
         shouldRender={uploadModal.shouldRender}
-        onClose={uploadModal.closeModal}
+        onClose={isUploading ? () => {} : uploadModal.closeModal}
         title="رفع شعار جديد"
         size="sm"
+        showCloseButton={!isUploading}
         options={uploadModal.options}
       >
         <CloudinaryImageUpload
@@ -358,6 +363,7 @@ const FrontLogoSection: React.FC = () => {
           className="mb-4"
           aspectRatio={1}
           cropTitle="اقتطاع شعار أمامي"
+          onUploadStateChange={setIsUploading}
         />
 
         <div className="text-xs text-gray-500 text-center">

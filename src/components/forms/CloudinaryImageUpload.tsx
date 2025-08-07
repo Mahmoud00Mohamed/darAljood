@@ -25,6 +25,7 @@ interface CloudinaryImageUploadProps {
   onMultipleImagesSelect?: (imagesData: CloudinaryImageData[]) => void;
   aspectRatio?: number;
   cropTitle?: string;
+  onUploadStateChange?: (isUploading: boolean) => void;
 }
 
 const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
@@ -37,6 +38,7 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   multiple = false,
   aspectRatio,
   cropTitle = "اقتطاع الصورة",
+  onUploadStateChange,
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string>("");
@@ -119,6 +121,7 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   const handleFileUpload = async (files: File[]) => {
     setError("");
     setIsUploading(true);
+    onUploadStateChange?.(true);
     setUploadProgress("جاري التحضير...");
 
     try {
@@ -172,6 +175,7 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
       );
     } finally {
       setIsUploading(false);
+      onUploadStateChange?.(false);
     }
   };
 

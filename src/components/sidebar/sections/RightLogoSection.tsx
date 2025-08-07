@@ -21,8 +21,12 @@ const RightLogoSection: React.FC = () => {
   const [showExistingImages, setShowExistingImages] = useState(false);
   const [uploadPosition, setUploadPosition] =
     useState<LogoPosition>("rightSide_top");
+  const [isUploading, setIsUploading] = useState(false);
 
-  const uploadModal = useModal();
+  const uploadModal = useModal({
+    closeOnEscape: !isUploading,
+    closeOnBackdropClick: !isUploading,
+  });
 
   const handleLogoUpload = (imageData: CloudinaryImageData) => {
     if (!isPositionOccupied(uploadPosition)) {
@@ -322,11 +326,12 @@ const RightLogoSection: React.FC = () => {
       <Modal
         isOpen={uploadModal.isOpen}
         shouldRender={uploadModal.shouldRender}
-        onClose={uploadModal.closeModal}
+        onClose={isUploading ? () => {} : uploadModal.closeModal}
         title={`رفع شعار - ${
           logoPositions.find((p) => p.id === uploadPosition)?.name
         }`}
         size="sm"
+        showCloseButton={!isUploading}
         options={uploadModal.options}
       >
         <CloudinaryImageUpload
@@ -342,6 +347,7 @@ const RightLogoSection: React.FC = () => {
           className="mb-4"
           aspectRatio={1}
           cropTitle="اقتطاع شعار جانبي أيمن"
+          onUploadStateChange={setIsUploading}
         />
 
         <div className="text-xs text-gray-500 text-center">
