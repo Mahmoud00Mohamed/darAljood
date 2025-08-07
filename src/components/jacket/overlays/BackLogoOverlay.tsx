@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { Logo, JacketView } from "../../../context/JacketContext";
 
 interface BackLogoOverlayProps {
@@ -31,7 +31,47 @@ const positionMappings: Record<
 };
 
 const BackLogoOverlay: React.FC<BackLogoOverlayProps> = ({ logo, view }) => {
-  const shouldDisplay = () => view === "back" && logo.position === "backCenter";
+  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const shouldDisplay = useCallback(
+    () => view === "back" && logo.position === "backCenter",
+    [view, logo.position]
+  );
+
+  useEffect(() => {
+    if (
+      imgRef.current &&
+      containerRef.current &&
+      shouldDisplay() &&
+      logo.image
+    ) {
+      const img = imgRef.current;
+      const container = containerRef.current;
+
+      // فرض الخصائص المطلوبة للعرض الصحيح
+      img.style.opacity = "1";
+      img.style.visibility = "visible";
+      img.style.display = "block";
+      img.style.pointerEvents = "none";
+      img.loading = "eager";
+      img.decoding = "sync";
+
+      container.style.opacity = "1";
+      container.style.visibility = "visible";
+      container.style.display = "block";
+      container.style.pointerEvents = "none";
+      container.style.zIndex = "1000";
+
+      // التأكد من أن الصورة محملة
+      if (!img.complete) {
+        img.onload = () => {
+          img.style.opacity = "1";
+          img.style.visibility = "visible";
+        };
+      }
+    }
+  }, [logo.image, shouldDisplay, view, logo.position]);
 
   if (!shouldDisplay() || !logo.image) {
     return null;
@@ -45,6 +85,7 @@ const BackLogoOverlay: React.FC<BackLogoOverlayProps> = ({ logo, view }) => {
     minY: 0,
     maxY: 0,
   };
+
   const xPos = basePosition.x;
   const yPos = Math.min(
     basePosition.y,
@@ -58,6 +99,7 @@ const BackLogoOverlay: React.FC<BackLogoOverlayProps> = ({ logo, view }) => {
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: "absolute",
         left: `${xPercent}%`,
@@ -68,11 +110,16 @@ const BackLogoOverlay: React.FC<BackLogoOverlayProps> = ({ logo, view }) => {
         maxWidth: `${baseSizePercent * 1.5}%`,
         maxHeight: `${(baseSizePercent * 1.5 * SVG_HEIGHT) / SVG_WIDTH}%`,
         overflow: "visible",
-        willChange: "transform, width, height",
+        opacity: 1,
+        visibility: "visible",
+        display: "block",
+        zIndex: 1000,
+        pointerEvents: "none",
       }}
       className="logo-overlay"
     >
       <img
+        ref={imgRef}
         src={logo.image}
         alt="شعار"
         style={{
@@ -80,11 +127,23 @@ const BackLogoOverlay: React.FC<BackLogoOverlayProps> = ({ logo, view }) => {
           height: "100%",
           objectFit: "contain",
           overflow: "visible",
-          willChange: "transform",
+          opacity: 1,
+          visibility: "visible",
+          display: "block",
+          imageRendering: "auto" as const,
         }}
-        className="logo-overlay"
         loading="eager"
         decoding="sync"
+        onLoad={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.opacity = "1";
+          target.style.visibility = "visible";
+        }}
+        onError={(e) => {
+          console.error("Failed to load back logo image:", logo.image);
+          const target = e.target as HTMLImageElement;
+          target.style.display = "none";
+        }}
       />
     </div>
   );

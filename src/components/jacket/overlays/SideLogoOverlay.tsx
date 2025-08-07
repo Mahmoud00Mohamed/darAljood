@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { Logo, JacketView } from "../../../context/JacketContext";
 
 interface SideLogoOverlayProps {
@@ -106,11 +106,51 @@ const positionMappings: Record<
 };
 
 const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
-  const shouldDisplay =
-    (view === "right" && logo.position.startsWith("rightSide")) ||
-    (view === "left" && logo.position.startsWith("leftSide"));
+  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  if (!shouldDisplay || !logo.image) {
+  const shouldDisplay = useCallback(
+    () =>
+      (view === "right" && logo.position.startsWith("rightSide")) ||
+      (view === "left" && logo.position.startsWith("leftSide")),
+    [view, logo.position]
+  );
+
+  useEffect(() => {
+    if (
+      imgRef.current &&
+      containerRef.current &&
+      shouldDisplay() &&
+      logo.image
+    ) {
+      const img = imgRef.current;
+      const container = containerRef.current;
+
+      // فرض الخصائص المطلوبة للعرض الصحيح
+      img.style.opacity = "1";
+      img.style.visibility = "visible";
+      img.style.display = "block";
+      img.style.pointerEvents = "none";
+      img.loading = "eager";
+      img.decoding = "sync";
+
+      container.style.opacity = "1";
+      container.style.visibility = "visible";
+      container.style.display = "block";
+      container.style.pointerEvents = "none";
+      container.style.zIndex = "1000";
+
+      // التأكد من أن الصورة محملة
+      if (!img.complete) {
+        img.onload = () => {
+          img.style.opacity = "1";
+          img.style.visibility = "visible";
+        };
+      }
+    }
+  }, [logo.image, shouldDisplay, view, logo.position]);
+
+  if (!shouldDisplay() || !logo.image) {
     return null;
   }
 
@@ -144,6 +184,7 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: "absolute",
         left: `${xPercent}%`,
@@ -154,10 +195,16 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
         border: "1px dashed #000000",
         transform: `rotate(${rotation}deg)`,
         transformOrigin: "center",
+        opacity: 1,
+        visibility: "visible",
+        display: "block",
+        zIndex: 1000,
+        pointerEvents: "none",
       }}
       className="logo-overlay-container"
     >
       <img
+        ref={imgRef}
         src={logo.image}
         alt="شعار"
         style={{
@@ -166,11 +213,24 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
           objectFit: "contain",
           transform: `scale(${scale})`,
           transformOrigin: "center",
-          willChange: "transform",
+          opacity: 1,
+          visibility: "visible",
+          display: "block",
+          imageRendering: "auto" as const,
         }}
         className="logo-overlay"
         loading="eager"
         decoding="sync"
+        onLoad={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.opacity = "1";
+          target.style.visibility = "visible";
+        }}
+        onError={(e) => {
+          console.error("Failed to load side logo image:", logo.image);
+          const target = e.target as HTMLImageElement;
+          target.style.display = "none";
+        }}
       />
     </div>
   );
