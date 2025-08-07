@@ -151,6 +151,7 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
         width: `${boxWidthPercent}%`,
         height: `${boxHeightPercent}%`,
         overflow: "visible",
+        border: "1px dashed #000000", // إعادة المربع
         transform: `rotate(${rotation}deg)`,
         transformOrigin: "center",
         willChange: "transform, width, height",

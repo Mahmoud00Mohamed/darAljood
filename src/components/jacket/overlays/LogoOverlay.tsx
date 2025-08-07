@@ -92,6 +92,7 @@ const LogoOverlay: React.FC<LogoOverlayProps> = ({ logo, view }) => {
         width: `${boxWidthPercent}%`,
         height: `${boxHeightPercent}%`,
         overflow: "visible",
+        border: "1px dashed #000000", // إعادة المربع
         willChange: "transform, width, height",
       }}
       className="logo-overlay-container"
