@@ -141,16 +141,20 @@ const JacketCustomizer: React.FC = () => {
         </div>
 
         {/* Success Message */}
+        {/* Success Message */}
         <AnimatePresence>
           {showSuccessMessage && (
             <motion.div
               initial={{ opacity: 0, y: -50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -50 }}
-              className="fixed top-[34px] left-1/2 transform -translate-x-1/2 z-[100] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2"
+              className="fixed top-[34px] left-1/2 transform -translate-x-1/2 z-[100] gold-gradient text-white px-3 py-2 lg:px-6 lg:py-3 rounded-lg shadow-gold flex items-center gap-2 text-sm lg:text-base max-w-[90vw] lg:max-w-none"
             >
-              <CheckCircle size={20} />
-              <span>تمت الإضافة إلى السلة بنجاح!</span>
+              <CheckCircle size={16} className="lg:hidden" />
+              <CheckCircle size={20} className="hidden lg:block" />
+              <span className="text-xs lg:text-base whitespace-nowrap overflow-hidden text-ellipsis">
+                تمت الإضافة إلى السلة بنجاح!
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
