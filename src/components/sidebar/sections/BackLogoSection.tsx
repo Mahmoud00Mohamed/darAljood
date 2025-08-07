@@ -532,7 +532,6 @@ const BackLogoSection: React.FC = () => {
         />
 
         <div className="text-xs text-gray-500 text-center">
-          <p>• سيتم رفع الصورة مباشرة إلى Cloudinary</p>
           <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
         </div>
       </Modal>

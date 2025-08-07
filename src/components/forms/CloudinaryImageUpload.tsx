@@ -410,10 +410,6 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
             <Crop className="w-3 h-3" />
             قص متقدم
           </span>
-          <span className="flex items-center gap-1">
-            <Cloud className="w-3 h-3" />
-            رفع إلى Cloudinary
-          </span>
         </div>
         {multiple && <span>يمكن رفع عدة صور</span>}
         {aspectRatio && <span>النسبة المطلوبة: {aspectRatio}:1</span>}
