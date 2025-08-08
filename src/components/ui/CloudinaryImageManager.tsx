@@ -18,12 +18,14 @@ interface CloudinaryImageManagerProps {
   onImageSelect?: (imageData: CloudinaryImageData) => void;
   showUploadSection?: boolean;
   className?: string;
+  autoAddToLibrary?: boolean;
 }
 
 const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
   onImageSelect,
   showUploadSection = true,
   className = "",
+  autoAddToLibrary = false,
 }) => {
   const [uploadedImages, setUploadedImages] = useState<CloudinaryImageData[]>(
     []
@@ -113,6 +115,7 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
             placeholder="اسحب الصور هنا أو انقر لاختيار عدة صور"
             className="mb-4"
             cropTitle="اقتطاع الصورة"
+            autoAddToLibrary={autoAddToLibrary}
           />
         </div>
       )}

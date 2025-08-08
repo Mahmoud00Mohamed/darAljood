@@ -39,7 +39,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
     findExistingImage,
     getUploadedImages,
   } = useJacket();
-  const { selectedImages } = useImageLibrary();
+  const { selectedImages, addUserImage, selectImage } = useImageLibrary();
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
   const [logoSource, setLogoSource] = useState<"predefined" | "upload">(
     showPredefinedLogos ? "predefined" : "upload"
@@ -227,6 +227,12 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
 
   const handleLogoUpload = (imageData: CloudinaryImageData) => {
     if (!isPositionOccupied(uploadPosition)) {
+      // إضافة الصورة إلى مكتبة الصور تلقائياً
+      addUserImage(imageData);
+
+      // تحديد الصورة تلقائياً في المكتبة
+      selectImage(imageData, "user");
+
       const existingImage = findExistingImage(imageData.url);
 
       if (existingImage) {
@@ -703,6 +709,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
               : "جانبي أيسر"
           }`}
           onUploadStateChange={setIsUploading}
+          autoAddToLibrary={true}
         />
 
         <div className="text-xs text-gray-500 text-center">

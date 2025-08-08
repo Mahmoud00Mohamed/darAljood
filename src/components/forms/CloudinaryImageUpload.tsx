@@ -13,6 +13,7 @@ import imageUploadService, {
   CloudinaryImageData,
 } from "../../services/imageUploadService";
 import ImageCropModal from "../modals/ImageCropModal";
+import { useImageLibrary } from "../../context/ImageLibraryContext";
 
 interface CloudinaryImageUploadProps {
   onImageSelect: (imageData: CloudinaryImageData) => void;
@@ -26,6 +27,7 @@ interface CloudinaryImageUploadProps {
   aspectRatio?: number;
   cropTitle?: string;
   onUploadStateChange?: (isUploading: boolean) => void;
+  autoAddToLibrary?: boolean; // خيار لإضافة الصور تلقائياً للمكتبة
 }
 
 const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
@@ -39,7 +41,9 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   aspectRatio,
   cropTitle = "اقتطاع الصورة",
   onUploadStateChange,
+  autoAddToLibrary = true,
 }) => {
+  const { addUserImage, selectImage } = useImageLibrary();
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
@@ -142,6 +146,14 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
           files
         );
 
+        // إضافة الصور إلى المكتبة تلقائياً إذا كان مفعل
+        if (autoAddToLibrary) {
+          uploadedData.forEach((imageData) => {
+            addUserImage(imageData);
+            selectImage(imageData, "user");
+          });
+        }
+
         setUploadedImages(uploadedData);
         if (onMultipleImagesSelect) {
           onMultipleImagesSelect(uploadedData);
@@ -153,6 +165,12 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
         const uploadedData = await imageUploadService.uploadSingleImage(
           files[0]
         );
+
+        // إضافة الصورة إلى المكتبة تلقائياً إذا كان مفعل
+        if (autoAddToLibrary) {
+          addUserImage(uploadedData);
+          selectImage(uploadedData, "user");
+        }
 
         setUploadedImages([uploadedData]);
         onImageSelect(uploadedData);

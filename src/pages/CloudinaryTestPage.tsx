@@ -29,6 +29,7 @@ const CloudinaryTestPage: React.FC = () => {
             <CloudinaryImageManager
               onImageSelect={handleImageSelect}
               showUploadSection={true}
+              autoAddToLibrary={false}
             />
           </div>
 

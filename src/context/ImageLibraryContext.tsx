@@ -300,26 +300,6 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
       if (exists) return prev;
       const newImages = [image, ...prev];
 
-      // تحديد الصورة تلقائياً عند إضافتها
-      const newSelectedImage: SelectedImage = {
-        id: image.publicId,
-        url: image.url,
-        name:
-          image.originalName ||
-          image.publicId.split("/").pop() ||
-          "صورة مرفوعة",
-        source: "user",
-        selectedAt: new Date(),
-      };
-
-      setSelectedImages((prevSelected) => {
-        const alreadySelected = prevSelected.some(
-          (img) => img.id === image.publicId
-        );
-        if (alreadySelected) return prevSelected;
-        return [newSelectedImage, ...prevSelected];
-      });
-
       return newImages;
     });
   };

@@ -359,6 +359,7 @@ const ImageLibraryPage: React.FC = () => {
                       maxFileSize={10}
                       aspectRatio={1}
                       cropTitle="اقتطاع الصورة"
+                      autoAddToLibrary={false}
                     />
                   </div>
 
