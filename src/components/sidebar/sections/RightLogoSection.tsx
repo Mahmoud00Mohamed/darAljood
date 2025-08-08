@@ -5,7 +5,7 @@ import { useJacket } from "../../../context/JacketContext";
 import { PRICING_CONFIG } from "../../../constants/pricing";
 
 const RightLogoSection: React.FC = () => {
-  const { jacketState, addLogo } = useJacket();
+  const { jacketState } = useJacket();
 
   const logoPositions: { id: LogoPosition; name: string }[] = [
     { id: "rightSide_top", name: "الجانب الأيمن - أعلى" },
@@ -22,25 +22,6 @@ const RightLogoSection: React.FC = () => {
   const rightSideLogos = filteredLogos.length;
   const isThirdLogo =
     rightSideLogos >= PRICING_CONFIG.includedItems.rightSideLogos;
-
-  const handleSelectedImageUse = (imageUrl: string) => {
-    // البحث عن أول موقع متاح
-    const availablePosition = logoPositions.find(
-      (pos) => !jacketState.logos.some((logo) => logo.position === pos.id)
-    );
-
-    if (availablePosition) {
-      const newLogo = {
-        id: `logo-${Date.now()}`,
-        image: imageUrl,
-        position: availablePosition.id,
-        x: 0,
-        y: 0,
-        scale: 1,
-      };
-      addLogo(newLogo);
-    }
-  };
 
   return (
     <div className="space-y-6">
