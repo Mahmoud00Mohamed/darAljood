@@ -23,7 +23,7 @@ interface SelectedImagesSectionProps {
 
 const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
   onImageSelect,
-  title = "الصور المرفوعة سابقاً",
+  title = "الصور المحددة",
   className = "",
 }) => {
   const { selectedImages } = useImageLibrary();
