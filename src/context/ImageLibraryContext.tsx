@@ -61,34 +61,55 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
   const [predefinedImages, setPredefinedImages] = useState<PredefinedImage[]>(
     []
   );
-  const [userImages, setUserImages] = useState<CloudinaryImageData[]>([]);
-  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // تحميل الصور المحددة من localStorage عند بدء التطبيق
-  useEffect(() => {
-    const savedSelectedImages = localStorage.getItem("selectedImages");
-    if (savedSelectedImages) {
-      try {
-        const parsed = JSON.parse(savedSelectedImages);
+  const [userImages, setUserImages] = useState<CloudinaryImageData[]>(() => {
+    try {
+      const saved = localStorage.getItem("userImages");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (error) {
+      console.warn("Failed to load user images from localStorage:", error);
+    }
+    return [];
+  });
+  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>(() => {
+    try {
+      const saved = localStorage.getItem("selectedImages");
+      if (saved) {
+        const parsed = JSON.parse(saved);
         const validatedImages = parsed.map(
           (img: SelectedImage & { selectedAt: string }) => ({
             ...img,
             selectedAt: new Date(img.selectedAt),
           })
         );
-        setSelectedImages(validatedImages);
-      } catch (error) {
-        console.warn("Failed to load selected images:", error);
-        localStorage.removeItem("selectedImages");
+        return Array.isArray(validatedImages) ? validatedImages : [];
       }
+    } catch (error) {
+      console.warn("Failed to load selected images from localStorage:", error);
     }
-  }, []);
+    return [];
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // حفظ صور المستخدم في localStorage عند تغييرها
+  useEffect(() => {
+    try {
+      localStorage.setItem("userImages", JSON.stringify(userImages));
+    } catch (error) {
+      console.warn("Failed to save user images to localStorage:", error);
+    }
+  }, [userImages]);
 
   // حفظ الصور المحددة في localStorage عند تغييرها
   useEffect(() => {
-    localStorage.setItem("selectedImages", JSON.stringify(selectedImages));
+    try {
+      localStorage.setItem("selectedImages", JSON.stringify(selectedImages));
+    } catch (error) {
+      console.warn("Failed to save selected images to localStorage:", error);
+    }
   }, [selectedImages]);
 
   // تحميل الصور الجاهزة من الباك إند
@@ -277,7 +298,29 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserImages((prev) => {
       const exists = prev.some((img) => img.publicId === image.publicId);
       if (exists) return prev;
-      return [image, ...prev];
+      const newImages = [image, ...prev];
+
+      // تحديد الصورة تلقائياً عند إضافتها
+      const newSelectedImage: SelectedImage = {
+        id: image.publicId,
+        url: image.url,
+        name:
+          image.originalName ||
+          image.publicId.split("/").pop() ||
+          "صورة مرفوعة",
+        source: "user",
+        selectedAt: new Date(),
+      };
+
+      setSelectedImages((prevSelected) => {
+        const alreadySelected = prevSelected.some(
+          (img) => img.id === image.publicId
+        );
+        if (alreadySelected) return prevSelected;
+        return [newSelectedImage, ...prevSelected];
+      });
+
+      return newImages;
     });
   };
 
