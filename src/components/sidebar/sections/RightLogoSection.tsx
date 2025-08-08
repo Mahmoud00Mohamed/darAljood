@@ -1,6 +1,5 @@
 import React from "react";
 import LogoUploadSection from "./shared/LogoUploadSection";
-import SelectedImagesSection from "./shared/SelectedImagesSection";
 import { LogoPosition } from "../../../context/JacketContext";
 import { useJacket } from "../../../context/JacketContext";
 import { PRICING_CONFIG } from "../../../constants/pricing";
@@ -45,12 +44,6 @@ const RightLogoSection: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* قسم الصور المحددة من المكتبة */}
-      <SelectedImagesSection
-        onImageSelect={handleSelectedImageUse}
-        title="الصور المحددة"
-      />
-
       {/* قسم رفع الشعارات التقليدي */}
       <LogoUploadSection
         positions={logoPositions}
