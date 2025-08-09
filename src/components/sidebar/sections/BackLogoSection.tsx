@@ -16,7 +16,7 @@ const BackLogoSection: React.FC = () => {
         view="back"
         showPredefinedLogos={true}
         pricingInfo={{
-          description: "* الشعار الخلفي مشمول في السعر الأساسي",
+          description: "الشعار الخلفي مشمول في السعر الأساسي",
         }}
       />
     </div>

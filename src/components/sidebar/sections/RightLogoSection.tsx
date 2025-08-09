@@ -34,7 +34,7 @@ const RightLogoSection: React.FC = () => {
           isExtraItem: isThirdLogo,
           extraCost: PRICING_CONFIG.additionalCosts.rightSideThirdLogo,
           includedCount: PRICING_CONFIG.includedItems.rightSideLogos,
-          description: `* أول شعارين مشمولين في السعر الأساسي، يتم إضافة ${PRICING_CONFIG.additionalCosts.rightSideThirdLogo} ريال للشعار الثالث`,
+          description: `أول شعارين مشمولين في السعر الأساسي ، يتم إضافة ${PRICING_CONFIG.additionalCosts.rightSideThirdLogo} ريال للشعار الثالث`,
         }}
         enablePositionSelector={true}
       />

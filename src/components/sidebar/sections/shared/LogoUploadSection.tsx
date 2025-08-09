@@ -391,7 +391,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
 
   return (
     <div className="space-y-6 overflow-x-hidden">
-      <h3 className="text-lg font-medium text-gray-900 mb-4 truncate">
+      <h3 className="text-lg font-medium text-gray-900 mb-4 whitespace-normal break-words">
         {title}
       </h3>
 
@@ -568,12 +568,12 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
 
         {filteredLogos.length === 0 ? (
           <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 mt-4">
-            <p className="mt-2 text-sm text-gray-500 truncate">
+            <p className="mt-2 text-sm text-gray-500 whitespace-normal break-words">
               {showPredefinedLogos && logoSource === "predefined"
                 ? "قم باختيار شعار من المجموعة المتوفرة"
                 : "قم برفع شعارك الخاص لتخصيص الجاكيت"}
             </p>
-            <p className="text-xs text-gray-400 truncate">
+            <p className="text-xs text-gray-400 whitespace-normal break-words">
               {pricingInfo?.description || "شعار مخصص"}
             </p>
 
@@ -652,7 +652,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate">
+                  <p className="text-sm whitespace-normal break-words">
                     {positions.find((pos) => pos.id === logo.position)?.name ||
                       logo.position}
                   </p>

@@ -37,7 +37,7 @@ const FrontLogoSection: React.FC = () => {
           isExtraItem,
           extraCost: PRICING_CONFIG.additionalCosts.frontExtraItem,
           includedCount: PRICING_CONFIG.includedItems.frontItems,
-          description: `* العنصر الأول في الأمام مشمول في السعر الأساسي، يتم إضافة ${PRICING_CONFIG.additionalCosts.frontExtraItem} ريال لكل عنصر إضافي`,
+          description: `العنصر الأول في الأمام مشمول في السعر الأساسي، يتم إضافة ${PRICING_CONFIG.additionalCosts.frontExtraItem} ريال لكل عنصر إضافي`,
         }}
       />
     </div>
