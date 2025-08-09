@@ -681,6 +681,30 @@ button.text-xs {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
 }
 
+/* Image Modal Responsive Styles */
+.image-modal-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+}
+
+@media (max-width: 640px) {
+  .image-modal-container {
+    padding: 0.5rem;
+  }
+}
+
+/* Line clamp utility for descriptions */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* Smooth modal animations */
 @keyframes modalFadeIn {
   from {

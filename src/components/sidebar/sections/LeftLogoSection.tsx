@@ -1,7 +1,6 @@
 import React from "react";
 import LogoUploadSection from "./shared/LogoUploadSection";
-import { LogoPosition } from "../../../context/JacketContext";
-import { useJacket } from "../../../context/JacketContext";
+import { LogoPosition, useJacket } from "../../../context/JacketContext";
 import { PRICING_CONFIG } from "../../../constants/pricing";
 
 const LeftLogoSection: React.FC = () => {
@@ -37,6 +36,7 @@ const LeftLogoSection: React.FC = () => {
           includedCount: PRICING_CONFIG.includedItems.leftSideLogos,
           description: `* أول شعارين مشمولين في السعر الأساسي، يتم إضافة ${PRICING_CONFIG.additionalCosts.leftSideThirdLogo} ريال للشعار الثالث`,
         }}
+        enablePositionSelector={true}
       />
     </div>
   );

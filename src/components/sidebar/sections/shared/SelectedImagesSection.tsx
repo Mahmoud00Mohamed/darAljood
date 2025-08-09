@@ -13,29 +13,50 @@ import {
 import { Link } from "react-router-dom";
 import { useImageLibrary } from "../../../../context/ImageLibraryContext";
 import ImageModal from "../../../ui/ImageModal";
+import Modal from "../../../ui/Modal";
 import { useModal } from "../../../../hooks/useModal";
 
 interface SelectedImagesSectionProps {
   onImageSelect?: (imageUrl: string) => void;
+  onImageSelectWithPosition?: (imageUrl: string, position?: string) => void;
   title?: string;
   className?: string;
+  showPositionSelector?: boolean;
+  availablePositions?: Array<{ id: string; name: string }>;
 }
 
 const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
   onImageSelect,
+  onImageSelectWithPosition,
   title = "الصور المحددة",
   className = "",
+  showPositionSelector = false,
+  availablePositions = [],
 }) => {
   const { selectedImages } = useImageLibrary();
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedImageForView, setSelectedImageForView] = useState<string>("");
+  const [selectedImageForPosition, setSelectedImageForPosition] =
+    useState<string>("");
 
   const imageModal = useModal();
+  const positionModal = useModal();
 
   const handleImageClick = (imageUrl: string) => {
-    if (onImageSelect) {
+    if (showPositionSelector && availablePositions.length > 0) {
+      setSelectedImageForPosition(imageUrl);
+      positionModal.openModal();
+    } else if (onImageSelect) {
       onImageSelect(imageUrl);
     }
+  };
+
+  const handlePositionSelect = (position: string) => {
+    if (onImageSelectWithPosition && selectedImageForPosition) {
+      onImageSelectWithPosition(selectedImageForPosition, position);
+    }
+    setSelectedImageForPosition("");
+    positionModal.closeModal();
   };
 
   const handleViewImage = (imageUrl: string, e: React.MouseEvent) => {
@@ -213,6 +234,62 @@ const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
         showDownload={true}
         showZoom={true}
       />
+
+      {/* Position Selection Modal */}
+      {showPositionSelector && (
+        <Modal
+          isOpen={positionModal.isOpen}
+          shouldRender={positionModal.shouldRender}
+          onClose={() => {
+            positionModal.closeModal();
+            setSelectedImageForPosition("");
+          }}
+          title="اختر موقع الشعار"
+          size="sm"
+          options={positionModal.options}
+        >
+          <div className="p-4">
+            <div className="text-center mb-6">
+              {selectedImageForPosition && (
+                <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-lg overflow-hidden">
+                  <img
+                    src={selectedImageForPosition}
+                    alt="الشعار المحدد"
+                    className="w-full h-full object-contain p-2"
+                  />
+                </div>
+              )}
+              <p className="text-sm text-gray-600">
+                اختر الموقع الذي تريد إضافة الشعار فيه
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {availablePositions.map((position) => (
+                <button
+                  key={position.id}
+                  onClick={() => handlePositionSelect(position.id)}
+                  className="w-full flex items-center justify-center gap-3 p-4 bg-gray-50 hover:bg-[#563660] hover:text-white rounded-lg transition-all duration-200 border border-gray-200 hover:border-[#563660]"
+                >
+                  <span className="font-medium">{position.name}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setSelectedImageForPosition("");
+                  positionModal.closeModal();
+                }}
+                className="w-full py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

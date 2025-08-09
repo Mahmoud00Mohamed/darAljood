@@ -21,6 +21,7 @@ interface LogoUploadSectionProps {
     includedCount?: number;
     description?: string;
   };
+  enablePositionSelector?: boolean;
 }
 
 const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
@@ -29,6 +30,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
   view,
   showPredefinedLogos = false,
   pricingInfo,
+  enablePositionSelector = false,
 }) => {
   const {
     jacketState,
@@ -318,6 +320,32 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
     }
   };
 
+  const handleImageSelectWithPosition = (
+    imageUrl: string,
+    positionId?: string
+  ) => {
+    if (positionId) {
+      const targetPosition = positionId as LogoPosition;
+      if (!isPositionOccupied(targetPosition)) {
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = () => {
+          const initialScale = getInitialScale(view);
+          const newLogo = {
+            id: `logo-${Date.now()}`,
+            image: imageUrl,
+            position: targetPosition,
+            x: 0,
+            y: 0,
+            scale: initialScale,
+          };
+          addLogo(newLogo);
+          setSelectedLogoId(newLogo.id);
+        };
+      }
+    }
+  };
+
   const filteredLogos = jacketState.logos.filter((logo) =>
     positions.some((pos) => pos.id === logo.position)
   );
@@ -448,15 +476,35 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
         selectedImages.length > 0 && (
           <div className="mb-4">
             <SelectedImagesSection
-              onImageSelect={(imageUrl) => {
-                if (view === "front") {
-                  handleExistingImageSelect(imageUrl);
-                } else if (view === "back") {
-                  handleExistingImageSelect(imageUrl, positions[0].id);
-                } else {
-                  handleExistingImageSelect(imageUrl, uploadPosition);
-                }
-              }}
+              onImageSelect={
+                !enablePositionSelector
+                  ? (imageUrl) => {
+                      if (view === "front") {
+                        handleExistingImageSelect(imageUrl);
+                      } else if (view === "back") {
+                        handleExistingImageSelect(imageUrl, positions[0].id);
+                      } else {
+                        handleExistingImageSelect(imageUrl, uploadPosition);
+                      }
+                    }
+                  : undefined
+              }
+              onImageSelectWithPosition={
+                enablePositionSelector
+                  ? handleImageSelectWithPosition
+                  : undefined
+              }
+              showPositionSelector={enablePositionSelector}
+              availablePositions={
+                enablePositionSelector
+                  ? positions
+                      .filter((pos) => !isPositionOccupied(pos.id))
+                      .map((pos) => ({
+                        id: pos.id,
+                        name: pos.name,
+                      }))
+                  : []
+              }
             />
           </div>
         )}

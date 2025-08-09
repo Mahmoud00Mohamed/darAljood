@@ -83,11 +83,13 @@ const Modal: React.FC<ModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: animationDuration / 1000 }}
-          className={`fixed inset-0 flex ${positionClasses[position]} p-4 modal-portal ${backdropClassName}`}
+          className={`fixed inset-0 flex ${positionClasses[position]} ${
+            size === "full" ? "p-0" : "p-4"
+          } modal-portal ${backdropClassName}`}
           style={{
             zIndex,
             backgroundColor: "rgba(0, 0, 0, 0.6)",
-            backdropFilter: "blur(8px)",
+            backdropFilter: size === "full" ? "none" : "blur(8px)",
           }}
           onClick={handleBackdropClick}
           data-modal="true"
@@ -101,7 +103,11 @@ const Modal: React.FC<ModalProps> = ({
               duration: animationDuration / 1000,
               ease: "easeOut",
             }}
-            className={`bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} ${contentClassName} ${className} border border-gray-100`}
+            className={`${
+              size === "full"
+                ? "w-full h-full"
+                : `bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} border border-gray-100`
+            } ${contentClassName} ${className}`}
             onClick={handleContentClick}
             data-modal="true"
             tabIndex={-1}
@@ -109,8 +115,8 @@ const Modal: React.FC<ModalProps> = ({
             aria-modal="true"
             aria-labelledby={title ? "modal-title" : undefined}
           >
-            {/* Header */}
-            {(title || showCloseButton) && (
+            {/* Header - إخفاء للنوافذ بحجم كامل */}
+            {(title || showCloseButton) && size !== "full" && (
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
                 {title && (
                   <h2
@@ -133,7 +139,15 @@ const Modal: React.FC<ModalProps> = ({
             )}
 
             {/* Content */}
-            <div className={title || showCloseButton ? "p-6" : "p-0"}>
+            <div
+              className={
+                size === "full"
+                  ? "w-full h-full"
+                  : title || showCloseButton
+                  ? "p-6"
+                  : "p-0"
+              }
+            >
               {children}
             </div>
           </motion.div>
