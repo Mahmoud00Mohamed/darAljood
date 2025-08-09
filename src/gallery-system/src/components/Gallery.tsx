@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { GalleryProps } from "../types";
 import { useGallery } from "../hooks/useGallery";
+import { useImagePreloader } from "../hooks/useImagePreloader";
 import { CategoryFilter } from "./CategoryFilter";
 import { PhotoGrid } from "./PhotoGrid";
 import { PhotoModal } from "./PhotoModal";
@@ -28,6 +29,29 @@ export const Gallery: React.FC<GalleryProps> = ({
     hasNext,
     hasPrev,
   } = useGallery(photos, defaultCategory);
+
+  const { preloadImages } = useImagePreloader({
+    preloadAll: true,
+    visibleCount: 12,
+    backgroundPreload: true,
+  });
+
+  // تحميل جميع الصور عند تحميل المعرض
+  React.useEffect(() => {
+    if (photos.length > 0) {
+      // تحميل فوري للصور الأولى
+      const priorityPhotos = photos.slice(0, 8);
+      preloadImages(priorityPhotos);
+      
+      // تحميل باقي الصور في الخلفية
+      if (photos.length > 8) {
+        setTimeout(() => {
+          const backgroundPhotos = photos.slice(8);
+          preloadImages(backgroundPhotos);
+        }, 100);
+      }
+    }
+  }, [photos, preloadImages]);
 
   const handlePhotoClick = (photo: (typeof photos)[0]) => {
     openPhoto(photo);

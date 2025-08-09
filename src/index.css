@@ -726,6 +726,38 @@ button.text-xs {
   bottom: 0;
 }
 
+/* تحسين أداء الصور في Gallery System */
+.gallery-container img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* تحسين الانيميشن للصور */
+.gallery-photo {
+  contain: layout style paint;
+  will-change: transform, box-shadow;
+}
+
+/* تحسين الشبكة */
+.gallery-grid {
+  contain: layout style;
+}
+
+/* تحسين placeholder الصور */
+.image-placeholder {
+  background: linear-gradient(90deg, #f8f9fa 25%, #e9ecef 50%, #f8f9fa 75%);
+  background-size: 200% 100%;
+  animation: shimmer-fast 1s ease-in-out infinite;
+}
+
+@keyframes shimmer-fast {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* تحسين عرض الخطوط في التقاط الصور */
 .jacket-image-capture,
 .jacket-image-capture * {

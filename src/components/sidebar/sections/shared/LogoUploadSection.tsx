@@ -5,6 +5,7 @@ import CloudinaryImageUpload from "../../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../../services/imageUploadService";
 import { Gallery } from "../../../../gallery-system/src";
 import type { Photo } from "../../../../gallery-system/src/types";
+import { imagePreloader } from "../../../../gallery-system/src/utils/imagePreloader";
 import SelectedImagesSection from "./SelectedImagesSection";
 import Modal from "../../../ui/Modal";
 import { useModal } from "../../../../hooks/useModal";
@@ -181,6 +182,14 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
     },
   ];
 
+  // تحميل الشعارات مسبقاً عند تحميل المكون
+  React.useEffect(() => {
+    if (showPredefinedLogos && availableLogos.length > 0) {
+      const logoUrls = availableLogos.map(logo => logo.url);
+      imagePreloader.preloadImages(logoUrls, { priority: 'high' });
+    }
+  }, [showPredefinedLogos]);
+
   // تحويل الشعارات المتاحة إلى تنسيق Gallery
   const galleryPhotos: Photo[] = availableLogos.map((logo) => ({
     id: logo.id,
@@ -214,9 +223,11 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
     position: LogoPosition
   ) => {
     if (!isPositionOccupied(position)) {
+      // استخدام الرابط المحسن من الكاش إذا كان متوفراً
+      const optimizedUrl = imagePreloader.getOptimizedUrl(logoUrl);
       const newLogo = {
         id: `logo-${Date.now()}`,
-        image: logoUrl,
+        image: optimizedUrl,
         position,
         x: 0,
         y: 0,

@@ -24,6 +24,7 @@ import CloudinaryImageUpload from "../components/forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../services/imageUploadService";
 import imageUploadService from "../services/imageUploadService";
 import ImageModal from "../components/ui/ImageModal";
+import { imagePreloader } from "../gallery-system/src/utils/imagePreloader";
 import { useModal } from "../hooks/useModal";
 import ConfirmationModal from "../components/ui/ConfirmationModal";
 
@@ -55,10 +56,25 @@ const ImageLibraryPage: React.FC = () => {
   const [imageToDelete, setImageToDelete] =
     useState<CloudinaryImageData | null>(null);
 
-  useEffect(() => {}, []);
+  // تحميل الصور مسبقاً عند تحميل الصفحة
+  useEffect(() => {
+    if (predefinedImages.length > 0) {
+      const imageUrls = predefinedImages.map(img => img.url);
+      imagePreloader.preloadImages(imageUrls, { priority: 'high' });
+    }
+  }, [predefinedImages]);
+
+  useEffect(() => {
+    if (userImages.length > 0) {
+      const imageUrls = userImages.map(img => img.url);
+      imagePreloader.preloadImages(imageUrls, { priority: 'high' });
+    }
+  }, [userImages]);
 
   const handleImageUpload = (imageData: CloudinaryImageData) => {
     addUserImage(imageData);
+    // تحميل الصورة الجديدة مسبقاً
+    imagePreloader.preloadImage(imageData.url, { priority: 'high' });
   };
 
   const handleDeleteUserImage = async (image: CloudinaryImageData) => {
@@ -105,6 +121,8 @@ const ImageLibraryPage: React.FC = () => {
   };
 
   const handleViewImage = (imageUrl: string) => {
+    // تحميل الصورة بدقة عالية للعرض
+    imagePreloader.preloadImage(imageUrl, { priority: 'high' });
     setSelectedImageForView(imageUrl);
     imageModal.openModal();
   };
@@ -126,6 +144,11 @@ const ImageLibraryPage: React.FC = () => {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  // تحسين عرض الصور باستخدام الكاش
+  const getImageSrc = (url: string): string => {
+    return imagePreloader.getOptimizedUrl(url);
   };
 
   return (
@@ -291,10 +314,11 @@ const ImageLibraryPage: React.FC = () => {
                         >
                           <div className="aspect-square p-2 sm:p-4">
                             <img
-                              src={image.url}
+                              src={getImageSrc(image.url)}
                               alt={image.name}
                               className="w-full h-full object-contain"
-                              loading="lazy"
+                              loading={index < 8 ? "eager" : "lazy"}
+                              decoding="async"
                             />
                           </div>
 
@@ -328,7 +352,7 @@ const ImageLibraryPage: React.FC = () => {
 
                           <div className="absolute top-1 sm:top-2 left-1 sm:left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
-                              onClick={() => handleViewImage(image.url)}
+                              onClick={() => handleViewImage(getImageSrc(image.url))}
                               className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors"
                               title="عرض"
                             >
@@ -395,10 +419,11 @@ const ImageLibraryPage: React.FC = () => {
                         >
                           <div className="aspect-square p-2 sm:p-4">
                             <img
-                              src={image.url}
+                              src={getImageSrc(image.url)}
                               alt={image.publicId}
                               className="w-full h-full object-contain"
-                              loading="lazy"
+                              loading={index < 8 ? "eager" : "lazy"}
+                              decoding="async"
                             />
                           </div>
 
@@ -429,7 +454,7 @@ const ImageLibraryPage: React.FC = () => {
 
                           <div className="absolute top-1 sm:top-2 left-1 sm:left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
-                              onClick={() => handleViewImage(image.url)}
+                              onClick={() => handleViewImage(getImageSrc(image.url))}
                               className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors"
                               title="عرض"
                             >
@@ -484,9 +509,11 @@ const ImageLibraryPage: React.FC = () => {
                       className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                     >
                       <img
-                        src={image.url}
+                        src={getImageSrc(image.url)}
                         alt={image.name}
                         className="w-10 h-10 object-contain rounded"
+                        loading="eager"
+                        decoding="async"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
@@ -598,9 +625,11 @@ const ImageLibraryPage: React.FC = () => {
                         >
                           <div className="aspect-square p-2">
                             <img
-                              src={image.url}
+                              src={getImageSrc(image.url)}
                               alt={image.name}
                               className="w-full h-full object-contain"
+                              loading="eager"
+                              decoding="async"
                             />
                           </div>
                           <div className="p-2 border-t border-gray-200">

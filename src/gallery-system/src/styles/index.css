@@ -23,6 +23,19 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
+/* تحسين أداء الصور */
+.gallery-photo img {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* تحسين الانيميشن */
+.gallery-photo {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 /* Modal animations */
 .gallery-modal-backdrop {
   backdrop-filter: blur(4px);
@@ -54,20 +67,37 @@
   left: 100%;
 }
 
-/* Loading states */
-.gallery-photo-loading {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+/* تحسين حالات التحميل */
+.gallery-image-placeholder {
+  background: linear-gradient(90deg, #f8f9fa 25%, #e9ecef 50%, #f8f9fa 75%);
   background-size: 200% 100%;
-  animation: loading 1.5s infinite;
+  animation: shimmer 1.2s ease-in-out infinite;
+  border-radius: 0.5rem;
 }
 
-@keyframes loading {
+@keyframes shimmer {
   0% {
     background-position: 200% 0;
   }
   100% {
     background-position: -200% 0;
   }
+}
+
+/* تحسين الأداء للشبكة */
+.gallery-grid {
+  contain: layout style paint;
+}
+
+.gallery-grid-item {
+  contain: layout style paint;
+  will-change: transform, opacity;
+}
+
+/* تحسين الذاكرة */
+.gallery-image {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Responsive grid utilities */
@@ -77,6 +107,15 @@
   }
   .gallery-grid-mobile-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  /* تحسين للهواتف */
+  .gallery-photo {
+    transform: none;
+  }
+  
+  .gallery-photo:hover {
+    transform: none;
   }
 }
 
@@ -99,4 +138,17 @@
   .gallery-grid-desktop-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
+}
+
+/* تحسين الأداء العام */
+.gallery-container * {
+  box-sizing: border-box;
+}
+
+/* تحسين GPU acceleration */
+.gallery-photo,
+.gallery-modal,
+.gallery-filter-button {
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
