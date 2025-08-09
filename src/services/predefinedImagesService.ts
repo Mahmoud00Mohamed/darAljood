@@ -1,7 +1,7 @@
 import { PredefinedImage } from "../context/ImageLibraryContext";
 
 class PredefinedImagesService {
-  private baseUrl = "https://server-algood.onrender.com/api";
+  private baseUrl = "http://localhost:5173/api";
 
   /**
    * تحميل الصور الجاهزة من الباك إند
