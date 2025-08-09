@@ -22,4 +22,8 @@ export {
   generatePhotoId,
   optimizeImageUrl,
   validatePhoto,
+  preloadImage,
+  preloadImages,
+  clearImageCache,
+  getCacheSize,
 } from "./utils";

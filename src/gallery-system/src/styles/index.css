@@ -13,9 +13,12 @@
   text-align: left;
 }
 
-/* Photo hover effects */
+/* Photo hover effects with performance optimization */
 .gallery-photo {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .gallery-photo:hover {
@@ -23,15 +26,38 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
+/* تحسين أداء الصور */
+.gallery-photo img {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* تحسين الانيميشن */
+.gallery-photo img {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* تحسين عرض الصور على الشاشات عالية الدقة */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .gallery-photo img {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
 /* Modal animations */
 .gallery-modal-backdrop {
   backdrop-filter: blur(4px);
+  will-change: backdrop-filter;
 }
 
 /* Category filter animations */
 .gallery-filter-button {
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 
 .gallery-filter-button::before {
@@ -54,20 +80,20 @@
   left: 100%;
 }
 
-/* Loading states */
-.gallery-photo-loading {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
+/* تحسين الأداء العام */
+.gallery-container * {
+  box-sizing: border-box;
 }
 
-@keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+/* تحسين عرض الشبكة */
+.gallery-grid {
+  contain: layout style paint;
+}
+
+/* تحسين الذاكرة للصور */
+.gallery-photo img {
+  content-visibility: auto;
+  contain-intrinsic-size: 400px 400px;
 }
 
 /* Responsive grid utilities */
@@ -77,6 +103,11 @@
   }
   .gallery-grid-mobile-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* تحسين للهواتف */
+  .gallery-photo img {
+    image-rendering: -webkit-optimize-contrast;
   }
 }
 
@@ -98,5 +129,10 @@
   }
   .gallery-grid-desktop-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  /* تحسين للشاشات الكبيرة */
+  .gallery-photo {
+    contain: layout style paint;
   }
 }

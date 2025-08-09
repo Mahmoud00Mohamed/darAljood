@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { PhotoModalProps } from "../types";
-import { optimizeImageUrl } from "../utils";
+import { optimizeImageUrl, preloadImage } from "../utils";
 
 export const PhotoModal: React.FC<
   PhotoModalProps & {
@@ -21,6 +21,14 @@ export const PhotoModal: React.FC<
   hasPrev = false,
   rtl = true,
 }) => {
+  // تحميل مسبق للصورة الحالية والصور المجاورة
+  useEffect(() => {
+    if (photo && isOpen) {
+      // تحميل الصورة الحالية بدقة عالية
+      preloadImage(optimizeImageUrl(photo.src, 1200));
+    }
+  }, [photo, isOpen]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
@@ -122,6 +130,9 @@ export const PhotoModal: React.FC<
               src={optimizeImageUrl(photo.src, 1200)}
               alt={photo.alt || photo.title}
               className="w-full h-96 object-cover"
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
             />
 
             <div className="p-6">

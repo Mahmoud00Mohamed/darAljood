@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Photo } from "../types";
+import { preloadImages, optimizeImageUrl } from "../utils";
 
 export const useGallery = (
   photos: Photo[],
@@ -16,7 +17,29 @@ export const useGallery = (
     return photos.filter((photo) => photo.category === selectedCategory);
   }, [photos, selectedCategory]);
 
+  // تحميل مسبق للصور عند تغيير الفئة
+  useEffect(() => {
+    if (filteredPhotos.length > 0) {
+      // تحميل أول 8 صور من الفئة الجديدة
+      const priorityUrls = filteredPhotos
+        .slice(0, 8)
+        .map((photo) => optimizeImageUrl(photo.src, 400));
+      preloadImages(priorityUrls);
+    }
+  }, [filteredPhotos]);
   const openPhoto = (photo: Photo) => {
+    // تحميل مسبق للصور المجاورة عند فتح صورة
+    const currentIndex = filteredPhotos.findIndex((p) => p.id === photo.id);
+    const adjacentPhotos = [
+      filteredPhotos[currentIndex - 1],
+      filteredPhotos[currentIndex + 1],
+    ].filter(Boolean);
+
+    const adjacentUrls = adjacentPhotos.map((p) =>
+      optimizeImageUrl(p.src, 1200)
+    );
+    preloadImages(adjacentUrls);
+
     setSelectedPhoto(photo);
   };
 
@@ -30,7 +53,12 @@ export const useGallery = (
       (p) => p.id === selectedPhoto.id
     );
     const nextIndex = (currentIndex + 1) % filteredPhotos.length;
-    setSelectedPhoto(filteredPhotos[nextIndex]);
+    const nextPhoto = filteredPhotos[nextIndex];
+
+    // تحميل مسبق للصورة التالية
+    preloadImages([optimizeImageUrl(nextPhoto.src, 1200)]);
+
+    setSelectedPhoto(nextPhoto);
   };
 
   const prevPhoto = () => {
@@ -40,7 +68,12 @@ export const useGallery = (
     );
     const prevIndex =
       currentIndex === 0 ? filteredPhotos.length - 1 : currentIndex - 1;
-    setSelectedPhoto(filteredPhotos[prevIndex]);
+    const prevPhoto = filteredPhotos[prevIndex];
+
+    // تحميل مسبق للصورة السابقة
+    preloadImages([optimizeImageUrl(prevPhoto.src, 1200)]);
+
+    setSelectedPhoto(prevPhoto);
   };
 
   return {
