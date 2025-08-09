@@ -2,7 +2,8 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZoomIn } from "lucide-react";
 import { PhotoGridProps } from "../types";
-import { optimizeImageUrl } from "../utils";
+import { OptimizedImage } from "./OptimizedImage";
+import { useImagePreloader } from "../hooks/useImagePreloader";
 
 export const PhotoGrid: React.FC<PhotoGridProps> = ({
   photos,
@@ -10,6 +11,28 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   columnsConfig = { mobile: 1, tablet: 2, desktop: 4 },
   className = "",
 }) => {
+  const { preloadImages, isImageLoaded } = useImagePreloader();
+
+  // تحميل الصور مسبقاً عند تحميل المكون
+  React.useEffect(() => {
+    if (photos.length > 0) {
+      // تحميل أول 8 صور بأولوية عالية
+      const priorityPhotos = photos.slice(0, 8);
+      const remainingPhotos = photos.slice(8);
+      
+      // تحميل الصور ذات الأولوية فوراً
+      priorityPhotos.forEach(photo => {
+        const img = new Image();
+        img.src = photo.src;
+      });
+      
+      // تحميل باقي الصور في الخلفية
+      setTimeout(() => {
+        preloadImages(remainingPhotos);
+      }, 500);
+    }
+  }, [photos, preloadImages]);
+
   const getGridClass = () => {
     return `grid grid-cols-${columnsConfig.mobile} sm:grid-cols-${columnsConfig.tablet} lg:grid-cols-${columnsConfig.desktop} xl:grid-cols-${columnsConfig.desktop} gap-6`;
   };
@@ -17,7 +40,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   return (
     <motion.div layout className={`${getGridClass()} ${className}`}>
       <AnimatePresence>
-        {photos.map((photo) => (
+        {photos.map((photo, index) => (
           <motion.div
             key={photo.id}
             layout
@@ -29,11 +52,12 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
             onClick={() => onPhotoClick(photo)}
           >
             <div className="aspect-square">
-              <img
-                src={optimizeImageUrl(photo.src, 400)}
+              <OptimizedImage
+                src={photo.src}
                 alt={photo.alt || photo.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                loading="lazy"
+                priority={index < 8} // أول 8 صور لها أولوية
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               />
             </div>
 
