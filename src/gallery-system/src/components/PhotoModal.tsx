@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { PhotoModalProps } from "../types";
-import { OptimizedImage } from "./OptimizedImage";
+import { optimizeImageUrl } from "../utils";
 
 export const PhotoModal: React.FC<
   PhotoModalProps & {
@@ -118,13 +118,10 @@ export const PhotoModal: React.FC<
               </button>
             )}
 
-            <OptimizedImage
-              src={photo.src}
+            <img
+              src={optimizeImageUrl(photo.src, 1200)}
               alt={photo.alt || photo.title}
               className="w-full h-96 object-cover"
-              priority={true}
-              sizes="(max-width: 1200px) 100vw, 1200px"
-              quality={90}
             />
 
             <div className="p-6">

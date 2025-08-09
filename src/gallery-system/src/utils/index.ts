@@ -20,32 +20,13 @@ export const optimizeImageUrl = (
   width?: number,
   quality: number = 80
 ) => {
-  // تحسين للصور من Cloudinary
-  if (url.includes("cloudinary.com")) {
-    const baseUrl = url.split('/upload/')[0] + '/upload/';
-    const imagePath = url.split('/upload/')[1];
-    const optimizations = [
-      'f_auto', // تنسيق تلقائي (WebP, AVIF حسب دعم المتصفح)
-      'q_auto:good', // جودة تلقائية محسنة
-      width ? `w_${width}` : '',
-      'c_limit', // تحديد الحد الأقصى للأبعاد
-      'dpr_auto', // كثافة البكسل التلقائية للشاشات عالية الدقة
-      'fl_progressive', // تحميل تدريجي
-      'fl_immutable_cache' // تخزين مؤقت ثابت
-    ].filter(Boolean).join(',');
-    
-    return `${baseUrl}${optimizations}/${imagePath}`;
-  }
-  
-  // تحسين للصور من Unsplash
+  // يمكن تخصيص هذه الدالة لخدمات تحسين الصور المختلفة
   if (url.includes("unsplash.com")) {
     const params = new URLSearchParams();
     if (width) params.set("w", width.toString());
     params.set("q", quality.toString());
     params.set("auto", "format");
     params.set("fit", "crop");
-    params.set("fm", "webp"); // تفضيل تنسيق WebP
-    params.set("dpr", "2"); // دعم الشاشات عالية الدقة
 
     return `${url}?${params.toString()}`;
   }

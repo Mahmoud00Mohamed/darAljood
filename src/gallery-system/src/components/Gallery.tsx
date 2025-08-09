@@ -2,11 +2,9 @@ import React from "react";
 import { motion } from "framer-motion";
 import { GalleryProps } from "../types";
 import { useGallery } from "../hooks/useGallery";
-import { useImagePreloader } from "../hooks/useImagePreloader";
 import { CategoryFilter } from "./CategoryFilter";
 import { PhotoGrid } from "./PhotoGrid";
 import { PhotoModal } from "./PhotoModal";
-import { GalleryLoadingIndicator } from "./GalleryLoadingIndicator";
 
 export const Gallery: React.FC<GalleryProps> = ({
   photos,
@@ -31,24 +29,6 @@ export const Gallery: React.FC<GalleryProps> = ({
     hasPrev,
   } = useGallery(photos, defaultCategory);
 
-  const { 
-    preloadImages, 
-    isPreloading, 
-    progress,
-    loadedImages 
-  } = useImagePreloader();
-
-  // تحميل الصور مسبقاً عند تحميل المعرض
-  React.useEffect(() => {
-    if (photos.length > 0) {
-      // تأخير قصير للسماح للمكون بالتحميل أولاً
-      const timer = setTimeout(() => {
-        preloadImages(photos);
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [photos, preloadImages]);
   const handlePhotoClick = (photo: (typeof photos)[0]) => {
     openPhoto(photo);
     onPhotoClick?.(photo);
@@ -59,15 +39,6 @@ export const Gallery: React.FC<GalleryProps> = ({
       className={`w-full ${className}`}
       style={{ direction: rtl ? "rtl" : "ltr" }}
     >
-      {/* Loading Indicator */}
-      {isPreloading && (
-        <GalleryLoadingIndicator 
-          progress={progress}
-          loadedCount={loadedImages.size}
-          totalCount={photos.length}
-        />
-      )}
-
       {/* Category Filter */}
       {showCategories && (
         <motion.div
