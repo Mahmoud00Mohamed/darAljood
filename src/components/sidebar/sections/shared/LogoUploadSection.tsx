@@ -652,12 +652,12 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm break-words leading-tight">
+                  <p className="text-sm truncate">
                     {positions.find((pos) => pos.id === logo.position)?.name ||
                       logo.position}
                   </p>
                   {uploadedImages.some((img) => img.url === logo.image) && (
-                    <p className="text-xs text-green-600 break-words">
+                    <p className="text-xs text-green-600">
                       صورة مُعاد استخدامها
                     </p>
                   )}
