@@ -15,16 +15,21 @@ import {
   CheckCircle,
   Loader2,
   TrendingUp,
-  Percent,
+  Trash2,
+  Image as ImageIcon,
+  Home,
 } from "lucide-react";
 import authService, { LoginCredentials } from "../services/authService";
 import pricingService, { PricingData } from "../services/pricingService";
+import predefinedImagesService, {
+  PredefinedImageData,
+} from "../services/predefinedImagesService";
+import CloudinaryImageUpload from "../components/forms/CloudinaryImageUpload";
+import { CloudinaryImageData } from "../services/imageUploadService";
 import { useNavigate } from "react-router-dom";
 
 const AdminPanelPage: React.FC = () => {
   const navigate = useNavigate();
-
-  // حالة المصادقة
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loginCredentials, setLoginCredentials] = useState<LoginCredentials>({
@@ -34,15 +39,24 @@ const AdminPanelPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-
-  // حالة التسعير
   const [pricingData, setPricingData] = useState<PricingData | null>(null);
   const [isLoadingPricing, setIsLoadingPricing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [pricingError, setPricingError] = useState("");
+  const [predefinedImages, setPredefinedImages] = useState<
+    PredefinedImageData[]
+  >([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [imagesError, setImagesError] = useState("");
+  const [activeTab, setActiveTab] = useState<"pricing" | "images">("pricing");
+  const [newImageData, setNewImageData] = useState({
+    name: "",
+    category: "شعارات جاهزة",
+    description: "شعار جاهز للاستخدام",
+  });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // التحقق من المصادقة عند تحميل الصفحة
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -51,6 +65,7 @@ const AdminPanelPage: React.FC = () => {
 
         if (isValid) {
           await loadPricingData();
+          await loadPredefinedImages();
         }
       } catch (error) {
         console.error("Auth check failed:", error);
@@ -63,11 +78,9 @@ const AdminPanelPage: React.FC = () => {
     checkAuth();
   }, []);
 
-  // تحميل بيانات التسعير
   const loadPricingData = async () => {
     setIsLoadingPricing(true);
     setPricingError("");
-
     try {
       const data = await pricingService.getPricing();
       setPricingData(data);
@@ -80,7 +93,78 @@ const AdminPanelPage: React.FC = () => {
     }
   };
 
-  // تسجيل الدخول
+  const loadPredefinedImages = async () => {
+    setIsLoadingImages(true);
+    setImagesError("");
+    try {
+      const images = await predefinedImagesService.loadPredefinedImages();
+      setPredefinedImages(images);
+    } catch (error) {
+      setImagesError(
+        error instanceof Error ? error.message : "فشل في تحميل الشعارات الجاهزة"
+      );
+    } finally {
+      setIsLoadingImages(false);
+    }
+  };
+
+  const handleAddPredefinedImage = async (imageData: CloudinaryImageData) => {
+    if (!newImageData.name.trim()) {
+      alert("اسم الشعار مطلوب");
+      return;
+    }
+
+    try {
+      const response = await fetch(imageData.url);
+      const blob = await response.blob();
+      const file = new File(
+        [blob],
+        `${imageData.publicId}.${imageData.format}`,
+        {
+          type: `image/${imageData.format}`,
+        }
+      );
+
+      const newImage = await predefinedImagesService.addPredefinedImage(
+        file,
+        newImageData.name,
+        newImageData.category,
+        newImageData.description
+      );
+
+      setPredefinedImages((prev) => [...prev, newImage]);
+      setSaveMessage("تم إضافة الشعار الجاهز بنجاح");
+      setNewImageData({
+        name: "",
+        category: "شعارات جاهزة",
+        description: "شعار جاهز للاستخدام",
+      });
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      setImagesError(
+        error instanceof Error ? error.message : "فشل في إضافة الشعار الجاهز"
+      );
+    }
+  };
+
+  const handleDeletePredefinedImage = async (imageId: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذا الشعار الجاهز؟")) return;
+
+    setIsLoadingImages(true);
+    try {
+      await predefinedImagesService.deletePredefinedImage(imageId);
+      setPredefinedImages((prev) => prev.filter((img) => img.id !== imageId));
+      setSaveMessage("تم حذف الشعار الجاهز بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      setImagesError(
+        error instanceof Error ? error.message : "فشل في حذف الشعار الجاهز"
+      );
+    } finally {
+      setIsLoadingImages(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
@@ -99,7 +183,6 @@ const AdminPanelPage: React.FC = () => {
     }
   };
 
-  // تسجيل الخروج
   const handleLogout = async () => {
     try {
       await authService.logout();
@@ -112,7 +195,6 @@ const AdminPanelPage: React.FC = () => {
     }
   };
 
-  // حفظ التغييرات
   const handleSave = async () => {
     if (!pricingData) return;
 
@@ -122,9 +204,7 @@ const AdminPanelPage: React.FC = () => {
 
     try {
       const token = authService.getToken();
-      if (!token) {
-        throw new Error("رمز المصادقة غير موجود");
-      }
+      if (!token) throw new Error("رمز المصادقة غير موجود");
 
       const updatedData = await pricingService.updatePricing(
         pricingData,
@@ -132,8 +212,6 @@ const AdminPanelPage: React.FC = () => {
       );
       setPricingData(updatedData);
       setSaveMessage("تم حفظ التغييرات بنجاح");
-
-      // إخفاء رسالة النجاح بعد 3 ثوان
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
       setPricingError(
@@ -144,27 +222,22 @@ const AdminPanelPage: React.FC = () => {
     }
   };
 
-  // إعادة تعيين إلى القيم الافتراضية
   const handleReset = async () => {
     if (
       !confirm("هل أنت متأكد من إعادة تعيين جميع الأسعار إلى القيم الافتراضية؟")
-    ) {
+    )
       return;
-    }
 
     setIsSaving(true);
     setPricingError("");
 
     try {
       const token = authService.getToken();
-      if (!token) {
-        throw new Error("رمز المصادقة غير موجود");
-      }
+      if (!token) throw new Error("رمز المصادقة غير موجود");
 
       const resetData = await pricingService.resetPricing(token);
       setPricingData(resetData);
       setSaveMessage("تم إعادة تعيين الأسعار بنجاح");
-
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
       setPricingError(
@@ -175,7 +248,6 @@ const AdminPanelPage: React.FC = () => {
     }
   };
 
-  // تحديث قيمة في بيانات التسعير
   const updatePricingField = (path: string, value: string | number) => {
     if (!pricingData) return;
 
@@ -195,7 +267,6 @@ const AdminPanelPage: React.FC = () => {
     setPricingData(newData);
   };
 
-  // شاشة التحميل
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -207,7 +278,6 @@ const AdminPanelPage: React.FC = () => {
     );
   }
 
-  // شاشة تسجيل الدخول
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
@@ -325,379 +395,473 @@ const AdminPanelPage: React.FC = () => {
     );
   }
 
-  // لوحة التحكم الرئيسية
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        className="md:hidden fixed bottom-4 right-4 z-50 w-12 h-12 bg-[#563660] text-white rounded-full shadow-lg flex items-center justify-center"
+      >
+        {mobileMenuOpen ? (
+          <span className="text-2xl">×</span>
+        ) : (
+          <Settings className="w-6 h-6" />
+        )}
+      </button>
+
+      {/* Sidebar */}
+      <aside
+        className={`${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"} 
+        md:translate-x-0 transform fixed md:static inset-y-0 left-0 z-40 w-64 bg-white shadow-md border-r border-gray-200 transition-transform duration-300 ease-in-out`}
+      >
+        <div className="h-full flex flex-col">
+          <div className="p-4 border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-lg flex items-center justify-center">
                 <Settings className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-lg font-semibold text-gray-900">
                   لوحة التحكم
                 </h1>
-                <p className="text-sm text-gray-600">إدارة أسعار دار الجود</p>
+                <p className="text-xs text-gray-600">دار الجود</p>
               </div>
             </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate("/")}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[#563660] transition-colors"
-              >
-                العودة للموقع
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                تسجيل الخروج
-              </button>
-            </div>
           </div>
-        </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* رسائل الحالة */}
-        <AnimatePresence>
-          {saveMessage && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2"
-            >
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="text-green-700">{saveMessage}</span>
-            </motion.div>
-          )}
-
-          {pricingError && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2"
-            >
-              <AlertCircle className="w-5 h-5 text-red-600" />
-              <span className="text-red-700">{pricingError}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* أزرار التحكم */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <button
-            onClick={handleSave}
-            disabled={isSaving || !pricingData}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white font-medium rounded-lg hover:from-[#4b2e55] hover:to-[#6d3f7a] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                جاري الحفظ...
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                حفظ التغييرات
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={handleReset}
-            disabled={isSaving}
-            className="flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            <RotateCcw className="w-5 h-5" />
-            إعادة تعيين
-          </button>
-
-          <button
-            onClick={loadPricingData}
-            disabled={isLoadingPricing}
-            className="flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            {isLoadingPricing ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <RotateCcw className="w-5 h-5" />
-            )}
-            إعادة تحميل
-          </button>
-        </div>
-
-        {isLoadingPricing ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
-              <p className="text-gray-600">جاري تحميل بيانات التسعير...</p>
-            </div>
-          </div>
-        ) : pricingData ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* السعر الأساسي */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-blue-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  السعر الأساسي
-                </h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    السعر الأساسي (ريال)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={pricingData.basePrice}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "basePrice",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-2">
-                    السعر الأساسي يشمل:
-                  </h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• شعار خلفي + نص خلفي</li>
-                    <li>• شعارين في الجهة اليمنى</li>
-                    <li>• شعارين في الجهة اليسرى</li>
-                    <li>• شعار أو نص واحد في الأمام</li>
-                  </ul>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* التكاليف الإضافية */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-orange-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  التكاليف الإضافية
-                </h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    عنصر إضافي في الأمام (ريال)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={pricingData.additionalCosts.frontExtraItem}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "additionalCosts.frontExtraItem",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    شعار ثالث - جهة يمنى (ريال)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={pricingData.additionalCosts.rightSideThirdLogo}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "additionalCosts.rightSideThirdLogo",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    شعار ثالث - جهة يسرى (ريال)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={pricingData.additionalCosts.leftSideThirdLogo}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "additionalCosts.leftSideThirdLogo",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-            </motion.div>
-
-            {/* خصومات الكمية */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Percent className="w-5 h-5 text-green-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  خصومات الكمية
-                </h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    خصم 25 قطعة فأكثر (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value={Math.round(
-                      (pricingData.discounts?.quantity25 || 0) * 100
-                    )}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "discounts.quantity25",
-                        (parseInt(e.target.value) || 0) / 100
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    خصم 50 قطعة فأكثر (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value={Math.round(
-                      (pricingData.discounts?.quantity50 || 0) * 100
-                    )}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "discounts.quantity50",
-                        (parseInt(e.target.value) || 0) / 100
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    خصم 100 قطعة فأكثر (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value={Math.round(
-                      (pricingData.discounts?.quantity100 || 0) * 100
-                    )}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "discounts.quantity100",
-                        (parseInt(e.target.value) || 0) / 100
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              فشل في تحميل بيانات التسعير
-            </h3>
-            <p className="text-gray-600 mb-4">حدث خطأ أثناء تحميل البيانات</p>
+          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
             <button
-              onClick={loadPricingData}
-              className="px-6 py-3 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
+              onClick={() => {
+                setActiveTab("pricing");
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "pricing"
+                  ? "bg-[#563660] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
             >
-              إعادة المحاولة
+              <DollarSign className="w-5 h-5" />
+              إدارة الأسعار
             </button>
-          </div>
-        )}
 
-        {/* معلومات آخر تحديث */}
-        {pricingData && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-8 bg-gray-100 rounded-xl p-6"
-          >
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              معلومات آخر تحديث
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-gray-700">آخر تحديث:</span>
-                <p className="text-gray-600">
-                  {new Date(pricingData.lastUpdated).toLocaleString("ar-SA")}
-                </p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">
-                  تم التحديث بواسطة:
+            <button
+              onClick={() => {
+                setActiveTab("images");
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "images"
+                  ? "bg-[#563660] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <ImageIcon className="w-5 h-5" />
+              الشعارات الجاهزة
+            </button>
+
+            <button
+              onClick={() => navigate("/")}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <Home className="w-5 h-5" />
+              العودة للموقع
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors mt-4"
+            >
+              <LogOut className="w-5 h-5" />
+              تسجيل الخروج
+            </button>
+          </nav>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 pb-16 md:pb-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Status messages */}
+          <AnimatePresence>
+            {saveMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2"
+              >
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <span className="text-green-700">{saveMessage}</span>
+              </motion.div>
+            )}
+
+            {(pricingError || imagesError) && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2"
+              >
+                <AlertCircle className="w-5 h-5 text-red-600" />
+                <span className="text-red-700">
+                  {pricingError || imagesError}
                 </span>
-                <p className="text-gray-600">{pricingData.updatedBy}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Pricing Tab */}
+          {activeTab === "pricing" && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    إدارة الأسعار
+                  </h2>
+                  <p className="text-gray-600">تعديل أسعار خدمات دار الجود</p>
+                </div>
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving || !pricingData}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    حفظ
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    disabled={isSaving}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    إعادة تعيين
+                  </button>
+                  <button
+                    onClick={loadPricingData}
+                    disabled={isLoadingPricing}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    {isLoadingPricing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" />
+                    )}
+                    تحديث
+                  </button>
+                </div>
               </div>
+
+              {isLoadingPricing ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
+                  <p className="text-gray-600">جاري تحميل بيانات التسعير...</p>
+                </div>
+              ) : pricingData ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Base Price Card */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <DollarSign className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        السعر الأساسي
+                      </h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          السعر الأساسي (ريال)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={pricingData.basePrice}
+                          onChange={(e) =>
+                            updatePricingField(
+                              "basePrice",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                        <h4 className="font-medium text-blue-900 mb-2">
+                          يشمل السعر الأساسي:
+                        </h4>
+                        <ul className="text-blue-800 space-y-1">
+                          <li>• شعار خلفي + نص خلفي</li>
+                          <li>• شعارين في الجهة اليمنى</li>
+                          <li>• شعارين في الجهة اليسرى</li>
+                          <li>• شعار أو نص واحد في الأمام</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Costs Card */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        التكاليف الإضافية
+                      </h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          عنصر إضافي في الأمام (ريال)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={pricingData.additionalCosts.frontExtraItem}
+                          onChange={(e) =>
+                            updatePricingField(
+                              "additionalCosts.frontExtraItem",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          شعار ثالث - جهة يمنى (ريال)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={pricingData.additionalCosts.rightSideThirdLogo}
+                          onChange={(e) =>
+                            updatePricingField(
+                              "additionalCosts.rightSideThirdLogo",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          شعار ثالث - جهة يسرى (ريال)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={pricingData.additionalCosts.leftSideThirdLogo}
+                          onChange={(e) =>
+                            updatePricingField(
+                              "additionalCosts.leftSideThirdLogo",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-20">
+                  <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    فشل في تحميل بيانات التسعير
+                  </h3>
+                  <button
+                    onClick={loadPricingData}
+                    className="px-4 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
+                  >
+                    إعادة المحاولة
+                  </button>
+                </div>
+              )}
             </div>
-          </motion.div>
-        )}
-      </div>
+          )}
+
+          {/* Images Tab */}
+          {activeTab === "images" && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    الشعارات الجاهزة
+                  </h2>
+                  <p className="text-gray-600">إدارة مكتبة الشعارات الجاهزة</p>
+                </div>
+                <button
+                  onClick={loadPredefinedImages}
+                  disabled={isLoadingImages}
+                  className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  {isLoadingImages ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RotateCcw className="w-4 h-4" />
+                  )}
+                  تحديث القائمة
+                </button>
+              </div>
+
+              {/* Add New Image Form */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  إضافة شعار جديد
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      اسم الشعار
+                    </label>
+                    <input
+                      type="text"
+                      value={newImageData.name}
+                      onChange={(e) =>
+                        setNewImageData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                      placeholder="مثال: شعار الشركة"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      الفئة
+                    </label>
+                    <input
+                      type="text"
+                      value={newImageData.category}
+                      onChange={(e) =>
+                        setNewImageData((prev) => ({
+                          ...prev,
+                          category: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      الوصف
+                    </label>
+                    <input
+                      type="text"
+                      value={newImageData.description}
+                      onChange={(e) =>
+                        setNewImageData((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                      placeholder="وصف مختصر للشعار"
+                    />
+                  </div>
+                </div>
+
+                <CloudinaryImageUpload
+                  onImageSelect={handleAddPredefinedImage}
+                  acceptedFormats={[
+                    "image/jpeg",
+                    "image/jpg",
+                    "image/png",
+                    "image/webp",
+                  ]}
+                  maxFileSize={5}
+                  placeholder="اسحب الشعار هنا أو انقر للاختيار"
+                  aspectRatio={1}
+                  cropTitle="اقتطاع الشعار الجاهز"
+                  autoAddToLibrary={false}
+                />
+              </div>
+
+              {/* Images List */}
+              {isLoadingImages ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
+                  <p className="text-gray-600">
+                    جاري تحميل الشعارات الجاهزة...
+                  </p>
+                </div>
+              ) : predefinedImages.length > 0 ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-6">
+                    الشعارات المتاحة ({predefinedImages.length})
+                  </h3>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {predefinedImages.map((image) => (
+                      <div
+                        key={image.id}
+                        className="relative group bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                      >
+                        <div className="aspect-square p-2">
+                          <img
+                            src={image.url}
+                            alt={image.name}
+                            className="w-full h-full object-contain"
+                            loading="lazy"
+                          />
+                        </div>
+
+                        <div className="p-2 border-t border-gray-200">
+                          <h4 className="text-xs font-medium text-gray-900 truncate">
+                            {image.name}
+                          </h4>
+                          <p className="text-xs text-gray-500 truncate">
+                            {image.category}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => handleDeletePredefinedImage(image.id)}
+                          disabled={isLoadingImages}
+                          className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50"
+                          title="حذف"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-200">
+                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    لا توجد شعارات جاهزة
+                  </h3>
+                  <p className="text-gray-600">
+                    ابدأ بإضافة شعارات جاهزة للمجموعة
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 };

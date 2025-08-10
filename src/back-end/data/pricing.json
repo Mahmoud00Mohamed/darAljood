@@ -1,17 +1,17 @@
 {
-  "basePrice": 240,
+  "basePrice": 250,
   "includedItems": {
     "backLogo": true,
     "backText": true,
-    "rightSideLogos": 1,
+    "rightSideLogos": 2,
     "leftSideLogos": 2,
     "frontItems": 1
   },
   "additionalCosts": {
-    "frontExtraItem": 28,
-    "rightSideThirdLogo": 28,
-    "leftSideThirdLogo": 34
+    "frontExtraItem": 26,
+    "rightSideThirdLogo": 25,
+    "leftSideThirdLogo": 25
   },
-  "lastUpdated": "2025-08-10T05:19:17.631Z",
+  "lastUpdated": "2025-08-10T21:11:55.923Z",
   "updatedBy": "admin"
 }

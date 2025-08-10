@@ -209,7 +209,6 @@ class PricingModel {
       breakdown.totalPrice = totalPrice;
       let finalPrice = totalPrice * quantity;
 
-      // لا توجد خصومات كمية
       finalPrice = totalPrice * quantity;
       breakdown.appliedDiscount = null;
 

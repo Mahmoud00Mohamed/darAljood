@@ -1,12 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CloudinaryImageData } from "../services/imageUploadService";
+import predefinedImagesService from "../services/predefinedImagesService";
 
 export interface PredefinedImage {
   id: string;
   url: string;
   name: string;
-  category?: string;
+  category: string;
   description?: string;
+  publicId: string;
+  createdAt: string;
+  updatedBy: string;
+  width?: number;
+  height?: number;
+  format?: string;
+  size?: number;
 }
 
 export interface SelectedImage {
@@ -21,6 +29,17 @@ interface ImageLibraryContextType {
   // الصور الجاهزة
   predefinedImages: PredefinedImage[];
   loadPredefinedImages: () => Promise<void>;
+  addPredefinedImage: (
+    file: File,
+    name: string,
+    category: string,
+    description?: string
+  ) => Promise<void>;
+  deletePredefinedImage: (imageId: string) => Promise<void>;
+  updatePredefinedImage: (
+    imageId: string,
+    updates: { name?: string; category?: string; description?: string }
+  ) => Promise<void>;
 
   // صور المستخدم
   userImages: CloudinaryImageData[];
@@ -117,180 +136,100 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
     setError(null);
 
-    // استخدم البيانات المحلية مباشرة
-    const fallbackImages: PredefinedImage[] = [
-      {
-        id: "logo1",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924691/16_ubbdbh.png",
-        name: "شعار 1",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo2",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924689/15_l0llk1.png",
-        name: "شعار 2",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo3",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
-        name: "شعار 3",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo4",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924676/21_swow6t.png",
-        name: "شعار 4",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo5",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924675/22_c9rump.png",
-        name: "شعار 5",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo6",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924671/24_x6nvyt.png",
-        name: "شعار 6",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo7",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924669/20_guvnha.png",
-        name: "شعار 7",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo8",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924661/23_rroabu.png",
-        name: "شعار 8",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo9",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924658/18_cpbs4b.png",
-        name: "شعار 9",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo10",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924657/19_kxggs4.png",
-        name: "شعار 10",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo11",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924650/17_k8axov.png",
-        name: "شعار 11",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo12",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924644/12_woyybb.png",
-        name: "شعار 12",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo13",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924644/13_mvqmgk.png",
-        name: "شعار 13",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo14",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924636/11_revnd6.png",
-        name: "شعار 14",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo15",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
-        name: "شعار 15",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo16",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924627/7_ptxh2b.png",
-        name: "شعار 16",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo17",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924622/10_yhvn0o.png",
-        name: "شعار 17",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo18",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621/2_vobopy.png",
-        name: "شعار 18",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo19",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621/1_kqcgdh.png",
-        name: "شعار 19",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo20",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621/8_yoay91.png",
-        name: "شعار 20",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo21",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924610/6_xfyebx.png",
-        name: "شعار 21",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo22",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924609/5_oupz1k.png",
-        name: "شعار 22",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo23",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924603/3_k7zsjo.png",
-        name: "شعار 23",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-      {
-        id: "logo24",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924602/4_v07jhi.png",
-        name: "شعار 24",
-        category: "شعارات جاهزة",
-        description: "شعار جاهز للاستخدام",
-      },
-    ];
+    try {
+      const images = await predefinedImagesService.loadPredefinedImages();
+      setPredefinedImages(images);
+    } catch (error) {
+      console.error("Error loading predefined images:", error);
+      setError(
+        error instanceof Error ? error.message : "فشل في تحميل الشعارات الجاهزة"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    setPredefinedImages(fallbackImages);
-    setIsLoading(false);
+  // إضافة شعار جاهز جديد
+  const addPredefinedImage = async (
+    file: File,
+    name: string,
+    category: string,
+    description?: string
+  ) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const newImage = await predefinedImagesService.addPredefinedImage(
+        file,
+        name,
+        category,
+        description
+      );
+      setPredefinedImages((prev) => [...prev, newImage]);
+    } catch (error) {
+      console.error("Error adding predefined image:", error);
+      setError(
+        error instanceof Error ? error.message : "فشل في إضافة الشعار الجاهز"
+      );
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // حذف شعار جاهز
+  const deletePredefinedImage = async (imageId: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await predefinedImagesService.deletePredefinedImage(imageId);
+      setPredefinedImages((prev) => prev.filter((img) => img.id !== imageId));
+      // حذف من الصور المحددة أيضاً
+      setSelectedImages((prev) => prev.filter((img) => img.id !== imageId));
+    } catch (error) {
+      console.error("Error deleting predefined image:", error);
+      setError(
+        error instanceof Error ? error.message : "فشل في حذف الشعار الجاهز"
+      );
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // تحديث معلومات شعار جاهز
+  const updatePredefinedImage = async (
+    imageId: string,
+    updates: { name?: string; category?: string; description?: string }
+  ) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const updatedImage = await predefinedImagesService.updatePredefinedImage(
+        imageId,
+        updates
+      );
+      setPredefinedImages((prev) =>
+        prev.map((img) => (img.id === imageId ? updatedImage : img))
+      );
+      // تحديث في الصور المحددة أيضاً
+      setSelectedImages((prev) =>
+        prev.map((img) =>
+          img.id === imageId ? { ...img, name: updatedImage.name } : img
+        )
+      );
+    } catch (error) {
+      console.error("Error updating predefined image:", error);
+      setError(
+        error instanceof Error ? error.message : "فشل في تحديث الشعار الجاهز"
+      );
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // إضافة صورة مستخدم جديدة
@@ -370,6 +309,9 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         predefinedImages,
         loadPredefinedImages,
+        addPredefinedImage,
+        deletePredefinedImage,
+        updatePredefinedImage,
         userImages,
         addUserImage,
         removeUserImage,

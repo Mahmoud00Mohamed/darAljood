@@ -13,11 +13,6 @@ export interface PricingData {
     rightSideThirdLogo: number;
     leftSideThirdLogo: number;
   };
-  discounts?: {
-    quantity25: number;
-    quantity50: number;
-    quantity100: number;
-  };
   lastUpdated: string;
   updatedBy: string;
 }

@@ -23,7 +23,7 @@ export interface UploadError {
 }
 
 class ImageUploadService {
-  private baseUrl = "http://localhost:5173/api/upload";
+  private baseUrl = "http://localhost:3001/api/upload";
 
   /**
    * رفع صورة واحدة إلى Cloudinary

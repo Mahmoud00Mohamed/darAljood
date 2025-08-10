@@ -4,6 +4,7 @@ import { initializeCloudinary } from "./config/cloudinary.js";
 import uploadRoutes from "./routes/upload.js";
 import authRoutes from "./routes/auth.js";
 import pricingRoutes from "./routes/pricing.js";
+import predefinedImagesRoutes from "./routes/predefinedImages.js";
 import corsMiddleware from "./middleware/cors.js";
 import {
   uploadRateLimit,
@@ -56,6 +57,12 @@ app.get("/api/info", (req, res) => {
       getPricing: "GET /api/pricing",
       calculatePrice: "POST /api/pricing/calculate",
       updatePricing: "PUT /api/pricing (requires auth)",
+      getPredefinedImages: "GET /api/predefined-images",
+      addPredefinedImage: "POST /api/predefined-images (requires auth)",
+      deletePredefinedImage:
+        "DELETE /api/predefined-images/:imageId (requires auth)",
+      updatePredefinedImage:
+        "PUT /api/predefined-images/:imageId (requires auth)",
     },
   });
 });
@@ -68,6 +75,9 @@ app.use("/api/auth", authRoutes);
 
 // مسارات التسعير
 app.use("/api/pricing", pricingRoutes);
+
+// مسارات الشعارات الجاهزة
+app.use("/api/predefined-images", predefinedImagesRoutes);
 
 // معالج المسارات غير الموجودة
 app.use(notFoundHandler);
