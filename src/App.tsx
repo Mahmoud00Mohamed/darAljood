@@ -20,6 +20,7 @@ import TermsPage from "./pages/TermsPage";
 import ReturnPolicyPage from "./pages/ReturnPolicyPage";
 import CloudinaryTestPage from "./pages/CloudinaryTestPage";
 import ImageLibraryPage from "./pages/ImageLibraryPage";
+import AdminPanelPage from "./pages/AdminPanelPage";
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -65,6 +66,7 @@ function App() {
                   element={<CloudinaryTestPage />}
                 />
                 <Route path="/image-library" element={<ImageLibraryPage />} />
+                <Route path="/admin" element={<AdminPanelPage />} />
               </Routes>
             </Layout>
           </Router>

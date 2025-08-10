@@ -1,3 +1,7 @@
+// ملاحظة: تم نقل منطق التسعير إلى الباك إند
+// هذا الملف محتفظ به للتوافق مع الكود القديم فقط
+// استخدم usePricing hook أو pricingService للحصول على الأسعار من الباك إند
+
 export interface PricingConfig {
   basePrice: number;
   includedItems: {
@@ -36,6 +40,9 @@ export const calculateTotalPrice = (
   rightSideLogos: number,
   leftSideLogos: number
 ): number => {
+  console.warn(
+    "تحذير: يتم استخدام حساب السعر المحلي. يُفضل استخدام pricingService من الباك إند"
+  );
   let totalPrice = PRICING_CONFIG.basePrice;
 
   const totalFrontItems = frontLogos + frontTexts;
@@ -69,6 +76,9 @@ export const getPricingBreakdown = (
   rightSideLogos: number,
   leftSideLogos: number
 ) => {
+  console.warn(
+    "تحذير: يتم استخدام حساب التفاصيل المحلي. يُفضل استخدام pricingService من الباك إند"
+  );
   const breakdown = {
     basePrice: PRICING_CONFIG.basePrice,
     additionalCosts: [] as Array<{

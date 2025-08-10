@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CustomizationSidebar from "../sidebar/CustomizationSidebar";
 import JacketViewer from "../jacket/JacketViewer";
@@ -16,9 +16,10 @@ import {
   ArrowLeft,
   Info,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getPricingBreakdown } from "../../constants/pricing";
+import { usePricing } from "../../hooks/usePricing";
 import ConfirmationModal from "../ui/ConfirmationModal";
 import { useModal } from "../../hooks/useModal";
 import fontPreloader from "../../utils/fontPreloader";
@@ -27,11 +28,28 @@ const JacketCustomizer: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const { jacketState } = useJacket();
   const { addToCart, items } = useCart();
+  const { calculatePrice } = usePricing();
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showPricingDetails, setShowPricingDetails] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isCapturingImages, setIsCapturingImages] = useState(false);
+  const [pricingBreakdown, setPricingBreakdown] = useState<{
+    basePrice: number;
+    additionalCosts: Array<{
+      item: string;
+      cost: number;
+      quantity: number;
+    }>;
+    totalPrice: number;
+    appliedDiscount: {
+      type: string;
+      percentage: number;
+      amount: number;
+    } | null;
+    finalPrice: number;
+  } | null>(null);
+  const [isLoadingPricing, setIsLoadingPricing] = useState(false);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
 
@@ -100,33 +118,57 @@ const JacketCustomizer: React.FC = () => {
     setShowMobileDetails((prev) => !prev);
   };
 
-  // حساب تفاصيل التسعير
-  const frontLogos = jacketState.logos.filter((logo) =>
-    ["chestRight", "chestLeft"].includes(logo.position)
-  ).length;
+  // حساب تفاصيل التسعير من الباك إند
+  useEffect(() => {
+    const loadPricingBreakdown = async () => {
+      setIsLoadingPricing(true);
+      try {
+        const frontLogos = jacketState.logos.filter((logo) =>
+          ["chestRight", "chestLeft"].includes(logo.position)
+        ).length;
 
-  const frontTexts = jacketState.texts.filter((text) =>
-    ["chestRight", "chestLeft"].includes(text.position)
-  ).length;
+        const frontTexts = jacketState.texts.filter((text) =>
+          ["chestRight", "chestLeft"].includes(text.position)
+        ).length;
 
-  const rightSideLogos = jacketState.logos.filter((logo) =>
-    ["rightSide_top", "rightSide_middle", "rightSide_bottom"].includes(
-      logo.position
-    )
-  ).length;
+        const rightSideLogos = jacketState.logos.filter((logo) =>
+          ["rightSide_top", "rightSide_middle", "rightSide_bottom"].includes(
+            logo.position
+          )
+        ).length;
 
-  const leftSideLogos = jacketState.logos.filter((logo) =>
-    ["leftSide_top", "leftSide_middle", "leftSide_bottom"].includes(
-      logo.position
-    )
-  ).length;
+        const leftSideLogos = jacketState.logos.filter((logo) =>
+          ["leftSide_top", "leftSide_middle", "leftSide_bottom"].includes(
+            logo.position
+          )
+        ).length;
 
-  const pricingBreakdown = getPricingBreakdown(
-    frontLogos,
-    frontTexts,
-    rightSideLogos,
-    leftSideLogos
-  );
+        const result = await calculatePrice(
+          frontLogos,
+          frontTexts,
+          rightSideLogos,
+          leftSideLogos,
+          quantity
+        );
+
+        setPricingBreakdown(result.breakdown);
+      } catch (error) {
+        console.error("Error loading pricing breakdown:", error);
+        // استخدام القيم الافتراضية في حالة الخطأ
+        setPricingBreakdown({
+          basePrice: 220,
+          additionalCosts: [],
+          totalPrice: 220,
+          appliedDiscount: null,
+          finalPrice: 220 * quantity,
+        });
+      } finally {
+        setIsLoadingPricing(false);
+      }
+    };
+
+    loadPricingBreakdown();
+  }, [jacketState.logos, jacketState.texts, quantity, calculatePrice]);
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-white jacket-customizer-container">
@@ -140,7 +182,6 @@ const JacketCustomizer: React.FC = () => {
           <JacketImageCapture ref={jacketImageCaptureRef} />
         </div>
 
-        {/* Success Message */}
         {/* Success Message */}
         <AnimatePresence>
           {showSuccessMessage && (
@@ -258,6 +299,9 @@ const JacketCustomizer: React.FC = () => {
                 <span className="text-sm font-medium text-gray-700">
                   تفاصيل السعر
                 </span>
+                {isLoadingPricing && (
+                  <Loader2 className="w-4 h-4 animate-spin text-[#563660]" />
+                )}
                 <button
                   onClick={() => setShowPricingDetails(!showPricingDetails)}
                   className="text-xs text-[#563660] hover:text-[#4b2e55] transition-colors flex items-center gap-1"
@@ -271,12 +315,12 @@ const JacketCustomizer: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">السعر الأساسي:</span>
                   <span className="font-medium">
-                    {pricingBreakdown.basePrice} ريال
+                    {pricingBreakdown?.basePrice ?? 220} ريال
                   </span>
                 </div>
 
                 <AnimatePresence>
-                  {showPricingDetails && (
+                  {showPricingDetails && pricingBreakdown && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
@@ -293,7 +337,7 @@ const JacketCustomizer: React.FC = () => {
                         <div>• شعار أو نص واحد في الأمام</div>
                       </div>
 
-                      {pricingBreakdown.additionalCosts.length > 0 && (
+                      {pricingBreakdown.additionalCosts?.length > 0 && (
                         <>
                           <div className="text-xs text-gray-500 mt-3 mb-2">
                             التكاليف الإضافية:
@@ -322,7 +366,8 @@ const JacketCustomizer: React.FC = () => {
                 <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
                   <span>الإجمالي:</span>
                   <span className="gold-text-gradient">
-                    {jacketState.totalPrice} ريال
+                    {pricingBreakdown?.finalPrice ?? jacketState.totalPrice}{" "}
+                    ريال
                   </span>
                 </div>
               </div>
@@ -359,7 +404,9 @@ const JacketCustomizer: React.FC = () => {
               <div className="flex justify-between items-center text-lg font-semibold">
                 <span>الإجمالي:</span>
                 <span className="gold-text-gradient">
-                  {jacketState.totalPrice * quantity} ريال
+                  {pricingBreakdown?.finalPrice ??
+                    jacketState.totalPrice * quantity}{" "}
+                  ريال
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-1">شامل الشحن</p>
@@ -486,12 +533,12 @@ const JacketCustomizer: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">السعر الأساسي:</span>
                       <span className="font-medium">
-                        {pricingBreakdown.basePrice} ريال
+                        {pricingBreakdown?.basePrice ?? 220} ريال
                       </span>
                     </div>
 
                     <AnimatePresence>
-                      {showPricingDetails && (
+                      {showPricingDetails && pricingBreakdown && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
@@ -508,13 +555,20 @@ const JacketCustomizer: React.FC = () => {
                             <div>• شعار أو نص واحد في الأمام</div>
                           </div>
 
-                          {pricingBreakdown.additionalCosts.length > 0 && (
+                          {pricingBreakdown.additionalCosts?.length > 0 && (
                             <>
                               <div className="text-xs text-gray-500 mt-3 mb-2">
                                 التكاليف الإضافية:
                               </div>
                               {pricingBreakdown.additionalCosts.map(
-                                (cost, index) => (
+                                (
+                                  cost: {
+                                    item: string;
+                                    cost: number;
+                                    quantity: number;
+                                  },
+                                  index: number
+                                ) => (
                                   <div
                                     key={index}
                                     className="flex justify-between text-xs"
@@ -530,6 +584,28 @@ const JacketCustomizer: React.FC = () => {
                               )}
                             </>
                           )}
+
+                          {pricingBreakdown.appliedDiscount && (
+                            <div className="p-3 bg-green-50 rounded-lg text-xs text-green-800 border border-green-200">
+                              <div className="font-semibold mb-1">
+                                خصم الكمية:
+                              </div>
+                              <div className="flex justify-between">
+                                <span>
+                                  خصم{" "}
+                                  {pricingBreakdown.appliedDiscount.percentage}
+                                  %:
+                                </span>
+                                <span>
+                                  -
+                                  {Math.round(
+                                    pricingBreakdown.appliedDiscount.amount
+                                  )}{" "}
+                                  ريال
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -537,7 +613,8 @@ const JacketCustomizer: React.FC = () => {
                     <div className="flex justify-between items-center text-base font-semibold border-t pt-2">
                       <span>الإجمالي:</span>
                       <span className="gold-text-gradient">
-                        {jacketState.totalPrice} ريال
+                        {pricingBreakdown?.finalPrice ?? jacketState.totalPrice}{" "}
+                        ريال
                       </span>
                     </div>
                   </div>
@@ -575,7 +652,9 @@ const JacketCustomizer: React.FC = () => {
                     الإجمالي النهائي:
                   </span>
                   <span className="text-base font-semibold gold-text-gradient">
-                    {jacketState.totalPrice * quantity} ريال
+                    {pricingBreakdown?.finalPrice ??
+                      jacketState.totalPrice * quantity}{" "}
+                    ريال
                   </span>
                 </div>
 

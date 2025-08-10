@@ -2,6 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import { initializeCloudinary } from "./config/cloudinary.js";
 import uploadRoutes from "./routes/upload.js";
+import authRoutes from "./routes/auth.js";
+import pricingRoutes from "./routes/pricing.js";
 import corsMiddleware from "./middleware/cors.js";
 import {
   uploadRateLimit,
@@ -50,12 +52,22 @@ app.get("/api/info", (req, res) => {
       uploadMultiple: "POST /api/upload/multiple",
       deleteImage: "DELETE /api/upload/:publicId",
       getImageInfo: "GET /api/upload/:publicId",
+      adminLogin: "POST /api/auth/login",
+      getPricing: "GET /api/pricing",
+      calculatePrice: "POST /api/pricing/calculate",
+      updatePricing: "PUT /api/pricing (requires auth)",
     },
   });
 });
 
 // مسارات رفع الصور مع rate limiting خاص
 app.use("/api/upload", uploadRateLimit, uploadRoutes);
+
+// مسارات المصادقة
+app.use("/api/auth", authRoutes);
+
+// مسارات التسعير
+app.use("/api/pricing", pricingRoutes);
 
 // معالج المسارات غير الموجودة
 app.use(notFoundHandler);

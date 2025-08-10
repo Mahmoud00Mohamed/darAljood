@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { calculateTotalPrice } from "../constants/pricing";
+import pricingService from "../services/pricingService";
 
 export type JacketPart = "body" | "sleeves" | "trim";
 export type JacketView = "front" | "back" | "right" | "left";
@@ -30,7 +30,7 @@ export interface Logo {
   x: number;
   y: number;
   scale: number;
-  rotation?: number; // إضافة خاصية الميل
+  rotation?: number;
 }
 
 export interface CustomText {
@@ -57,7 +57,7 @@ export interface UploadedImage {
   url: string;
   name: string;
   uploadedAt: Date;
-  publicId?: string; // إضافة publicId للتكامل مع Cloudinary
+  publicId?: string;
 }
 
 export interface JacketState {
@@ -70,6 +70,21 @@ export interface JacketState {
   totalPrice: number;
   isCapturing: boolean;
   uploadedImages: UploadedImage[];
+  pricingBreakdown?: {
+    basePrice: number;
+    additionalCosts: Array<{
+      item: string;
+      cost: number;
+      quantity: number;
+    }>;
+    totalPrice: number;
+    appliedDiscount: {
+      type: string;
+      percentage: number;
+      amount: number;
+    } | null;
+    finalPrice: number;
+  };
 }
 
 export interface JacketContextType {
@@ -89,6 +104,8 @@ export interface JacketContextType {
   addUploadedImage: (image: UploadedImage) => void;
   findExistingImage: (imageData: string) => UploadedImage | null;
   getUploadedImages: () => UploadedImage[];
+  updatePricing: (quantity?: number) => Promise<void>;
+  isLoadingPrice: boolean;
 }
 
 const defaultColors: Record<JacketPart, string> = {
@@ -170,6 +187,7 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
                 })
               )
             : [],
+          pricingBreakdown: parsedState.pricingBreakdown || undefined,
         };
       }
       return initialState;
@@ -179,7 +197,9 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoadingPrice, setIsLoadingPrice] = useState(false);
 
+  // حفظ الحالة في localStorage
   useEffect(() => {
     if (!isInitialized) {
       setIsInitialized(true);
@@ -196,6 +216,84 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     return () => clearTimeout(timeoutId);
   }, [jacketState, isInitialized]);
+
+  // حساب السعر من الباك إند
+  const calculatePriceFromBackend = useCallback(
+    async (quantity: number = 1) => {
+      setIsLoadingPrice(true);
+      try {
+        const frontLogos = jacketState.logos.filter((logo) =>
+          ["chestRight", "chestLeft"].includes(logo.position)
+        ).length;
+
+        const frontTexts = jacketState.texts.filter((text) =>
+          ["chestRight", "chestLeft"].includes(text.position)
+        ).length;
+
+        const rightSideLogos = jacketState.logos.filter((logo) =>
+          ["rightSide_top", "rightSide_middle", "rightSide_bottom"].includes(
+            logo.position
+          )
+        ).length;
+
+        const leftSideLogos = jacketState.logos.filter((logo) =>
+          ["leftSide_top", "leftSide_middle", "leftSide_bottom"].includes(
+            logo.position
+          )
+        ).length;
+
+        const result = await pricingService.calculatePrice(
+          frontLogos,
+          frontTexts,
+          rightSideLogos,
+          leftSideLogos,
+          quantity
+        );
+
+        return {
+          totalPrice: result.totalPrice,
+          breakdown: result.breakdown,
+        };
+      } catch (error) {
+        console.error("Error calculating price from backend:", error);
+        // استخدام السعر الافتراضي في حالة الخطأ
+        return {
+          totalPrice: 220,
+          breakdown: {
+            basePrice: 220,
+            additionalCosts: [],
+            totalPrice: 220,
+            appliedDiscount: null,
+            finalPrice: 220 * quantity,
+          },
+        };
+      } finally {
+        setIsLoadingPrice(false);
+      }
+    },
+    [jacketState.logos, jacketState.texts]
+  );
+
+  // تحديث السعر
+  const updatePricing = useCallback(
+    async (quantity: number = 1) => {
+      const pricingResult = await calculatePriceFromBackend(quantity);
+
+      setJacketState((prev) => ({
+        ...prev,
+        totalPrice: pricingResult.totalPrice,
+        pricingBreakdown: pricingResult.breakdown,
+      }));
+    },
+    [calculatePriceFromBackend]
+  );
+
+  // تحديث السعر عند تغيير الشعارات أو النصوص
+  useEffect(() => {
+    if (isInitialized) {
+      updatePricing();
+    }
+  }, [jacketState.logos, jacketState.texts, isInitialized, updatePricing]);
 
   const setColor = useCallback((part: JacketPart, color: string) => {
     setJacketState((prev) => ({
@@ -316,47 +414,6 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
     return jacketState.uploadedImages;
   }, [jacketState.uploadedImages]);
 
-  const calculatePrice = useCallback(() => {
-    const frontLogos = jacketState.logos.filter((logo) =>
-      ["chestRight", "chestLeft"].includes(logo.position)
-    ).length;
-
-    const frontTexts = jacketState.texts.filter((text) =>
-      ["chestRight", "chestLeft"].includes(text.position)
-    ).length;
-
-    const rightSideLogos = jacketState.logos.filter((logo) =>
-      ["rightSide_top", "rightSide_middle", "rightSide_bottom"].includes(
-        logo.position
-      )
-    ).length;
-
-    const leftSideLogos = jacketState.logos.filter((logo) =>
-      ["leftSide_top", "leftSide_middle", "leftSide_bottom"].includes(
-        logo.position
-      )
-    ).length;
-
-    return calculateTotalPrice(
-      frontLogos,
-      frontTexts,
-      rightSideLogos,
-      leftSideLogos
-    );
-  }, [jacketState.logos, jacketState.texts]);
-
-  useEffect(() => {
-    if (isInitialized) {
-      const newPrice = calculatePrice();
-      if (newPrice !== jacketState.totalPrice) {
-        setJacketState((prev) => ({
-          ...prev,
-          totalPrice: newPrice,
-        }));
-      }
-    }
-  }, [calculatePrice, jacketState.totalPrice, isInitialized]);
-
   return (
     <JacketContext.Provider
       value={{
@@ -376,6 +433,8 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
         addUploadedImage,
         findExistingImage,
         getUploadedImages,
+        updatePricing,
+        isLoadingPrice,
       }}
     >
       {children}
