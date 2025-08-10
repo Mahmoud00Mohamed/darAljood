@@ -1,5 +1,5 @@
-import rateLimit from 'express-rate-limit';
-import helmet from 'helmet';
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 // تحديد معدل الطلبات لرفع الصور
 export const uploadRateLimit = rateLimit({
@@ -7,8 +7,8 @@ export const uploadRateLimit = rateLimit({
   max: 50, // حد أقصى 50 طلب رفع لكل IP في 15 دقيقة
   message: {
     success: false,
-    message: 'تم تجاوز الحد المسموح لرفع الصور. يرجى المحاولة لاحقاً',
-    error: 'RATE_LIMIT_EXCEEDED'
+    message: "تم تجاوز الحد المسموح لرفع الصور. يرجى المحاولة لاحقاً",
+    error: "RATE_LIMIT_EXCEEDED",
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -20,8 +20,8 @@ export const generalRateLimit = rateLimit({
   max: 200, // حد أقصى 200 طلب لكل IP في 15 دقيقة
   message: {
     success: false,
-    message: 'تم تجاوز الحد المسموح للطلبات. يرجى المحاولة لاحقاً',
-    error: 'RATE_LIMIT_EXCEEDED'
+    message: "تم تجاوز الحد المسموح للطلبات. يرجى المحاولة لاحقاً",
+    error: "RATE_LIMIT_EXCEEDED",
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -43,17 +43,17 @@ export const securityHeaders = helmet({
 
 // التحقق من صحة Content-Type للصور
 export const validateImageContentType = (req, res, next) => {
-  if (req.method === 'POST' && req.path.includes('/upload/')) {
-    const contentType = req.get('Content-Type');
-    
-    if (!contentType || !contentType.includes('multipart/form-data')) {
+  if (req.method === "POST" && req.path.includes("/upload/")) {
+    const contentType = req.get("Content-Type");
+
+    if (!contentType || !contentType.includes("multipart/form-data")) {
       return res.status(400).json({
         success: false,
-        message: 'نوع المحتوى يجب أن يكون multipart/form-data',
-        error: 'INVALID_CONTENT_TYPE'
+        message: "نوع المحتوى يجب أن يكون multipart/form-data",
+        error: "INVALID_CONTENT_TYPE",
       });
     }
   }
-  
+
   next();
 };

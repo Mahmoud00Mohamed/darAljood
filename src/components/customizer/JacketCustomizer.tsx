@@ -275,7 +275,7 @@ const JacketCustomizer: React.FC = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-6"
+            className="space-y-6 flex-1 flex flex-col"
           >
             <h2 className="text-2xl font-light text-gray-900 gold-text-gradient">
               تخصيص الجاكيت
@@ -394,10 +394,6 @@ const JacketCustomizer: React.FC = () => {
                   <Plus size={16} className="text-white" />
                 </button>
               </div>
-
-              <p className="text-xs text-green-600 mt-2">
-                خصم 17% عند طلب 25 قطعة أو أكثر
-              </p>
             </div>
 
             <div className="bg-gray-50 p-4 rounded-xl">
@@ -412,7 +408,7 @@ const JacketCustomizer: React.FC = () => {
               <p className="text-xs text-gray-500 mt-1">شامل الشحن</p>
             </div>
 
-            <div className="space-y-3 text-sm text-gray-600">
+            <div className="space-y-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-xl">
               <div className="flex justify-between">
                 <span>مدة الإنتاج:</span>
                 <span className="font-medium">شهر إلى 45 يوم</span>
@@ -427,7 +423,7 @@ const JacketCustomizer: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 mt-auto">
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={handleAddToCart}
@@ -584,28 +580,6 @@ const JacketCustomizer: React.FC = () => {
                               )}
                             </>
                           )}
-
-                          {pricingBreakdown.appliedDiscount && (
-                            <div className="p-3 bg-green-50 rounded-lg text-xs text-green-800 border border-green-200">
-                              <div className="font-semibold mb-1">
-                                خصم الكمية:
-                              </div>
-                              <div className="flex justify-between">
-                                <span>
-                                  خصم{" "}
-                                  {pricingBreakdown.appliedDiscount.percentage}
-                                  %:
-                                </span>
-                                <span>
-                                  -
-                                  {Math.round(
-                                    pricingBreakdown.appliedDiscount.amount
-                                  )}{" "}
-                                  ريال
-                                </span>
-                              </div>
-                            </div>
-                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -672,10 +646,6 @@ const JacketCustomizer: React.FC = () => {
                     <span className="font-medium">السعودية فقط</span>
                   </div>
                 </div>
-
-                <p className="text-xs text-green-600 text-center">
-                  خصم 17% عند طلب 25 قطعة أو أكثر
-                </p>
 
                 <div className="space-y-3">
                   <motion.button

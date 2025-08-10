@@ -15,7 +15,6 @@ import {
   CheckCircle,
   Loader2,
   TrendingUp,
-  Package,
   Percent,
 } from "lucide-react";
 import authService, { LoginCredentials } from "../services/authService";
@@ -596,7 +595,9 @@ const AdminPanelPage: React.FC = () => {
                     min="0"
                     max="100"
                     step="1"
-                    value={Math.round(pricingData.discounts.quantity25 * 100)}
+                    value={Math.round(
+                      (pricingData.discounts?.quantity25 || 0) * 100
+                    )}
                     onChange={(e) =>
                       updatePricingField(
                         "discounts.quantity25",
@@ -616,7 +617,9 @@ const AdminPanelPage: React.FC = () => {
                     min="0"
                     max="100"
                     step="1"
-                    value={Math.round(pricingData.discounts.quantity50 * 100)}
+                    value={Math.round(
+                      (pricingData.discounts?.quantity50 || 0) * 100
+                    )}
                     onChange={(e) =>
                       updatePricingField(
                         "discounts.quantity50",
@@ -636,90 +639,13 @@ const AdminPanelPage: React.FC = () => {
                     min="0"
                     max="100"
                     step="1"
-                    value={Math.round(pricingData.discounts.quantity100 * 100)}
+                    value={Math.round(
+                      (pricingData.discounts?.quantity100 || 0) * 100
+                    )}
                     onChange={(e) =>
                       updatePricingField(
                         "discounts.quantity100",
                         (parseInt(e.target.value) || 0) / 100
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-            </motion.div>
-
-            {/* العناصر المشمولة */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-5 h-5 text-purple-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  العناصر المشمولة
-                </h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    عدد الشعارات المشمولة - جهة يمنى
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="1"
-                    value={pricingData.includedItems.rightSideLogos}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "includedItems.rightSideLogos",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    عدد الشعارات المشمولة - جهة يسرى
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="1"
-                    value={pricingData.includedItems.leftSideLogos}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "includedItems.leftSideLogos",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    عدد العناصر المشمولة في الأمام
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="1"
-                    value={pricingData.includedItems.frontItems}
-                    onChange={(e) =>
-                      updatePricingField(
-                        "includedItems.frontItems",
-                        parseInt(e.target.value) || 0
                       )
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"

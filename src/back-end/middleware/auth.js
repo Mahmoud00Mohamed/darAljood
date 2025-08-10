@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -9,7 +9,7 @@ export const validateAdminCredentials = (username, password) => {
   const adminPassword = process.env.ADMIN_PASSWORD;
 
   if (!adminUsername || !adminPassword) {
-    throw new Error('بيانات المدير غير مكونة في ملف البيئة');
+    throw new Error("بيانات المدير غير مكونة في ملف البيئة");
   }
 
   return username === adminUsername && password === adminPassword;
@@ -18,34 +18,34 @@ export const validateAdminCredentials = (username, password) => {
 // إنشاء JWT token
 export const generateToken = (username) => {
   const secret = process.env.JWT_SECRET;
-  
+
   if (!secret) {
-    throw new Error('JWT secret غير مكون في ملف البيئة');
+    throw new Error("JWT secret غير مكون في ملف البيئة");
   }
 
   return jwt.sign(
-    { 
-      username, 
-      role: 'admin',
-      iat: Date.now() 
+    {
+      username,
+      role: "admin",
+      iat: Date.now(),
     },
     secret,
-    { expiresIn: '24h' }
+    { expiresIn: "24h" }
   );
 };
 
 // التحقق من صحة JWT token
 export const verifyToken = (token) => {
   const secret = process.env.JWT_SECRET;
-  
+
   if (!secret) {
-    throw new Error('JWT secret غير مكون في ملف البيئة');
+    throw new Error("JWT secret غير مكون في ملف البيئة");
   }
 
   try {
     return jwt.verify(token, secret);
   } catch (error) {
-    throw new Error('رمز المصادقة غير صحيح أو منتهي الصلاحية');
+    throw new Error("رمز المصادقة غير صحيح أو منتهي الصلاحية");
   }
 };
 
@@ -53,28 +53,28 @@ export const verifyToken = (token) => {
 export const authenticateAdmin = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        message: 'رمز المصادقة مطلوب',
-        error: 'UNAUTHORIZED'
+        message: "رمز المصادقة مطلوب",
+        error: "UNAUTHORIZED",
       });
     }
 
     const token = authHeader.substring(7); // إزالة "Bearer "
     const decoded = verifyToken(token);
-    
+
     // إضافة معلومات المستخدم إلى الطلب
     req.admin = decoded;
     next();
   } catch (error) {
-    console.error('Authentication error:', error);
-    
+    console.error("Authentication error:", error);
+
     return res.status(401).json({
       success: false,
-      message: error.message || 'فشل في التحقق من الهوية',
-      error: 'AUTHENTICATION_FAILED'
+      message: error.message || "فشل في التحقق من الهوية",
+      error: "AUTHENTICATION_FAILED",
     });
   }
 };
@@ -86,16 +86,16 @@ export const validateLoginData = (req, res, next) => {
   if (!username || !password) {
     return res.status(400).json({
       success: false,
-      message: 'اسم المستخدم وكلمة المرور مطلوبان',
-      error: 'MISSING_CREDENTIALS'
+      message: "اسم المستخدم وكلمة المرور مطلوبان",
+      error: "MISSING_CREDENTIALS",
     });
   }
 
-  if (typeof username !== 'string' || typeof password !== 'string') {
+  if (typeof username !== "string" || typeof password !== "string") {
     return res.status(400).json({
       success: false,
-      message: 'بيانات تسجيل الدخول غير صحيحة',
-      error: 'INVALID_CREDENTIALS_FORMAT'
+      message: "بيانات تسجيل الدخول غير صحيحة",
+      error: "INVALID_CREDENTIALS_FORMAT",
     });
   }
 

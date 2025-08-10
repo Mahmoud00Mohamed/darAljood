@@ -23,11 +23,6 @@ const DEFAULT_PRICING = {
     rightSideThirdLogo: 25,
     leftSideThirdLogo: 25,
   },
-  discounts: {
-    quantity25: 0.17, // 17% خصم للطلبات 25 قطعة فأكثر
-    quantity50: 0.2, // 20% خصم للطلبات 50 قطعة فأكثر
-    quantity100: 0.25, // 25% خصم للطلبات 100 قطعة فأكثر
-  },
   lastUpdated: new Date().toISOString(),
   updatedBy: "system",
 };
@@ -145,14 +140,7 @@ class PricingModel {
         }
 
         // تطبيق خصومات الكمية
-        let finalPrice = totalPrice * quantity;
-        if (quantity >= 100 && pricing.discounts.quantity100) {
-          finalPrice = finalPrice * (1 - pricing.discounts.quantity100);
-        } else if (quantity >= 50 && pricing.discounts.quantity50) {
-          finalPrice = finalPrice * (1 - pricing.discounts.quantity50);
-        } else if (quantity >= 25 && pricing.discounts.quantity25) {
-          finalPrice = finalPrice * (1 - pricing.discounts.quantity25);
-        }
+        const finalPrice = totalPrice * quantity;
 
         resolve(Math.round(finalPrice));
       } catch (error) {
@@ -221,32 +209,9 @@ class PricingModel {
       breakdown.totalPrice = totalPrice;
       let finalPrice = totalPrice * quantity;
 
-      // تطبيق خصومات الكمية
-      if (quantity >= 100 && pricing.discounts.quantity100) {
-        const discount = pricing.discounts.quantity100;
-        finalPrice = finalPrice * (1 - discount);
-        breakdown.appliedDiscount = {
-          type: "quantity100",
-          percentage: discount * 100,
-          amount: totalPrice * quantity - finalPrice,
-        };
-      } else if (quantity >= 50 && pricing.discounts.quantity50) {
-        const discount = pricing.discounts.quantity50;
-        finalPrice = finalPrice * (1 - discount);
-        breakdown.appliedDiscount = {
-          type: "quantity50",
-          percentage: discount * 100,
-          amount: totalPrice * quantity - finalPrice,
-        };
-      } else if (quantity >= 25 && pricing.discounts.quantity25) {
-        const discount = pricing.discounts.quantity25;
-        finalPrice = finalPrice * (1 - discount);
-        breakdown.appliedDiscount = {
-          type: "quantity25",
-          percentage: discount * 100,
-          amount: totalPrice * quantity - finalPrice,
-        };
-      }
+      // لا توجد خصومات كمية
+      finalPrice = totalPrice * quantity;
+      breakdown.appliedDiscount = null;
 
       breakdown.finalPrice = Math.round(finalPrice);
 
