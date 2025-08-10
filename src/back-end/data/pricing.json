@@ -8,15 +8,15 @@
     "frontItems": 1
   },
   "additionalCosts": {
-    "frontExtraItem": 26,
-    "rightSideThirdLogo": 25,
-    "leftSideThirdLogo": 25
+    "frontExtraItem": 30,
+    "rightSideThirdLogo": 30,
+    "leftSideThirdLogo": 35
   },
   "discounts": {
     "quantity25": 0.23,
     "quantity50": 0.2,
     "quantity100": 0.25
   },
-  "lastUpdated": "2025-08-10T02:29:15.344Z",
+  "lastUpdated": "2025-08-10T04:34:11.033Z",
   "updatedBy": "admin"
 }

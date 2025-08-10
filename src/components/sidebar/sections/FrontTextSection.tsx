@@ -5,10 +5,11 @@ import {
   CustomText,
 } from "../../../context/JacketContext";
 import { Type, Trash2, Move, Link2, Unlink, AlertCircle } from "lucide-react";
-import { PRICING_CONFIG } from "../../../constants/pricing";
+import { usePricing } from "../../../hooks/usePricing";
 
 const FrontTextSection: React.FC = () => {
   const { jacketState, addText, updateText, removeText } = useJacket();
+  const { pricingData } = usePricing();
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
   const [content, setContent] = useState("");
   const [position, setPosition] = useState<TextPosition>("chestRight");
@@ -39,7 +40,7 @@ const FrontTextSection: React.FC = () => {
 
   const totalFrontItems = frontLogos + frontTexts;
   const isExtraItem =
-    totalFrontItems >= PRICING_CONFIG.includedItems.frontItems;
+    totalFrontItems >= (pricingData?.includedItems.frontItems || 1);
 
   useEffect(() => {
     const occupiedPositions = [
@@ -145,7 +146,7 @@ const FrontTextSection: React.FC = () => {
               <p className="text-amber-800 font-medium">تكلفة إضافية</p>
               <p className="text-amber-700">
                 إضافة شعار أو نص إضافي في الأمام سيكلف{" "}
-                {PRICING_CONFIG.additionalCosts.frontExtraItem} ريال
+                {pricingData?.additionalCosts.frontExtraItem || 25} ريال
               </p>
             </div>
           </div>
@@ -498,7 +499,8 @@ const FrontTextSection: React.FC = () => {
       <div className="p-3 bg-purple-50 rounded-lg text-xs text-purple-700 border border-purple-200">
         <p>
           * العنصر الأول في الأمام مشمول في السعر الأساسي، يتم إضافة{" "}
-          {PRICING_CONFIG.additionalCosts.frontExtraItem} ريال لكل عنصر إضافي
+          {pricingData?.additionalCosts.frontExtraItem || 25} ريال لكل عنصر
+          إضافي
         </p>
       </div>
     </div>

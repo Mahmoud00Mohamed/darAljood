@@ -1,10 +1,11 @@
 import React from "react";
 import LogoUploadSection from "./shared/LogoUploadSection";
 import { LogoPosition, useJacket } from "../../../context/JacketContext";
-import { PRICING_CONFIG } from "../../../constants/pricing";
+import { usePricing } from "../../../hooks/usePricing";
 
 const LeftLogoSection: React.FC = () => {
   const { jacketState } = useJacket();
+  const { pricingData } = usePricing();
 
   const logoPositions: { id: LogoPosition; name: string }[] = [
     { id: "leftSide_top", name: "الجانب الأيسر - أعلى" },
@@ -20,7 +21,7 @@ const LeftLogoSection: React.FC = () => {
 
   const leftSideLogos = filteredLogos.length;
   const isThirdLogo =
-    leftSideLogos >= PRICING_CONFIG.includedItems.leftSideLogos;
+    leftSideLogos >= (pricingData?.includedItems.leftSideLogos || 2);
 
   return (
     <div className="space-y-6">
@@ -32,9 +33,11 @@ const LeftLogoSection: React.FC = () => {
         showPredefinedLogos={false}
         pricingInfo={{
           isExtraItem: isThirdLogo,
-          extraCost: PRICING_CONFIG.additionalCosts.leftSideThirdLogo,
-          includedCount: PRICING_CONFIG.includedItems.leftSideLogos,
-          description: `أول شعارين مشمولين في السعر الأساسي ، يتم إضافة ${PRICING_CONFIG.additionalCosts.leftSideThirdLogo} ريال للشعار الثالث`,
+          extraCost: pricingData?.additionalCosts.leftSideThirdLogo || 25,
+          includedCount: pricingData?.includedItems.leftSideLogos || 2,
+          description: `أول شعارين مشمولين في السعر الأساسي ، يتم إضافة ${
+            pricingData?.additionalCosts.leftSideThirdLogo || 25
+          } ريال للشعار الثالث`,
         }}
         enablePositionSelector={true}
       />
