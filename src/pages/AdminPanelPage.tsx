@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  Package,
   Menu,
   X,
   User,
@@ -22,6 +23,7 @@ import ConfirmationModal from "../components/ui/ConfirmationModal";
 import { useModal } from "../hooks/useModal";
 import PricingManagement from "../components/admin/PricingManagement";
 import PredefinedImagesManagement from "../components/admin/PredefinedImagesManagement";
+import OrdersManagement from "../components/admin/OrdersManagement";
 
 const AdminPanelPage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,7 +36,9 @@ const AdminPanelPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<"pricing" | "images">("pricing");
+  const [activeTab, setActiveTab] = useState<"orders" | "pricing" | "images">(
+    "orders"
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const logoutConfirmModal = useModal();
@@ -83,6 +87,12 @@ const AdminPanelPage: React.FC = () => {
   };
 
   const navigationItems = [
+    {
+      id: "orders",
+      name: "إدارة الطلبات",
+      icon: Package,
+      description: "عرض وإدارة طلبات العملاء",
+    },
     {
       id: "pricing",
       name: "إدارة الأسعار",
@@ -339,7 +349,7 @@ const AdminPanelPage: React.FC = () => {
                     <button
                       key={item.id}
                       onClick={() => {
-                        setActiveTab(item.id as "pricing" | "images");
+                        setActiveTab(item.id as typeof activeTab);
                         setSidebarOpen(false);
                       }}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 group ${
@@ -446,12 +456,23 @@ const AdminPanelPage: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[calc(100vh-200px)]">
                   <div className="p-4 lg:p-6">
                     <AnimatePresence mode="wait">
-                      {activeTab === "pricing" && (
+                      {activeTab === "orders" && (
                         <motion.div
-                          key="pricing"
+                          key="orders"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 20 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <OrdersManagement />
+                        </motion.div>
+                      )}
+                      {activeTab === "pricing" && (
+                        <motion.div
+                          key="pricing"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
                           transition={{ duration: 0.3 }}
                         >
                           <PricingManagement />

@@ -8,6 +8,7 @@ export interface PDFGenerationOptions {
     name: string;
     phone: string;
   };
+  orderNumber?: string;
 }
 
 const getColorName = (colorValue: string): string => {
@@ -76,8 +77,10 @@ export const generateOrderPDFWithImages = async (
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(12);
 
-  // نص دار الجود في أعلى اليسار داخل الهيدر
-  const storeInfo = "دار الجود | واتساب: 0536065766";
+  // نص دار الجود ورقم الطلب في أعلى اليسار داخل الهيدر
+  const storeInfo = options.orderNumber 
+    ? `دار الجود | رقم الطلب: ${options.orderNumber}`
+    : "دار الجود | واتساب: 0536065766";
   pdf.text(storeInfo, margin, headerHeight / 2, {
     baseline: "middle",
   });
@@ -237,7 +240,9 @@ export const generateOrderPDFWithImages = async (
 
   pdf.setFontSize(7);
   pdf.setTextColor(255, 255, 255);
-  const contactText = "دار الجود | واتساب: 0536065766 | www.daraljoud.com";
+  const contactText = options.orderNumber
+    ? `دار الجود | رقم الطلب: ${options.orderNumber} | واتساب: 0536065766`
+    : "دار الجود | واتساب: 0536065766 | www.daraljoud.com";
   const contactTextWidth =
     (pdf.getStringUnitWidth(contactText) * pdf.internal.getFontSize()) /
     pdf.internal.scaleFactor;

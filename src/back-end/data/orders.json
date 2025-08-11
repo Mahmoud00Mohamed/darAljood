@@ -1,0 +1,338 @@
+[
+  {
+    "id": "order-1754944910431-mro0u29xj",
+    "orderNumber": "910431095",
+    "trackingCode": "DN0CL3UZ",
+    "customerInfo": {
+      "name": "DDD",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1754944904060-adeyqdubd",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [
+            {
+              "id": "logo-1754802229642",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924622/10_yhvn0o.png",
+              "position": "backCenter",
+              "x": 0,
+              "y": 0,
+              "scale": 1.5
+            },
+            {
+              "id": "logo-1754802241347",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "chestRight",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
+            },
+            {
+              "id": "logo-1754802267841",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "rightSide_middle",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754802271945",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924676/21_swow6t.png",
+              "position": "leftSide_top",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754802274215",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "leftSide_bottom",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            }
+          ],
+          "texts": [
+            {
+              "id": "text-1754802246259",
+              "content": "WQ",
+              "position": "chestLeft",
+              "x": 0,
+              "y": 0,
+              "scale": 1,
+              "font": "Katibeh",
+              "color": "#000000",
+              "isConnected": true,
+              "charStyles": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "font": "Amiri"
+                },
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "font": "Amiri"
+                }
+              ]
+            },
+            {
+              "id": "text-1754802260211",
+              "content": "A H M E D",
+              "position": "backBottom",
+              "x": 0,
+              "y": 20,
+              "scale": 1.5,
+              "font": "Noto Naskh Arabic",
+              "color": "#000000",
+              "isConnected": true
+            }
+          ],
+          "currentView": "left",
+          "totalPrice": 285,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 260,
+            "additionalCosts": [
+              {
+                "item": "عناصر أمامية إضافية",
+                "cost": 25,
+                "quantity": 1
+              }
+            ],
+            "totalPrice": 285,
+            "appliedDiscount": null,
+            "finalPrice": 285
+          }
+        },
+        "quantity": 1,
+        "price": 285
+      }
+    ],
+    "totalPrice": 285,
+    "status": "quality_check",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-11T20:41:50.431Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      },
+      {
+        "status": "confirmed",
+        "timestamp": "2025-08-11T20:43:36.131Z",
+        "note": "تم التأكيد",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "in_production",
+        "timestamp": "2025-08-11T20:44:08.610Z",
+        "note": "قيد التنفيذ",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "quality_check",
+        "timestamp": "2025-08-11T21:10:03.955Z",
+        "note": "ملاحظة (اختيارية)\n SDXSD",
+        "updatedBy": "admin"
+      }
+    ],
+    "createdAt": "2025-08-11T20:41:50.431Z",
+    "updatedAt": "2025-08-11T21:10:03.955Z",
+    "estimatedDelivery": "2025-09-15T20:41:50.431Z",
+    "notes": []
+  },
+  {
+    "id": "order-1754947169956-aght5jukr",
+    "orderNumber": "169956790",
+    "trackingCode": "WTEO60GN",
+    "customerInfo": {
+      "name": "محمود محمد",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1754944904060-adeyqdubd",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [
+            {
+              "id": "logo-1754802229642",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924622/10_yhvn0o.png",
+              "position": "backCenter",
+              "x": 0,
+              "y": 0,
+              "scale": 1.5
+            },
+            {
+              "id": "logo-1754802241347",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "chestRight",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
+            },
+            {
+              "id": "logo-1754802267841",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "rightSide_middle",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754802271945",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924676/21_swow6t.png",
+              "position": "leftSide_top",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754802274215",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "leftSide_bottom",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            }
+          ],
+          "texts": [
+            {
+              "id": "text-1754802246259",
+              "content": "WQ",
+              "position": "chestLeft",
+              "x": 0,
+              "y": 0,
+              "scale": 1,
+              "font": "Katibeh",
+              "color": "#000000",
+              "isConnected": true,
+              "charStyles": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "font": "Amiri"
+                },
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "font": "Amiri"
+                }
+              ]
+            },
+            {
+              "id": "text-1754802260211",
+              "content": "A H M E D",
+              "position": "backBottom",
+              "x": 0,
+              "y": 20,
+              "scale": 1.5,
+              "font": "Noto Naskh Arabic",
+              "color": "#000000",
+              "isConnected": true
+            }
+          ],
+          "currentView": "left",
+          "totalPrice": 285,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 260,
+            "additionalCosts": [
+              {
+                "item": "عناصر أمامية إضافية",
+                "cost": 25,
+                "quantity": 1
+              }
+            ],
+            "totalPrice": 285,
+            "appliedDiscount": null,
+            "finalPrice": 285
+          }
+        },
+        "quantity": 1,
+        "price": 285
+      }
+    ],
+    "totalPrice": 285,
+    "status": "delivered",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-11T21:19:29.956Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      },
+      {
+        "status": "confirmed",
+        "timestamp": "2025-08-11T21:46:34.646Z",
+        "note": "تم التأكيد",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "in_production",
+        "timestamp": "2025-08-11T21:46:56.926Z",
+        "note": "قيد التنفيذ",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "quality_check",
+        "timestamp": "2025-08-11T21:47:09.747Z",
+        "note": "فحص الجودة",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "ready_to_ship",
+        "timestamp": "2025-08-11T21:47:25.482Z",
+        "note": "جاهز للشحن",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "shipped",
+        "timestamp": "2025-08-11T21:47:34.973Z",
+        "note": "تم الشحن",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "delivered",
+        "timestamp": "2025-08-11T21:47:57.123Z",
+        "note": "تم التسليم",
+        "updatedBy": "admin"
+      }
+    ],
+    "createdAt": "2025-08-11T21:19:29.956Z",
+    "updatedAt": "2025-08-11T21:47:57.123Z",
+    "estimatedDelivery": "2025-08-14T21:47:34.973Z",
+    "notes": [],
+    "shippedAt": "2025-08-11T21:47:34.973Z",
+    "deliveredAt": "2025-08-11T21:47:57.123Z"
+  }
+]

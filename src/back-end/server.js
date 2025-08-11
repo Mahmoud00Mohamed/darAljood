@@ -5,6 +5,7 @@ import uploadRoutes from "./routes/upload.js";
 import authRoutes from "./routes/auth.js";
 import pricingRoutes from "./routes/pricing.js";
 import predefinedImagesRoutes from "./routes/predefinedImages.js";
+import ordersRoutes from "./routes/orders.js";
 import corsMiddleware from "./middleware/cors.js";
 import {
   uploadRateLimit,
@@ -63,6 +64,14 @@ app.get("/api/info", (req, res) => {
         "DELETE /api/predefined-images/:imageId (requires auth)",
       updatePredefinedImage:
         "PUT /api/predefined-images/:imageId (requires auth)",
+      createOrder: "POST /api/orders",
+      trackOrder: "GET /api/orders/track/:trackingCode",
+      getAllOrders: "GET /api/orders (requires auth)",
+      getOrderById: "GET /api/orders/:orderId (requires auth)",
+      updateOrderStatus: "PUT /api/orders/:orderId/status (requires auth)",
+      addOrderNote: "POST /api/orders/:orderId/notes (requires auth)",
+      getOrderStats: "GET /api/orders/stats (requires auth)",
+      getOrderStatuses: "GET /api/orders/statuses",
     },
   });
 });
@@ -78,6 +87,9 @@ app.use("/api/pricing", pricingRoutes);
 
 // مسارات الشعارات الجاهزة
 app.use("/api/predefined-images", predefinedImagesRoutes);
+
+// مسارات الطلبات
+app.use("/api/orders", ordersRoutes);
 
 // معالج المسارات غير الموجودة
 app.use(notFoundHandler);

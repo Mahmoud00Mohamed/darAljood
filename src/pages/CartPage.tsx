@@ -44,6 +44,10 @@ const CartPage: React.FC = () => {
   >("capturing");
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const [orderInfo, setOrderInfo] = useState<{
+    orderNumber: string;
+    trackingCode: string;
+  } | null>(null);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
 
@@ -91,6 +95,7 @@ const CartPage: React.FC = () => {
   const handleGeneratePDF = async (customerInfo: {
     name: string;
     phone: string;
+    orderNumber?: string;
   }) => {
     setIsGeneratingPDF(true);
     setShowLoadingOverlay(true);
@@ -133,6 +138,7 @@ const CartPage: React.FC = () => {
         cartItems: items,
         totalPrice: getTotalPrice(),
         customerInfo,
+        orderNumber: customerInfo.orderNumber,
       };
 
       const pdfBlob = await generateOrderPDFWithImages(
@@ -172,22 +178,33 @@ const CartPage: React.FC = () => {
 
   const handleSendWhatsApp = () => {
     const phoneNumber = "966536065766";
-    const message = encodeURIComponent(
-      `مرحباً، أرغب في طلب جاكيت مخصص من دار الجود.\n\n` +
-        `تفاصيل الطلب:\n` +
-        `• عدد القطع: ${getTotalItems()}\n` +
-        `• الإجمالي: ${formatPrice(getTotalPrice())}\n\n` +
-        `تم إرفاق ملف PDF يحتوي على جميع التفاصيل والصور.\n\n` +
-        `أرجو التواصل معي لتأكيد الطلب وترتيب عملية الدفع والتسليم.`
-    );
 
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    let message = `مرحباً، أرغب في طلب جاكيت مخصص من دار الجود.\n\n`;
+
+    if (orderInfo) {
+      message += `رقم الطلب: ${orderInfo.orderNumber}\n`;
+      message += `رمز التتبع: ${orderInfo.trackingCode}\n\n`;
+    }
+
+    message += `تفاصيل الطلب:\n`;
+    message += `• عدد القطع: ${getTotalItems()}\n`;
+    message += `• الإجمالي: ${formatPrice(getTotalPrice())}\n\n`;
+    message += `تم إرفاق ملف PDF يحتوي على جميع التفاصيل والصور.\n\n`;
+    message += `أرجو التواصل معي لتأكيد الطلب وترتيب عملية الدفع والتسليم.`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
     window.open(whatsappUrl, "_blank");
   };
 
   const handleCompleteOrder = () => {
     setShowOrderModal(true);
     setPdfGenerated(false);
+    setOrderInfo(null);
+  };
+
+  const handleOrderCreated = (orderNumber: string, trackingCode: string) => {
+    setOrderInfo({ orderNumber, trackingCode });
   };
 
   if (items.length === 0) {
@@ -422,6 +439,7 @@ const CartPage: React.FC = () => {
         onSendWhatsApp={handleSendWhatsApp}
         isGeneratingPDF={isGeneratingPDF}
         pdfGenerated={pdfGenerated}
+        onOrderCreated={handleOrderCreated}
       />
     </div>
   );
