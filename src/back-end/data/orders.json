@@ -334,5 +334,107 @@
     "notes": [],
     "shippedAt": "2025-08-11T21:47:34.973Z",
     "deliveredAt": "2025-08-11T21:47:57.123Z"
+  },
+  {
+    "id": "order-1754955767130-nmuszogoi",
+    "orderNumber": "767130096",
+    "trackingCode": "GACFIWI2",
+    "customerInfo": {
+      "name": "ddd",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1754955705032-g59t4frkf",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [
+            {
+              "id": "logo-1754955651593",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955650/dar-aljoud/logos/yjbc9qundprqjprbu37g.jpg",
+              "position": "chestRight",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
+            },
+            {
+              "id": "logo-1754955658502",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924644/13_mvqmgk.png",
+              "position": "backCenter",
+              "x": 0,
+              "y": 0,
+              "scale": 1.5
+            },
+            {
+              "id": "logo-1754955665146",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955650/dar-aljoud/logos/yjbc9qundprqjprbu37g.jpg",
+              "position": "rightSide_top",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754955679474",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955678/dar-aljoud/logos/fsvcqvyb13nlivi1ug26.png",
+              "position": "rightSide_middle",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            }
+          ],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 260,
+          "isCapturing": false,
+          "uploadedImages": [
+            {
+              "id": "uploaded-1754955651593",
+              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955650/dar-aljoud/logos/yjbc9qundprqjprbu37g.jpg",
+              "name": "yjbc9qundprqjprbu37g",
+              "uploadedAt": "2025-08-11T23:40:51.593Z"
+            },
+            {
+              "id": "uploaded-1754955679474",
+              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955678/dar-aljoud/logos/fsvcqvyb13nlivi1ug26.png",
+              "name": "fsvcqvyb13nlivi1ug26",
+              "uploadedAt": "2025-08-11T23:41:19.474Z"
+            }
+          ],
+          "pricingBreakdown": {
+            "basePrice": 260,
+            "additionalCosts": [],
+            "totalPrice": 260,
+            "appliedDiscount": null,
+            "finalPrice": 260
+          }
+        },
+        "quantity": 1,
+        "price": 260
+      }
+    ],
+    "totalPrice": 260,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-11T23:42:47.130Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-11T23:42:47.130Z",
+    "updatedAt": "2025-08-11T23:42:47.130Z",
+    "estimatedDelivery": "2025-09-15T23:42:47.130Z",
+    "notes": []
   }
 ]
