@@ -1,13 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, Shield, Eye, EyeOff, Loader2 } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  Shield,
+  Eye,
+  EyeOff,
+  Loader2,
+  Settings,
+  DollarSign,
+  Image as ImageIcon,
+  LogOut,
+  Home,
+  Activity,
+  ChevronRight,
+} from "lucide-react";
 import authService, { LoginCredentials } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import ConfirmationModal from "../components/ui/ConfirmationModal";
 import { useModal } from "../hooks/useModal";
 import PricingManagement from "../components/admin/PricingManagement";
 import PredefinedImagesManagement from "../components/admin/PredefinedImagesManagement";
-import Sidebar from "../components/admin/Sidebar";
 
 const AdminPanelPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +35,7 @@ const AdminPanelPage: React.FC = () => {
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [activeTab, setActiveTab] = useState<"pricing" | "images">("pricing");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const logoutConfirmModal = useModal();
 
@@ -68,22 +82,37 @@ const AdminPanelPage: React.FC = () => {
     }
   };
 
+  const navigationItems = [
+    {
+      id: "pricing",
+      name: "إدارة الأسعار",
+      icon: DollarSign,
+      description: "تعديل أسعار الخدمات والمنتجات",
+    },
+    {
+      id: "images",
+      name: "الشعارات الجاهزة",
+      icon: ImageIcon,
+      description: "إدارة مكتبة الشعارات الجاهزة",
+    },
+  ];
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
-          className="text-center bg-white rounded-2xl p-8 shadow-xl"
+          className="text-center bg-white rounded-xl p-6 shadow-lg max-w-xs w-full"
         >
-          <div className="w-16 h-16 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Loader2 className="w-8 h-8 animate-spin text-white" />
+          <div className="w-12 h-12 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-5 h-5 animate-spin text-white" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
             جاري التحقق من الهوية
           </h3>
-          <p className="text-gray-600">يرجى الانتظار...</p>
+          <p className="text-sm text-gray-600">يرجى الانتظار...</p>
         </motion.div>
       </div>
     );
@@ -91,51 +120,50 @@ const AdminPanelPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="w-full max-w-md"
         >
-          <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#563660] to-[#7e4a8c] p-8 text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-black bg-opacity-10"></div>
-              <div className="relative">
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
-                  <Shield className="w-10 h-10 text-white" />
-                </div>
-                <h1 className="text-3xl font-bold text-white mb-3">
-                  لوحة التحكم
-                </h1>
-                <p className="text-white text-opacity-90">
-                  دار الجود - إدارة النظام
-                </p>
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#563660] to-[#7e4a8c] p-6 text-center">
+              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-white" />
               </div>
+              <h1 className="text-xl font-semibold text-white mb-2">
+                لوحة التحكم
+              </h1>
+              <p className="text-sm text-white text-opacity-90">
+                دار الجود - إدارة النظام
+              </p>
             </div>
 
-            <form onSubmit={handleLogin} className="p-8 space-y-6">
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="p-6 space-y-4">
               <AnimatePresence>
                 {loginError && (
                   <motion.div
                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3"
+                    className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2"
                   >
-                    <Shield className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    <Shield className="w-4 h-4 text-red-600 flex-shrink-0" />
                     <span className="text-red-700 text-sm">{loginError}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     اسم المستخدم
                   </label>
                   <div className="relative">
-                    <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                       type="text"
                       value={loginCredentials.username}
@@ -145,7 +173,7 @@ const AdminPanelPage: React.FC = () => {
                           username: e.target.value,
                         }))
                       }
-                      className="w-full pr-12 pl-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                      className="w-full pr-10 pl-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
                       placeholder="أدخل اسم المستخدم"
                       required
                     />
@@ -153,11 +181,11 @@ const AdminPanelPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     كلمة المرور
                   </label>
                   <div className="relative">
-                    <Shield className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Shield className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                       type={showPassword ? "text" : "password"}
                       value={loginCredentials.password}
@@ -167,19 +195,19 @@ const AdminPanelPage: React.FC = () => {
                           password: e.target.value,
                         }))
                       }
-                      className="w-full pr-12 pl-14 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                      className="w-full pr-10 pl-10 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
                       placeholder="أدخل كلمة المرور"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
                     >
                       {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
+                        <EyeOff className="w-4 h-4" />
                       ) : (
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-4 h-4" />
                       )}
                     </button>
                   </div>
@@ -193,16 +221,16 @@ const AdminPanelPage: React.FC = () => {
                   !loginCredentials.username ||
                   !loginCredentials.password
                 }
-                className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white font-semibold rounded-xl hover:from-[#4b2e55] hover:to-[#6d3f7a] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white font-medium rounded-lg hover:from-[#4b2e55] hover:to-[#6d3f7a] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 {isLoggingIn ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     جاري تسجيل الدخول...
                   </>
                 ) : (
                   <>
-                    <Shield className="w-5 h-5" />
+                    <Shield className="w-4 h-4" />
                     تسجيل الدخول
                   </>
                 )}
@@ -215,35 +243,241 @@ const AdminPanelPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col md:flex-row">
-      <button
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white rounded-2xl shadow-xl flex items-center justify-center hover:shadow-2xl transition-all"
-      >
-        {mobileMenuOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <Menu className="w-6 h-6" />
-        )}
-      </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Navigation Bar */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div className="px-4 lg:px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Left side - Logo and title */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
 
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        onLogout={logoutConfirmModal.openModal}
-      />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-lg flex items-center justify-center">
+                  <Settings className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-semibold text-gray-900">
+                    لوحة التحكم
+                  </h1>
+                  <p className="text-xs text-gray-500 hidden sm:block">
+                    دار الجود
+                  </p>
+                </div>
+              </div>
+            </div>
 
-      <main className="flex-1 pb-20 md:pb-0 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {activeTab === "pricing" && <PricingManagement />}
-            {activeTab === "images" && <PredefinedImagesManagement />}
+            {/* Right side - User actions */}
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-lg">
+                <Activity className="w-4 h-4 text-green-500" />
+                <span className="text-sm text-green-700 font-medium">متصل</span>
+              </div>
+
+              <button
+                onClick={() => navigate("/")}
+                className="hidden md:flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Home className="w-4 h-4" />
+                الموقع الرئيسي
+              </button>
+
+              <button
+                onClick={logoutConfirmModal.openModal}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">خروج</span>
+              </button>
+            </div>
           </div>
         </div>
-      </main>
+      </header>
 
+      <div className="flex h-[calc(100vh-64px)]">
+        {/* Sidebar */}
+        <aside
+          className={`${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:transform-none flex flex-col`}
+        >
+          {/* Mobile sidebar header */}
+          <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-md flex items-center justify-center">
+                <Settings className="w-3 h-3 text-white" />
+              </div>
+              <span className="font-medium text-gray-900 text-sm">
+                لوحة التحكم
+              </span>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Navigation Menu */}
+          <nav className="flex-1 p-4 space-y-2">
+            <div className="mb-6">
+              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 px-2">
+                الإدارة
+              </h3>
+              <div className="space-y-1">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id as "pricing" | "images");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 group ${
+                        isActive
+                          ? "bg-[#563660] text-white shadow-sm"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-4 h-4 flex-shrink-0 ${
+                          isActive ? "text-white" : "text-gray-500"
+                        }`}
+                      />
+                      <div className="text-right flex-1 min-w-0">
+                        <div
+                          className={`font-medium truncate ${
+                            isActive ? "text-white" : "text-gray-900"
+                          }`}
+                        >
+                          {item.name}
+                        </div>
+                        <div
+                          className={`text-xs mt-0.5 truncate ${
+                            isActive ? "text-white/80" : "text-gray-500"
+                          }`}
+                        >
+                          {item.description}
+                        </div>
+                      </div>
+                      {isActive && (
+                        <ChevronRight className="w-4 h-4 text-white/80" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="border-t border-gray-200 pt-4">
+              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 px-2">
+                التنقل السريع
+              </h3>
+              <button
+                onClick={() => navigate("/")}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200"
+              >
+                <Home className="w-4 h-4 text-gray-500" />
+                <span>العودة للموقع</span>
+              </button>
+            </div>
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-gray-600">النظام يعمل بشكل طبيعي</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* Mobile overlay */}
+        {sidebarOpen && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-20"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Page Header */}
+          <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="text-xl font-semibold text-gray-900 truncate">
+                  {navigationItems.find((item) => item.id === activeTab)?.name}
+                </h1>
+                <p className="text-sm text-gray-600 mt-1 truncate">
+                  {
+                    navigationItems.find((item) => item.id === activeTab)
+                      ?.description
+                  }
+                </p>
+              </div>
+
+              {/* Breadcrumb */}
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <span>لوحة التحكم</span>
+                <ChevronRight className="w-4 h-4" />
+                <span className="text-gray-900 font-medium">
+                  {navigationItems.find((item) => item.id === activeTab)?.name}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 overflow-auto">
+            <div className="p-4 lg:p-6">
+              <div className="max-w-7xl mx-auto">
+                {/* Content Card */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[calc(100vh-200px)]">
+                  <div className="p-4 lg:p-6">
+                    <AnimatePresence mode="wait">
+                      {activeTab === "pricing" && (
+                        <motion.div
+                          key="pricing"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <PricingManagement />
+                        </motion.div>
+                      )}
+                      {activeTab === "images" && (
+                        <motion.div
+                          key="images"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <PredefinedImagesManagement />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {/* Logout Confirmation Modal */}
       <ConfirmationModal
         isOpen={logoutConfirmModal.isOpen}
         onClose={logoutConfirmModal.closeModal}

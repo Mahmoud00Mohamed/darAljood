@@ -11,6 +11,7 @@ import {
   Edit3,
   Info,
   Save,
+  Grid,
 } from "lucide-react";
 import predefinedImagesService, {
   PredefinedImageData,
@@ -163,22 +164,55 @@ const PredefinedImagesManagement: React.FC = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="space-y-8"
-    >
+    <div className="space-y-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <Grid className="w-5 h-5 text-[#563660]" />
+            إدارة الشعارات الجاهزة
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            إضافة وتعديل وحذف الشعارات المتاحة للعملاء
+          </p>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={addImageModal.openModal}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-all duration-200 text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            إضافة شعار
+          </button>
+          <button
+            onClick={loadPredefinedImages}
+            disabled={isLoadingImages}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 text-sm"
+          >
+            {isLoadingImages ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RotateCcw className="w-4 h-4" />
+            )}
+            تحديث
+          </button>
+        </div>
+      </div>
+
       <AnimatePresence>
         {saveMessage && (
           <motion.div
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 shadow-sm"
+            className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2"
           >
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-green-700 font-medium">{saveMessage}</span>
+            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+            <span className="text-green-700 font-medium text-sm">
+              {saveMessage}
+            </span>
           </motion.div>
         )}
 
@@ -187,74 +221,46 @@ const PredefinedImagesManagement: React.FC = () => {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3 shadow-sm"
+            className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2"
           >
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <span className="text-red-700 font-medium">{imagesError}</span>
+            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+            <span className="text-red-700 font-medium text-sm">
+              {imagesError}
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            الشعارات الجاهزة
-          </h2>
-          <p className="text-gray-600">إدارة مكتبة الشعارات الجاهزة للعملاء</p>
-        </div>
-        <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-          <button
-            onClick={addImageModal.openModal}
-            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-          >
-            <Plus className="w-4 h-4" />
-            إضافة شعار جديد
-          </button>
-          <button
-            onClick={loadPredefinedImages}
-            disabled={isLoadingImages}
-            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 disabled:opacity-50"
-          >
-            {isLoadingImages ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <RotateCcw className="w-4 h-4" />
-            )}
-            تحديث القائمة
-          </button>
-        </div>
-      </div>
-
       {isLoadingImages ? (
-        <div className="flex items-center justify-center py-20">
+        <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-[#563660] mx-auto mb-4" />
-            <p className="text-gray-600 text-lg">
+            <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
+            <p className="text-gray-600 text-sm">
               جاري تحميل الشعارات الجاهزة...
             </p>
           </div>
         </div>
       ) : predefinedImages.length > 0 ? (
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-bold text-gray-900">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">
               الشعارات المتاحة
             </h3>
-            <span className="bg-[#563660] text-white px-4 py-2 rounded-xl font-semibold">
+            <span className="bg-[#563660] text-white px-3 py-1.5 rounded-lg font-medium text-sm">
               {predefinedImages.length} شعار
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {predefinedImages.map((image, index) => (
               <motion.div
                 key={image.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="relative group bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200"
+                className="relative group bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-200"
               >
-                <div className="aspect-square p-4">
+                <div className="aspect-square p-3">
                   <img
                     src={image.url}
                     alt={image.name}
@@ -263,8 +269,8 @@ const PredefinedImagesManagement: React.FC = () => {
                   />
                 </div>
 
-                <div className="p-4 border-t border-gray-200 bg-white">
-                  <h4 className="text-sm font-semibold text-gray-900 truncate mb-1">
+                <div className="p-3 border-t border-gray-200 bg-white">
+                  <h4 className="text-sm font-medium text-gray-900 truncate mb-1">
                     {image.name}
                   </h4>
                   <p className="text-xs text-gray-500 truncate">
@@ -283,7 +289,7 @@ const PredefinedImagesManagement: React.FC = () => {
                       setSelectedImageForEdit(image);
                       editImageModal.openModal();
                     }}
-                    className="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors shadow-md"
+                    className="w-6 h-6 bg-blue-500 text-white rounded-md flex items-center justify-center hover:bg-blue-600 transition-colors"
                     title="تعديل"
                   >
                     <Edit3 className="w-3 h-3" />
@@ -294,7 +300,7 @@ const PredefinedImagesManagement: React.FC = () => {
                       deleteImageModal.openModal();
                     }}
                     disabled={isLoadingImages}
-                    className="w-7 h-7 bg-red-500 text-white rounded-lg flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50 shadow-md"
+                    className="w-6 h-6 bg-red-500 text-white rounded-md flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50"
                     title="حذف"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -305,18 +311,19 @@ const PredefinedImagesManagement: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
-          <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-6" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+          <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
             لا توجد شعارات جاهزة
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-sm text-gray-600 mb-4 px-4">
             ابدأ بإضافة شعارات جاهزة للمجموعة
           </p>
           <button
             onClick={addImageModal.openModal}
-            className="px-6 py-3 bg-[#563660] text-white rounded-xl hover:bg-[#4b2e55] transition-colors font-semibold"
+            className="flex items-center gap-2 px-4 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors font-medium text-sm"
           >
+            <Plus className="w-4 h-4" />
             إضافة شعار جديد
           </button>
         </div>
@@ -345,10 +352,10 @@ const PredefinedImagesManagement: React.FC = () => {
         size="lg"
         options={addImageModal.options}
       >
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 اسم الشعار *
               </label>
               <input
@@ -360,75 +367,93 @@ const PredefinedImagesManagement: React.FC = () => {
                     name: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
                 placeholder="مثال: شعار الشركة"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                الفئة
-              </label>
-              <input
-                type="text"
-                value={newImageData.category}
-                onChange={(e) =>
-                  setNewImageData((prev) => ({
-                    ...prev,
-                    category: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-              />
-            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  الفئة
+                </label>
+                <input
+                  type="text"
+                  value={newImageData.category}
+                  onChange={(e) =>
+                    setNewImageData((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                الوصف
-              </label>
-              <input
-                type="text"
-                value={newImageData.description}
-                onChange={(e) =>
-                  setNewImageData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                placeholder="وصف مختصر للشعار"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  الوصف
+                </label>
+                <input
+                  type="text"
+                  value={newImageData.description}
+                  onChange={(e) =>
+                    setNewImageData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                  placeholder="وصف مختصر"
+                />
+              </div>
             </div>
           </div>
 
-          <CloudinaryImageUpload
-            onImageSelect={handleAddPredefinedImage}
-            acceptedFormats={[
-              "image/jpeg",
-              "image/jpg",
-              "image/png",
-              "image/webp",
-            ]}
-            maxFileSize={5}
-            placeholder="اسحب الشعار هنا أو انقر للاختيار"
-            aspectRatio={1}
-            cropTitle="اقتطاع الشعار الجاهز"
-            autoAddToLibrary={false}
-          />
+          <div className="sm:hidden">
+            <CloudinaryImageUpload
+              onImageSelect={handleAddPredefinedImage}
+              acceptedFormats={[
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+              ]}
+              maxFileSize={5}
+              placeholder="اختر الشعار"
+              aspectRatio={1}
+              cropTitle="اقتطاع الشعار"
+              autoAddToLibrary={false}
+            />
+          </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div className="hidden sm:block">
+            <CloudinaryImageUpload
+              onImageSelect={handleAddPredefinedImage}
+              acceptedFormats={[
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+              ]}
+              maxFileSize={5}
+              placeholder="اسحب الشعار هنا أو انقر للاختيار"
+              aspectRatio={1}
+              cropTitle="اقتطاع الشعار الجاهز"
+              autoAddToLibrary={false}
+            />
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <Info className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="text-amber-800 font-semibold mb-1">
-                  ملاحظات مهمة:
-                </p>
-                <ul className="text-amber-700 space-y-1">
-                  <li>• الحد الأقصى لحجم الملف: 5MB</li>
-                  <li>• الأنواع المدعومة: JPG, PNG, WEBP</li>
-                  <li>• يفضل أن تكون الصورة مربعة الشكل</li>
-                  <li>• سيتم تحسين الصورة تلقائياً للاستخدام</li>
+                <p className="text-amber-800 font-medium mb-1">ملاحظات:</p>
+                <ul className="text-amber-700 space-y-0.5 text-xs">
+                  <li>• الحد الأقصى: 5MB</li>
+                  <li>• الأنواع: JPG, PNG, WEBP</li>
+                  <li>• يفضل الشكل المربع</li>
                 </ul>
               </div>
             </div>
@@ -448,23 +473,23 @@ const PredefinedImagesManagement: React.FC = () => {
         options={editImageModal.options}
       >
         {selectedImageForEdit && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="text-center">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-xl overflow-hidden">
+              <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-lg overflow-hidden">
                 <img
                   src={selectedImageForEdit.url}
                   alt={selectedImageForEdit.name}
                   className="w-full h-full object-contain p-2"
                 />
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs text-gray-600">
                 معرف الصورة: {selectedImageForEdit.publicId}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   اسم الشعار *
                 </label>
                 <input
@@ -475,13 +500,13 @@ const PredefinedImagesManagement: React.FC = () => {
                       prev ? { ...prev, name: e.target.value } : null
                     )
                   }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   الفئة
                 </label>
                 <input
@@ -492,12 +517,12 @@ const PredefinedImagesManagement: React.FC = () => {
                       prev ? { ...prev, category: e.target.value } : null
                     )
                   }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   الوصف
                 </label>
                 <textarea
@@ -507,8 +532,8 @@ const PredefinedImagesManagement: React.FC = () => {
                       prev ? { ...prev, description: e.target.value } : null
                     )
                   }
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all resize-none"
+                  rows={2}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all resize-none text-sm"
                   placeholder="وصف مختصر للشعار"
                 />
               </div>
@@ -517,7 +542,7 @@ const PredefinedImagesManagement: React.FC = () => {
             <div className="flex gap-3 pt-4">
               <button
                 onClick={handleEditImage}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#563660] text-white font-semibold rounded-xl hover:bg-[#4b2e55] transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors text-sm"
               >
                 <Save className="w-4 h-4" />
                 حفظ التغييرات
@@ -527,7 +552,7 @@ const PredefinedImagesManagement: React.FC = () => {
                   editImageModal.closeModal();
                   setSelectedImageForEdit(null);
                 }}
-                className="flex-1 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm"
               >
                 إلغاء
               </button>
@@ -535,7 +560,7 @@ const PredefinedImagesManagement: React.FC = () => {
           </div>
         )}
       </Modal>
-    </motion.div>
+    </div>
   );
 };
 

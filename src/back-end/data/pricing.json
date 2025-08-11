@@ -1,5 +1,5 @@
 {
-  "basePrice": 250,
+  "basePrice": 260,
   "includedItems": {
     "backLogo": true,
     "backText": true,
@@ -12,6 +12,6 @@
     "rightSideThirdLogo": 25,
     "leftSideThirdLogo": 25
   },
-  "lastUpdated": "2025-08-11T04:01:44.712Z",
+  "lastUpdated": "2025-08-11T18:31:39.037Z",
   "updatedBy": "admin"
 }
