@@ -329,6 +329,15 @@ export const getPredefinedImages = async (req, res) => {
 // إضافة شعار جاهز جديد (يتطلب مصادقة المدير)
 export const addPredefinedImage = async (req, res) => {
   try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإضافة شعارات جاهزة",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -423,6 +432,15 @@ export const addPredefinedImage = async (req, res) => {
 // حذف شعار جاهز (يتطلب مصادقة المدير)
 export const deletePredefinedImage = async (req, res) => {
   try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بحذف شعارات جاهزة",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
     const { imageId } = req.params;
 
     if (!imageId) {
@@ -478,6 +496,15 @@ export const deletePredefinedImage = async (req, res) => {
 // تحديث معلومات شعار جاهز (يتطلب مصادقة المدير)
 export const updatePredefinedImage = async (req, res) => {
   try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بتحديث شعارات جاهزة",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
     const { imageId } = req.params;
     const { name, category, description } = req.body;
 
@@ -535,6 +562,15 @@ export const updatePredefinedImage = async (req, res) => {
 // إعادة تعيين الشعارات الجاهزة إلى القيم الافتراضية (يتطلب مصادقة المدير)
 export const resetPredefinedImages = async (req, res) => {
   try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإعادة تعيين الشعارات الجاهزة",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
     const updatedBy = req.admin?.username || "admin";
     const defaultImages = DEFAULT_PREDEFINED_IMAGES.map((img) => ({
       ...img,

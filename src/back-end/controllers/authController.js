@@ -5,6 +5,24 @@ export const adminLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
 
+    // التحقق من وجود البيانات المطلوبة
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "اسم المستخدم وكلمة المرور مطلوبان",
+        error: "MISSING_CREDENTIALS",
+      });
+    }
+
+    // التحقق من نوع البيانات
+    if (typeof username !== "string" || typeof password !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "بيانات تسجيل الدخول غير صحيحة",
+        error: "INVALID_CREDENTIALS_TYPE",
+      });
+    }
+
     // التحقق من صحة بيانات تسجيل الدخول
     const isValid = validateAdminCredentials(username, password);
 
@@ -13,6 +31,16 @@ export const adminLogin = async (req, res) => {
         success: false,
         message: "اسم المستخدم أو كلمة المرور غير صحيحة",
         error: "INVALID_CREDENTIALS",
+      });
+    }
+
+    // التحقق الإضافي من أن المستخدم هو المدير المصرح له
+    const adminUsername = process.env.ADMIN_USERNAME;
+    if (!adminUsername || username !== adminUsername) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول",
+        error: "UNAUTHORIZED_USER",
       });
     }
 
@@ -43,6 +71,25 @@ export const adminLogin = async (req, res) => {
 // التحقق من صحة الجلسة
 export const verifySession = async (req, res) => {
   try {
+    // التحقق الإضافي من صحة بيانات الجلسة
+    if (!req.admin || !req.admin.username || req.admin.role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: "جلسة غير صحيحة",
+        error: "INVALID_SESSION",
+      });
+    }
+
+    // التحقق من أن المستخدم هو المدير المصرح له
+    const adminUsername = process.env.ADMIN_USERNAME;
+    if (!adminUsername || req.admin.username !== adminUsername) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول",
+        error: "UNAUTHORIZED_USER",
+      });
+    }
+
     // إذا وصل الطلب إلى هنا، فهذا يعني أن المصادقة نجحت
     res.status(200).json({
       success: true,

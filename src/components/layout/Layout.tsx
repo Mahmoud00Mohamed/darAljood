@@ -101,8 +101,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const isCustomizerPage = location.pathname === "/customizer";
+  const isAdminPage = location.pathname === "/admin";
 
-  if (isCustomizerPage) {
+  if (isCustomizerPage || isAdminPage) {
     return <>{children}</>;
   }
 

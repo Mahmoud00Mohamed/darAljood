@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Images,
@@ -23,7 +23,6 @@ import {
 import CloudinaryImageUpload from "../components/forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../services/imageUploadService";
 import imageUploadService from "../services/imageUploadService";
-import authService from "../services/authService";
 import ImageModal from "../components/ui/ImageModal";
 import { useModal } from "../hooks/useModal";
 import ConfirmationModal from "../components/ui/ConfirmationModal";
@@ -39,7 +38,6 @@ const ImageLibraryPage: React.FC = () => {
     addUserImage,
     removeUserImage,
     loadPredefinedImages,
-    deletePredefinedImage,
     isLoading,
     error,
   } = useImageLibrary();
@@ -51,24 +49,11 @@ const ImageLibraryPage: React.FC = () => {
   const [selectedImageForView, setSelectedImageForView] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [showSelectedSidebar, setShowSelectedSidebar] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const imageModal = useModal();
   const deleteConfirmModal = useModal();
-  const deletePredefinedConfirmModal = useModal();
   const [imageToDelete, setImageToDelete] =
     useState<CloudinaryImageData | null>(null);
-  const [predefinedImageToDelete, setPredefinedImageToDelete] =
-    useState<PredefinedImage | null>(null);
-
-  // التحقق من المصادقة عند تحميل الصفحة
-  useEffect(() => {
-    const checkAuth = async () => {
-      const isValid = await authService.verifySession();
-      setIsAuthenticated(isValid);
-    };
-    checkAuth();
-  }, []);
 
   const handleImageUpload = (imageData: CloudinaryImageData) => {
     addUserImage(imageData);
@@ -77,16 +62,6 @@ const ImageLibraryPage: React.FC = () => {
   const handleDeleteUserImage = async (image: CloudinaryImageData) => {
     setImageToDelete(image);
     deleteConfirmModal.openModal();
-  };
-
-  // حذف شعار جاهز
-  const handleDeletePredefinedImage = async (image: PredefinedImage) => {
-    if (!isAuthenticated) {
-      alert("يجب تسجيل الدخول كمدير لحذف الشعارات الجاهزة");
-      return;
-    }
-    setPredefinedImageToDelete(image);
-    deletePredefinedConfirmModal.openModal();
   };
 
   const confirmDeleteImage = async () => {
@@ -111,24 +86,6 @@ const ImageLibraryPage: React.FC = () => {
       deleteConfirmModal.closeModal();
     }
   };
-
-  const confirmDeletePredefinedImage = async () => {
-    if (!predefinedImageToDelete) return;
-
-    setIsDeleting(predefinedImageToDelete.id);
-    try {
-      await deletePredefinedImage(predefinedImageToDelete.id);
-    } catch (error) {
-      console.error("Error deleting predefined image:", error);
-      alert("حدث خطأ أثناء حذف الشعار الجاهز");
-    } finally {
-      setIsDeleting(null);
-      setPredefinedImageToDelete(null);
-      deletePredefinedConfirmModal.closeModal();
-    }
-  };
-
-  // إضافة شعار جاهز جديد
 
   const handleImageSelect = (
     image: PredefinedImage | CloudinaryImageData,
@@ -375,22 +332,6 @@ const ImageLibraryPage: React.FC = () => {
                             >
                               <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                             </button>
-                            {isAuthenticated && (
-                              <button
-                                onClick={() =>
-                                  handleDeletePredefinedImage(image)
-                                }
-                                disabled={isDeleting === image.id}
-                                className="w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50"
-                                title="حذف"
-                              >
-                                {isDeleting === image.id ? (
-                                  <Loader2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-spin" />
-                                ) : (
-                                  <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                )}
-                              </button>
-                            )}
                           </div>
                         </motion.div>
                       ))}
@@ -750,19 +691,6 @@ const ImageLibraryPage: React.FC = () => {
           onConfirm={confirmDeleteImage}
           title="تأكيد حذف الصورة"
           message="سيتم حذف هذه الصورة نهائياً من مكتبتك ومن الخادم. لا يمكن التراجع عن هذا الإجراء."
-          confirmText="نعم، احذف"
-          cancelText="إلغاء"
-          type="danger"
-          isLoading={!!isDeleting}
-        />
-
-        {/* نافذة تأكيد حذف الشعار الجاهز */}
-        <ConfirmationModal
-          isOpen={deletePredefinedConfirmModal.isOpen}
-          onClose={deletePredefinedConfirmModal.closeModal}
-          onConfirm={confirmDeletePredefinedImage}
-          title="تأكيد حذف الشعار الجاهز"
-          message="سيتم حذف هذا الشعار نهائياً من المجموعة الجاهزة ومن الخادم. لا يمكن التراجع عن هذا الإجراء."
           confirmText="نعم، احذف"
           cancelText="إلغاء"
           type="danger"

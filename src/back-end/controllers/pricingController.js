@@ -81,6 +81,15 @@ export const calculatePrice = async (req, res) => {
 // تحديث بيانات التسعير (يتطلب مصادقة المدير)
 export const updatePricing = async (req, res) => {
   try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بتحديث بيانات التسعير",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
     const updates = req.body;
     const updatedBy = req.admin.username;
 
@@ -138,6 +147,15 @@ export const updatePricing = async (req, res) => {
 // إعادة تعيين الأسعار إلى القيم الافتراضية (يتطلب مصادقة المدير)
 export const resetPricing = async (req, res) => {
   try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإعادة تعيين الأسعار",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
     const updatedBy = req.admin.username;
     const resetPricing = await PricingModel.resetToDefaults(updatedBy);
 
@@ -160,6 +178,15 @@ export const resetPricing = async (req, res) => {
 // الحصول على تاريخ التحديثات (يتطلب مصادقة المدير)
 export const getPricingHistory = async (req, res) => {
   try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بعرض تاريخ التحديثات",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
     const pricing = await PricingModel.getPricing();
 
     res.status(200).json({

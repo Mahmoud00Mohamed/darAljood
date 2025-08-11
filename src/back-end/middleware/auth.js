@@ -12,6 +12,12 @@ export const validateAdminCredentials = (username, password) => {
     throw new Error("بيانات المدير غير مكونة في ملف البيئة");
   }
 
+  // التحقق الصارم من بيانات المدير
+  if (typeof username !== "string" || typeof password !== "string") {
+    return false;
+  }
+
+  // التحقق من تطابق البيانات بدقة
   return username === adminUsername && password === adminPassword;
 };
 
@@ -64,6 +70,25 @@ export const authenticateAdmin = (req, res, next) => {
 
     const token = authHeader.substring(7); // إزالة "Bearer "
     const decoded = verifyToken(token);
+
+    // التحقق الإضافي من صحة بيانات المدير في الرمز المميز
+    if (!decoded.username || decoded.role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: "رمز المصادقة غير صحيح",
+        error: "INVALID_TOKEN_DATA",
+      });
+    }
+
+    // التحقق من أن المستخدم هو المدير المصرح له
+    const adminUsername = process.env.ADMIN_USERNAME;
+    if (!adminUsername || decoded.username !== adminUsername) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول لهذا المورد",
+        error: "FORBIDDEN",
+      });
+    }
 
     // إضافة معلومات المستخدم إلى الطلب
     req.admin = decoded;

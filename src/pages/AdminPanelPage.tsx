@@ -18,6 +18,13 @@ import {
   Trash2,
   Image as ImageIcon,
   Home,
+  Menu,
+  X,
+  Plus,
+  Edit3,
+  Info,
+  Calendar,
+  Activity,
 } from "lucide-react";
 import authService, { LoginCredentials } from "../services/authService";
 import pricingService, { PricingData } from "../services/pricingService";
@@ -27,6 +34,9 @@ import predefinedImagesService, {
 import CloudinaryImageUpload from "../components/forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../services/imageUploadService";
 import { useNavigate } from "react-router-dom";
+import ConfirmationModal from "../components/ui/ConfirmationModal";
+import { useModal } from "../hooks/useModal";
+import Modal from "../components/ui/Modal";
 
 const AdminPanelPage: React.FC = () => {
   const navigate = useNavigate();
@@ -56,6 +66,18 @@ const AdminPanelPage: React.FC = () => {
     description: "شعار جاهز للاستخدام",
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedImageForEdit, setSelectedImageForEdit] =
+    useState<PredefinedImageData | null>(null);
+
+  // Modal hooks
+  const logoutConfirmModal = useModal();
+  const resetPricingModal = useModal();
+  const deleteImageModal = useModal();
+  const editImageModal = useModal();
+  const addImageModal = useModal();
+
+  const [imageToDelete, setImageToDelete] =
+    useState<PredefinedImageData | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -64,8 +86,7 @@ const AdminPanelPage: React.FC = () => {
         setIsAuthenticated(isValid);
 
         if (isValid) {
-          await loadPricingData();
-          await loadPredefinedImages();
+          await Promise.all([loadPricingData(), loadPredefinedImages()]);
         }
       } catch (error) {
         console.error("Auth check failed:", error);
@@ -132,13 +153,14 @@ const AdminPanelPage: React.FC = () => {
         newImageData.description
       );
 
-      setPredefinedImages((prev) => [...prev, newImage]);
+      setPredefinedImages((prev) => [newImage, ...prev]);
       setSaveMessage("تم إضافة الشعار الجاهز بنجاح");
       setNewImageData({
         name: "",
         category: "شعارات جاهزة",
         description: "شعار جاهز للاستخدام",
       });
+      addImageModal.closeModal();
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
       setImagesError(
@@ -147,13 +169,15 @@ const AdminPanelPage: React.FC = () => {
     }
   };
 
-  const handleDeletePredefinedImage = async (imageId: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الشعار الجاهز؟")) return;
+  const handleDeletePredefinedImage = async () => {
+    if (!imageToDelete) return;
 
     setIsLoadingImages(true);
     try {
-      await predefinedImagesService.deletePredefinedImage(imageId);
-      setPredefinedImages((prev) => prev.filter((img) => img.id !== imageId));
+      await predefinedImagesService.deletePredefinedImage(imageToDelete.id);
+      setPredefinedImages((prev) =>
+        prev.filter((img) => img.id !== imageToDelete.id)
+      );
       setSaveMessage("تم حذف الشعار الجاهز بنجاح");
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
@@ -162,6 +186,38 @@ const AdminPanelPage: React.FC = () => {
       );
     } finally {
       setIsLoadingImages(false);
+      setImageToDelete(null);
+      deleteImageModal.closeModal();
+    }
+  };
+
+  const handleEditImage = async () => {
+    if (!selectedImageForEdit) return;
+
+    try {
+      const updatedImage = await predefinedImagesService.updatePredefinedImage(
+        selectedImageForEdit.id,
+        {
+          name: selectedImageForEdit.name,
+          category: selectedImageForEdit.category,
+          description: selectedImageForEdit.description,
+        }
+      );
+
+      setPredefinedImages((prev) =>
+        prev.map((img) =>
+          img.id === selectedImageForEdit.id ? updatedImage : img
+        )
+      );
+
+      setSaveMessage("تم تحديث الشعار بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
+      editImageModal.closeModal();
+      setSelectedImageForEdit(null);
+    } catch (error) {
+      setImagesError(
+        error instanceof Error ? error.message : "فشل في تحديث الشعار"
+      );
     }
   };
 
@@ -173,7 +229,7 @@ const AdminPanelPage: React.FC = () => {
     try {
       await authService.login(loginCredentials);
       setIsAuthenticated(true);
-      await loadPricingData();
+      await Promise.all([loadPricingData(), loadPredefinedImages()]);
     } catch (error) {
       setLoginError(
         error instanceof Error ? error.message : "فشل في تسجيل الدخول"
@@ -188,6 +244,7 @@ const AdminPanelPage: React.FC = () => {
       await authService.logout();
       setIsAuthenticated(false);
       setPricingData(null);
+      setPredefinedImages([]);
       setLoginCredentials({ username: "", password: "" });
       navigate("/");
     } catch (error) {
@@ -223,11 +280,6 @@ const AdminPanelPage: React.FC = () => {
   };
 
   const handleReset = async () => {
-    if (
-      !confirm("هل أنت متأكد من إعادة تعيين جميع الأسعار إلى القيم الافتراضية؟")
-    )
-      return;
-
     setIsSaving(true);
     setPricingError("");
 
@@ -245,6 +297,7 @@ const AdminPanelPage: React.FC = () => {
       );
     } finally {
       setIsSaving(false);
+      resetPricingModal.closeModal();
     }
   };
 
@@ -267,103 +320,130 @@ const AdminPanelPage: React.FC = () => {
     setPricingData(newData);
   };
 
+  const formatFileSize = (bytes?: number): string => {
+    if (!bytes) return "غير محدد";
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
-          <p className="text-gray-600">جاري التحقق من الهوية...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="text-center bg-white rounded-2xl p-8 shadow-xl"
+        >
+          <div className="w-16 h-16 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 animate-spin text-white" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            جاري التحقق من الهوية
+          </h3>
+          <p className="text-gray-600">يرجى الانتظار...</p>
+        </motion.div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="w-full max-w-md"
         >
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#563660] to-[#7e4a8c] p-6 text-center">
-              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-white" />
+          <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-[#563660] to-[#7e4a8c] p-8 text-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-black bg-opacity-10"></div>
+              <div className="relative">
+                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+                  <Shield className="w-10 h-10 text-white" />
+                </div>
+                <h1 className="text-3xl font-bold text-white mb-3">
+                  لوحة التحكم
+                </h1>
+                <p className="text-white text-opacity-90">
+                  دار الجود - إدارة النظام
+                </p>
               </div>
-              <h1 className="text-2xl font-bold text-white mb-2">
-                لوحة التحكم
-              </h1>
-              <p className="text-white text-opacity-90 text-sm">
-                دار الجود - إدارة الأسعار
-              </p>
             </div>
 
-            <form onSubmit={handleLogin} className="p-6 space-y-6">
-              {loginError && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2"
-                >
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                  <span className="text-red-700 text-sm">{loginError}</span>
-                </motion.div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  اسم المستخدم
-                </label>
-                <div className="relative">
-                  <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    value={loginCredentials.username}
-                    onChange={(e) =>
-                      setLoginCredentials((prev) => ({
-                        ...prev,
-                        username: e.target.value,
-                      }))
-                    }
-                    className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                    placeholder="أدخل اسم المستخدم"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  كلمة المرور
-                </label>
-                <div className="relative">
-                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={loginCredentials.password}
-                    onChange={(e) =>
-                      setLoginCredentials((prev) => ({
-                        ...prev,
-                        password: e.target.value,
-                      }))
-                    }
-                    className="w-full pr-10 pl-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                    placeholder="أدخل كلمة المرور"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            <form onSubmit={handleLogin} className="p-8 space-y-6">
+              <AnimatePresence>
+                {loginError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3"
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    <span className="text-red-700 text-sm">{loginError}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    اسم المستخدم
+                  </label>
+                  <div className="relative">
+                    <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      value={loginCredentials.username}
+                      onChange={(e) =>
+                        setLoginCredentials((prev) => ({
+                          ...prev,
+                          username: e.target.value,
+                        }))
+                      }
+                      className="w-full pr-12 pl-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                      placeholder="أدخل اسم المستخدم"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    كلمة المرور
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={loginCredentials.password}
+                      onChange={(e) =>
+                        setLoginCredentials((prev) => ({
+                          ...prev,
+                          password: e.target.value,
+                        }))
+                      }
+                      className="w-full pr-12 pl-14 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                      placeholder="أدخل كلمة المرور"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -374,7 +454,7 @@ const AdminPanelPage: React.FC = () => {
                   !loginCredentials.username ||
                   !loginCredentials.password
                 }
-                className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white font-medium rounded-lg hover:from-[#4b2e55] hover:to-[#6d3f7a] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white font-semibold rounded-xl hover:from-[#4b2e55] hover:to-[#6d3f7a] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
               >
                 {isLoggingIn ? (
                   <>
@@ -396,53 +476,54 @@ const AdminPanelPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col md:flex-row">
       {/* Mobile menu button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden fixed bottom-4 right-4 z-50 w-12 h-12 bg-[#563660] text-white rounded-full shadow-lg flex items-center justify-center"
+        className="md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white rounded-2xl shadow-xl flex items-center justify-center hover:shadow-2xl transition-all"
       >
         {mobileMenuOpen ? (
-          <span className="text-2xl">×</span>
+          <X className="w-6 h-6" />
         ) : (
-          <Settings className="w-6 h-6" />
+          <Menu className="w-6 h-6" />
         )}
       </button>
 
       {/* Sidebar */}
       <aside
-        className={`${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"} 
-        md:translate-x-0 transform fixed md:static inset-y-0 left-0 z-40 w-64 bg-white shadow-md border-r border-gray-200 transition-transform duration-300 ease-in-out`}
+        className={`${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0 transform fixed md:static inset-y-0 left-0 z-40 w-72 bg-white shadow-2xl border-r border-gray-100 transition-transform duration-300 ease-in-out`}
       >
         <div className="h-full flex flex-col">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-lg flex items-center justify-center">
-                <Settings className="w-5 h-5 text-white" />
+          {/* Sidebar Header */}
+          <div className="p-6 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <Settings className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">
-                  لوحة التحكم
-                </h1>
-                <p className="text-xs text-gray-600">دار الجود</p>
+                <h1 className="text-xl font-bold">لوحة التحكم</h1>
+                <p className="text-sm opacity-90">دار الجود</p>
               </div>
             </div>
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto p-6 space-y-2">
             <button
               onClick={() => {
                 setActiveTab("pricing");
                 setMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+              className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                 activeTab === "pricing"
-                  ? "bg-[#563660] text-white"
+                  ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-lg"
                   : "text-gray-700 hover:bg-gray-100"
               }`}
             >
               <DollarSign className="w-5 h-5" />
-              إدارة الأسعار
+              <span>إدارة الأسعار</span>
             </button>
 
             <button
@@ -450,418 +531,768 @@ const AdminPanelPage: React.FC = () => {
                 setActiveTab("images");
                 setMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+              className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                 activeTab === "images"
-                  ? "bg-[#563660] text-white"
+                  ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-lg"
                   : "text-gray-700 hover:bg-gray-100"
               }`}
             >
               <ImageIcon className="w-5 h-5" />
-              الشعارات الجاهزة
+              <span>الشعارات الجاهزة</span>
+              <span className="mr-auto bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">
+                {predefinedImages.length}
+              </span>
             </button>
 
-            <button
-              onClick={() => navigate("/")}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-            >
-              <Home className="w-5 h-5" />
-              العودة للموقع
-            </button>
+            <div className="border-t border-gray-200 pt-4 mt-6">
+              <button
+                onClick={() => navigate("/")}
+                className="w-full flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+              >
+                <Home className="w-5 h-5" />
+                <span>العودة للموقع</span>
+              </button>
 
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors mt-4"
-            >
-              <LogOut className="w-5 h-5" />
-              تسجيل الخروج
-            </button>
+              <button
+                onClick={logoutConfirmModal.openModal}
+                className="w-full flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 mt-2"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>تسجيل الخروج</span>
+              </button>
+            </div>
           </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-6 border-t border-gray-100 bg-gray-50">
+            <div className="text-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Activity className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-xs text-gray-600">النظام يعمل بشكل طبيعي</p>
+            </div>
+          </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 pb-16 md:pb-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Status messages */}
-          <AnimatePresence>
-            {saveMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2"
-              >
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                <span className="text-green-700">{saveMessage}</span>
-              </motion.div>
-            )}
-
-            {(pricingError || imagesError) && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2"
-              >
-                <AlertCircle className="w-5 h-5 text-red-600" />
-                <span className="text-red-700">
-                  {pricingError || imagesError}
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Pricing Tab */}
-          {activeTab === "pricing" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    إدارة الأسعار
-                  </h2>
-                  <p className="text-gray-600">تعديل أسعار خدمات دار الجود</p>
-                </div>
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                  <button
-                    onClick={handleSave}
-                    disabled={isSaving || !pricingData}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50"
-                  >
-                    {isSaving ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                    حفظ
-                  </button>
-                  <button
-                    onClick={handleReset}
-                    disabled={isSaving}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    إعادة تعيين
-                  </button>
-                  <button
-                    onClick={loadPricingData}
-                    disabled={isLoadingPricing}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    {isLoadingPricing ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <RotateCcw className="w-4 h-4" />
-                    )}
-                    تحديث
-                  </button>
-                </div>
-              </div>
-
-              {isLoadingPricing ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
-                  <p className="text-gray-600">جاري تحميل بيانات التسعير...</p>
-                </div>
-              ) : pricingData ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Base Price Card */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <DollarSign className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        السعر الأساسي
-                      </h3>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          السعر الأساسي (ريال)
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={pricingData.basePrice}
-                          onChange={(e) =>
-                            updatePricingField(
-                              "basePrice",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                        />
-                      </div>
-
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-                        <h4 className="font-medium text-blue-900 mb-2">
-                          يشمل السعر الأساسي:
-                        </h4>
-                        <ul className="text-blue-800 space-y-1">
-                          <li>• شعار خلفي + نص خلفي</li>
-                          <li>• شعارين في الجهة اليمنى</li>
-                          <li>• شعارين في الجهة اليسرى</li>
-                          <li>• شعار أو نص واحد في الأمام</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Costs Card */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-orange-600" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        التكاليف الإضافية
-                      </h3>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          عنصر إضافي في الأمام (ريال)
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={pricingData.additionalCosts.frontExtraItem}
-                          onChange={(e) =>
-                            updatePricingField(
-                              "additionalCosts.frontExtraItem",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          شعار ثالث - جهة يمنى (ريال)
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={pricingData.additionalCosts.rightSideThirdLogo}
-                          onChange={(e) =>
-                            updatePricingField(
-                              "additionalCosts.rightSideThirdLogo",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          شعار ثالث - جهة يسرى (ريال)
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={pricingData.additionalCosts.leftSideThirdLogo}
-                          onChange={(e) =>
-                            updatePricingField(
-                              "additionalCosts.leftSideThirdLogo",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-20">
-                  <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    فشل في تحميل بيانات التسعير
-                  </h3>
-                  <button
-                    onClick={loadPricingData}
-                    className="px-4 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
-                  >
-                    إعادة المحاولة
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Images Tab */}
-          {activeTab === "images" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    الشعارات الجاهزة
-                  </h2>
-                  <p className="text-gray-600">إدارة مكتبة الشعارات الجاهزة</p>
-                </div>
-                <button
-                  onClick={loadPredefinedImages}
-                  disabled={isLoadingImages}
-                  className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+      <main className="flex-1 pb-20 md:pb-0 overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Status messages */}
+            <AnimatePresence>
+              {saveMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 shadow-sm"
                 >
-                  {isLoadingImages ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <RotateCcw className="w-4 h-4" />
-                  )}
-                  تحديث القائمة
-                </button>
-              </div>
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="text-green-700 font-medium">
+                    {saveMessage}
+                  </span>
+                </motion.div>
+              )}
 
-              {/* Add New Image Form */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  إضافة شعار جديد
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {(pricingError || imagesError) && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3 shadow-sm"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <span className="text-red-700 font-medium">
+                    {pricingError || imagesError}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Pricing Tab */}
+            {activeTab === "pricing" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="space-y-8"
+              >
+                {/* Header */}
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      اسم الشعار
-                    </label>
-                    <input
-                      type="text"
-                      value={newImageData.name}
-                      onChange={(e) =>
-                        setNewImageData((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                      placeholder="مثال: شعار الشركة"
-                    />
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      إدارة الأسعار
+                    </h2>
+                    <p className="text-gray-600">
+                      تعديل أسعار خدمات دار الجود وإدارة التكاليف
+                    </p>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الفئة
-                    </label>
-                    <input
-                      type="text"
-                      value={newImageData.category}
-                      onChange={(e) =>
-                        setNewImageData((prev) => ({
-                          ...prev,
-                          category: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الوصف
-                    </label>
-                    <input
-                      type="text"
-                      value={newImageData.description}
-                      onChange={(e) =>
-                        setNewImageData((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
-                      placeholder="وصف مختصر للشعار"
-                    />
+                  <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+                    <button
+                      onClick={handleSave}
+                      disabled={isSaving || !pricingData}
+                      className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white font-semibold rounded-xl hover:from-[#4b2e55] hover:to-[#6d3f7a] transition-all duration-200 disabled:opacity-50 shadow-lg hover:shadow-xl"
+                    >
+                      {isSaving ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4" />
+                      )}
+                      حفظ التغييرات
+                    </button>
+                    <button
+                      onClick={resetPricingModal.openModal}
+                      disabled={isSaving}
+                      className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 disabled:opacity-50"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      إعادة تعيين
+                    </button>
+                    <button
+                      onClick={loadPricingData}
+                      disabled={isLoadingPricing}
+                      className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 disabled:opacity-50"
+                    >
+                      {isLoadingPricing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <RotateCcw className="w-4 h-4" />
+                      )}
+                      تحديث
+                    </button>
                   </div>
                 </div>
 
-                <CloudinaryImageUpload
-                  onImageSelect={handleAddPredefinedImage}
-                  acceptedFormats={[
-                    "image/jpeg",
-                    "image/jpg",
-                    "image/png",
-                    "image/webp",
-                  ]}
-                  maxFileSize={5}
-                  placeholder="اسحب الشعار هنا أو انقر للاختيار"
-                  aspectRatio={1}
-                  cropTitle="اقتطاع الشعار الجاهز"
-                  autoAddToLibrary={false}
+                {isLoadingPricing ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <Loader2 className="w-12 h-12 animate-spin text-[#563660] mx-auto mb-4" />
+                      <p className="text-gray-600 text-lg">
+                        جاري تحميل بيانات التسعير...
+                      </p>
+                    </div>
+                  </div>
+                ) : pricingData ? (
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    {/* Base Price Card */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
+                      <div className="flex items-center gap-4 mb-8">
+                        <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                          <DollarSign className="w-7 h-7 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">
+                            السعر الأساسي
+                          </h3>
+                          <p className="text-gray-600 text-sm">
+                            السعر الأساسي للجاكيت المخصص
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-6">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">
+                            السعر الأساسي (ريال سعودي)
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={pricingData.basePrice}
+                              onChange={(e) =>
+                                updatePricingField(
+                                  "basePrice",
+                                  parseInt(e.target.value) || 0
+                                )
+                              }
+                              className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all bg-gray-50 hover:bg-white text-lg font-semibold"
+                            />
+                            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                              ريال
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+                          <h4 className="font-bold text-blue-900 mb-4 flex items-center gap-2">
+                            <Info className="w-5 h-5" />
+                            يشمل السعر الأساسي:
+                          </h4>
+                          <ul className="text-blue-800 space-y-2">
+                            <li className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-blue-600" />
+                              شعار خلفي + نص خلفي
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-blue-600" />
+                              شعارين في الجهة اليمنى
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-blue-600" />
+                              شعارين في الجهة اليسرى
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-blue-600" />
+                              شعار أو نص واحد في الأمام
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Costs Card */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
+                      <div className="flex items-center gap-4 mb-8">
+                        <div className="w-14 h-14 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
+                          <TrendingUp className="w-7 h-7 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">
+                            التكاليف الإضافية
+                          </h3>
+                          <p className="text-gray-600 text-sm">
+                            أسعار الخدمات الإضافية
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-6">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">
+                            عنصر إضافي في الأمام (ريال)
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={pricingData.additionalCosts.frontExtraItem}
+                              onChange={(e) =>
+                                updatePricingField(
+                                  "additionalCosts.frontExtraItem",
+                                  parseInt(e.target.value) || 0
+                                )
+                              }
+                              className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                            />
+                            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                              ريال
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">
+                            شعار ثالث - جهة يمنى (ريال)
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={
+                                pricingData.additionalCosts.rightSideThirdLogo
+                              }
+                              onChange={(e) =>
+                                updatePricingField(
+                                  "additionalCosts.rightSideThirdLogo",
+                                  parseInt(e.target.value) || 0
+                                )
+                              }
+                              className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                            />
+                            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                              ريال
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">
+                            شعار ثالث - جهة يسرى (ريال)
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={
+                                pricingData.additionalCosts.leftSideThirdLogo
+                              }
+                              onChange={(e) =>
+                                updatePricingField(
+                                  "additionalCosts.leftSideThirdLogo",
+                                  parseInt(e.target.value) || 0
+                                )
+                              }
+                              className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                            />
+                            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                              ريال
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pricing Summary Card */}
+                    <div className="xl:col-span-2 bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-2xl shadow-xl p-8 text-white">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center">
+                          <Calendar className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">ملخص التسعير</h3>
+                          <p className="text-white text-opacity-90 text-sm">
+                            آخر تحديث:{" "}
+                            {new Date(
+                              pricingData.lastUpdated
+                            ).toLocaleDateString("ar-SA")}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="bg-white bg-opacity-10 rounded-xl p-4 backdrop-blur-sm">
+                          <div className="text-2xl font-bold mb-1">
+                            {pricingData.basePrice} ريال
+                          </div>
+                          <div className="text-white text-opacity-80 text-sm">
+                            السعر الأساسي
+                          </div>
+                        </div>
+                        <div className="bg-white bg-opacity-10 rounded-xl p-4 backdrop-blur-sm">
+                          <div className="text-2xl font-bold mb-1">
+                            {pricingData.additionalCosts.frontExtraItem} ريال
+                          </div>
+                          <div className="text-white text-opacity-80 text-sm">
+                            عنصر أمامي إضافي
+                          </div>
+                        </div>
+                        <div className="bg-white bg-opacity-10 rounded-xl p-4 backdrop-blur-sm">
+                          <div className="text-2xl font-bold mb-1">
+                            {pricingData.additionalCosts.rightSideThirdLogo}{" "}
+                            ريال
+                          </div>
+                          <div className="text-white text-opacity-80 text-sm">
+                            شعار ثالث يمين
+                          </div>
+                        </div>
+                        <div className="bg-white bg-opacity-10 rounded-xl p-4 backdrop-blur-sm">
+                          <div className="text-2xl font-bold mb-1">
+                            {pricingData.additionalCosts.leftSideThirdLogo} ريال
+                          </div>
+                          <div className="text-white text-opacity-80 text-sm">
+                            شعار ثالث يسار
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-20">
+                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                      فشل في تحميل بيانات التسعير
+                    </h3>
+                    <button
+                      onClick={loadPricingData}
+                      className="px-6 py-3 bg-[#563660] text-white rounded-xl hover:bg-[#4b2e55] transition-colors font-semibold"
+                    >
+                      إعادة المحاولة
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Images Tab */}
+            {activeTab === "images" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="space-y-8"
+              >
+                {/* Header */}
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      الشعارات الجاهزة
+                    </h2>
+                    <p className="text-gray-600">
+                      إدارة مكتبة الشعارات الجاهزة للعملاء
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+                    <button
+                      onClick={addImageModal.openModal}
+                      className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                    >
+                      <Plus className="w-4 h-4" />
+                      إضافة شعار جديد
+                    </button>
+                    <button
+                      onClick={loadPredefinedImages}
+                      disabled={isLoadingImages}
+                      className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 disabled:opacity-50"
+                    >
+                      {isLoadingImages ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <RotateCcw className="w-4 h-4" />
+                      )}
+                      تحديث القائمة
+                    </button>
+                  </div>
+                </div>
+
+                {/* Images Grid */}
+                {isLoadingImages ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <Loader2 className="w-12 h-12 animate-spin text-[#563660] mx-auto mb-4" />
+                      <p className="text-gray-600 text-lg">
+                        جاري تحميل الشعارات الجاهزة...
+                      </p>
+                    </div>
+                  </div>
+                ) : predefinedImages.length > 0 ? (
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                    <div className="flex items-center justify-between mb-8">
+                      <h3 className="text-xl font-bold text-gray-900">
+                        الشعارات المتاحة
+                      </h3>
+                      <span className="bg-[#563660] text-white px-4 py-2 rounded-xl font-semibold">
+                        {predefinedImages.length} شعار
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                      {predefinedImages.map((image, index) => (
+                        <motion.div
+                          key={image.id}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                          className="relative group bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200"
+                        >
+                          <div className="aspect-square p-4">
+                            <img
+                              src={image.url}
+                              alt={image.name}
+                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                          </div>
+
+                          <div className="p-4 border-t border-gray-200 bg-white">
+                            <h4 className="text-sm font-semibold text-gray-900 truncate mb-1">
+                              {image.name}
+                            </h4>
+                            <p className="text-xs text-gray-500 truncate">
+                              {image.category}
+                            </p>
+                            {image.size && (
+                              <p className="text-xs text-gray-400 mt-1">
+                                {formatFileSize(image.size)}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Action buttons */}
+                          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <button
+                              onClick={() => {
+                                setSelectedImageForEdit(image);
+                                editImageModal.openModal();
+                              }}
+                              className="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors shadow-md"
+                              title="تعديل"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setImageToDelete(image);
+                                deleteImageModal.openModal();
+                              }}
+                              disabled={isLoadingImages}
+                              className="w-7 h-7 bg-red-500 text-white rounded-lg flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50 shadow-md"
+                              title="حذف"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
+                    <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-6" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                      لا توجد شعارات جاهزة
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      ابدأ بإضافة شعارات جاهزة للمجموعة
+                    </p>
+                    <button
+                      onClick={addImageModal.openModal}
+                      className="px-6 py-3 bg-[#563660] text-white rounded-xl hover:bg-[#4b2e55] transition-colors font-semibold"
+                    >
+                      إضافة شعار جديد
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Confirmation Modals */}
+      <ConfirmationModal
+        isOpen={logoutConfirmModal.isOpen}
+        onClose={logoutConfirmModal.closeModal}
+        onConfirm={handleLogout}
+        title="تأكيد تسجيل الخروج"
+        message="هل أنت متأكد من تسجيل الخروج من لوحة التحكم؟"
+        confirmText="نعم، تسجيل الخروج"
+        cancelText="إلغاء"
+        type="warning"
+      />
+
+      <ConfirmationModal
+        isOpen={resetPricingModal.isOpen}
+        onClose={resetPricingModal.closeModal}
+        onConfirm={handleReset}
+        title="إعادة تعيين الأسعار"
+        message="هل أنت متأكد من إعادة تعيين جميع الأسعار إلى القيم الافتراضية؟ سيتم فقدان جميع التعديلات الحالية."
+        confirmText="نعم، إعادة تعيين"
+        cancelText="إلغاء"
+        type="danger"
+        isLoading={isSaving}
+      />
+
+      <ConfirmationModal
+        isOpen={deleteImageModal.isOpen}
+        onClose={() => {
+          deleteImageModal.closeModal();
+          setImageToDelete(null);
+        }}
+        onConfirm={handleDeletePredefinedImage}
+        title="تأكيد حذف الشعار"
+        message={`هل أنت متأكد من حذف الشعار "${imageToDelete?.name}"؟ سيتم حذفه نهائياً من المجموعة ومن الخادم.`}
+        confirmText="نعم، احذف"
+        cancelText="إلغاء"
+        type="danger"
+        isLoading={isLoadingImages}
+      />
+
+      {/* Add Image Modal */}
+      <Modal
+        isOpen={addImageModal.isOpen}
+        shouldRender={addImageModal.shouldRender}
+        onClose={addImageModal.closeModal}
+        title="إضافة شعار جديد"
+        size="lg"
+        options={addImageModal.options}
+      >
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                اسم الشعار *
+              </label>
+              <input
+                type="text"
+                value={newImageData.name}
+                onChange={(e) =>
+                  setNewImageData((prev) => ({
+                    ...prev,
+                    name: e.target.value,
+                  }))
+                }
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                placeholder="مثال: شعار الشركة"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                الفئة
+              </label>
+              <input
+                type="text"
+                value={newImageData.category}
+                onChange={(e) =>
+                  setNewImageData((prev) => ({
+                    ...prev,
+                    category: e.target.value,
+                  }))
+                }
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                الوصف
+              </label>
+              <input
+                type="text"
+                value={newImageData.description}
+                onChange={(e) =>
+                  setNewImageData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                placeholder="وصف مختصر للشعار"
+              />
+            </div>
+          </div>
+
+          <CloudinaryImageUpload
+            onImageSelect={handleAddPredefinedImage}
+            acceptedFormats={[
+              "image/jpeg",
+              "image/jpg",
+              "image/png",
+              "image/webp",
+            ]}
+            maxFileSize={5}
+            placeholder="اسحب الشعار هنا أو انقر للاختيار"
+            aspectRatio={1}
+            cropTitle="اقتطاع الشعار الجاهز"
+            autoAddToLibrary={false}
+          />
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="text-amber-800 font-semibold mb-1">
+                  ملاحظات مهمة:
+                </p>
+                <ul className="text-amber-700 space-y-1">
+                  <li>• الحد الأقصى لحجم الملف: 5MB</li>
+                  <li>• الأنواع المدعومة: JPG, PNG, WEBP</li>
+                  <li>• يفضل أن تكون الصورة مربعة الشكل</li>
+                  <li>• سيتم تحسين الصورة تلقائياً للاستخدام</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Image Modal */}
+      <Modal
+        isOpen={editImageModal.isOpen}
+        shouldRender={editImageModal.shouldRender}
+        onClose={() => {
+          editImageModal.closeModal();
+          setSelectedImageForEdit(null);
+        }}
+        title="تعديل معلومات الشعار"
+        size="md"
+        options={editImageModal.options}
+      >
+        {selectedImageForEdit && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-xl overflow-hidden">
+                <img
+                  src={selectedImageForEdit.url}
+                  alt={selectedImageForEdit.name}
+                  className="w-full h-full object-contain p-2"
+                />
+              </div>
+              <p className="text-sm text-gray-600">
+                معرف الصورة: {selectedImageForEdit.publicId}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  اسم الشعار *
+                </label>
+                <input
+                  type="text"
+                  value={selectedImageForEdit.name}
+                  onChange={(e) =>
+                    setSelectedImageForEdit((prev) =>
+                      prev ? { ...prev, name: e.target.value } : null
+                    )
+                  }
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                  required
                 />
               </div>
 
-              {/* Images List */}
-              {isLoadingImages ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
-                  <p className="text-gray-600">
-                    جاري تحميل الشعارات الجاهزة...
-                  </p>
-                </div>
-              ) : predefinedImages.length > 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-6">
-                    الشعارات المتاحة ({predefinedImages.length})
-                  </h3>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  الفئة
+                </label>
+                <input
+                  type="text"
+                  value={selectedImageForEdit.category}
+                  onChange={(e) =>
+                    setSelectedImageForEdit((prev) =>
+                      prev ? { ...prev, category: e.target.value } : null
+                    )
+                  }
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+                />
+              </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {predefinedImages.map((image) => (
-                      <div
-                        key={image.id}
-                        className="relative group bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                      >
-                        <div className="aspect-square p-2">
-                          <img
-                            src={image.url}
-                            alt={image.name}
-                            className="w-full h-full object-contain"
-                            loading="lazy"
-                          />
-                        </div>
-
-                        <div className="p-2 border-t border-gray-200">
-                          <h4 className="text-xs font-medium text-gray-900 truncate">
-                            {image.name}
-                          </h4>
-                          <p className="text-xs text-gray-500 truncate">
-                            {image.category}
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={() => handleDeletePredefinedImage(image.id)}
-                          disabled={isLoadingImages}
-                          className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50"
-                          title="حذف"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-200">
-                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    لا توجد شعارات جاهزة
-                  </h3>
-                  <p className="text-gray-600">
-                    ابدأ بإضافة شعارات جاهزة للمجموعة
-                  </p>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  الوصف
+                </label>
+                <textarea
+                  value={selectedImageForEdit.description || ""}
+                  onChange={(e) =>
+                    setSelectedImageForEdit((prev) =>
+                      prev ? { ...prev, description: e.target.value } : null
+                    )
+                  }
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all resize-none"
+                  placeholder="وصف مختصر للشعار"
+                />
+              </div>
             </div>
-          )}
-        </div>
-      </main>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={handleEditImage}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#563660] text-white font-semibold rounded-xl hover:bg-[#4b2e55] transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                حفظ التغييرات
+              </button>
+              <button
+                onClick={() => {
+                  editImageModal.closeModal();
+                  setSelectedImageForEdit(null);
+                }}
+                className="flex-1 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

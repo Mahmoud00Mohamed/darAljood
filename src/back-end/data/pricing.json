@@ -1,5 +1,5 @@
 {
-  "basePrice": 250,
+  "basePrice": 220,
   "includedItems": {
     "backLogo": true,
     "backText": true,
@@ -8,10 +8,10 @@
     "frontItems": 1
   },
   "additionalCosts": {
-    "frontExtraItem": 26,
+    "frontExtraItem": 25,
     "rightSideThirdLogo": 25,
     "leftSideThirdLogo": 25
   },
-  "lastUpdated": "2025-08-10T23:17:18.848Z",
+  "lastUpdated": "2025-08-11T01:55:15.612Z",
   "updatedBy": "admin"
 }
