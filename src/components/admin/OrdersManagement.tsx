@@ -19,6 +19,7 @@ import {
   TrendingUp,
   DollarSign,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import orderService, {
   OrderData,
   OrderStats,
@@ -29,6 +30,7 @@ import Modal from "../ui/Modal";
 import { useModal } from "../../hooks/useModal";
 
 const OrdersManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -421,6 +423,15 @@ const OrdersManagement: React.FC = () => {
                           title="عرض التفاصيل"
                         >
                           <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            navigate(`/admin/orders/${order.id}/edit`)
+                          }
+                          className="text-purple-600 hover:text-purple-800 transition-colors"
+                          title="تعديل الطلب"
+                        >
+                          <Edit3 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => {

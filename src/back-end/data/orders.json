@@ -336,16 +336,194 @@
     "deliveredAt": "2025-08-11T21:47:57.123Z"
   },
   {
-    "id": "order-1754955767130-nmuszogoi",
-    "orderNumber": "767130096",
-    "trackingCode": "GACFIWI2",
+    "id": "order-1754957912401-ur238xgcx",
+    "orderNumber": "912401710",
+    "trackingCode": "L2VEITVO",
     "customerInfo": {
-      "name": "ddd",
+      "name": "عبدالشكور",
       "phone": "0512345678"
     },
     "items": [
       {
-        "id": "cart-1754955705032-g59t4frkf",
+        "id": "cart-1754957901699-10g4ra5lp",
+        "jacketConfig": {
+          "colors": {
+            "body": "#1B263B",
+            "sleeves": "#4A4A4A",
+            "trim": "#1B263B"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [
+            {
+              "id": "logo-1754802229642",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924622/10_yhvn0o.png",
+              "position": "backCenter",
+              "x": 0,
+              "y": 0,
+              "scale": 1.5
+            },
+            {
+              "id": "logo-1754802241347",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "chestRight",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
+            },
+            {
+              "id": "logo-1754802267841",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "rightSide_middle",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754802271945",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924676/21_swow6t.png",
+              "position": "leftSide_top",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754802274215",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924688/14_htk85j.png",
+              "position": "leftSide_bottom",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            }
+          ],
+          "texts": [
+            {
+              "id": "text-1754802246259",
+              "content": "WQ",
+              "position": "chestLeft",
+              "x": 0,
+              "y": 0,
+              "scale": 1,
+              "font": "Katibeh",
+              "color": "#000000",
+              "isConnected": true,
+              "charStyles": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "font": "Amiri"
+                },
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "font": "Amiri"
+                }
+              ]
+            },
+            {
+              "id": "text-1754802246259",
+              "content": "WQ",
+              "position": "chestLeft",
+              "x": 0,
+              "y": 0,
+              "scale": 1,
+              "font": "Katibeh",
+              "color": "#000000",
+              "isConnected": true,
+              "charStyles": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "font": "Amiri"
+                },
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "font": "Amiri"
+                }
+              ]
+            },
+            {
+              "id": "text-1754802260211",
+              "content": "A H M E D",
+              "position": "backBottom",
+              "x": 0,
+              "y": 20,
+              "scale": 1.5,
+              "font": "Noto Naskh Arabic",
+              "color": "#000000",
+              "isConnected": true
+            }
+          ],
+          "currentView": "front",
+          "totalPrice": 310,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 260,
+            "additionalCosts": [
+              {
+                "item": "عناصر أمامية إضافية",
+                "cost": 25,
+                "quantity": 2
+              }
+            ],
+            "totalPrice": 310,
+            "appliedDiscount": null,
+            "finalPrice": 310
+          }
+        },
+        "quantity": 1,
+        "price": 310
+      }
+    ],
+    "totalPrice": 310,
+    "status": "delivered",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T00:18:32.401Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      },
+      {
+        "status": "confirmed",
+        "timestamp": "2025-08-12T00:39:52.266Z",
+        "note": "السلام عليكم",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "delivered",
+        "timestamp": "2025-08-12T00:40:15.857Z",
+        "note": "تم التسليم",
+        "updatedBy": "admin"
+      }
+    ],
+    "createdAt": "2025-08-12T00:18:32.401Z",
+    "updatedAt": "2025-08-12T00:40:15.857Z",
+    "estimatedDelivery": "2025-09-16T00:18:32.401Z",
+    "notes": [],
+    "deliveredAt": "2025-08-12T00:40:15.857Z"
+  },
+  {
+    "id": "order-1754959379010-v0u53uyqj",
+    "orderNumber": "379010691",
+    "trackingCode": "QLTEM0XT",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1754958875649-xv7bn1vp6",
         "jacketConfig": {
           "colors": {
             "body": "#5C1A2B",
@@ -360,81 +538,324 @@
           "size": "M",
           "logos": [
             {
-              "id": "logo-1754955651593",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955650/dar-aljoud/logos/yjbc9qundprqjprbu37g.jpg",
-              "position": "chestRight",
-              "x": 0,
-              "y": 0,
-              "scale": 0.7
-            },
-            {
-              "id": "logo-1754955658502",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924644/13_mvqmgk.png",
+              "id": "logo-1754958651077",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924658/18_cpbs4b.png",
               "position": "backCenter",
               "x": 0,
               "y": 0,
               "scale": 1.5
             },
             {
-              "id": "logo-1754955665146",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955650/dar-aljoud/logos/yjbc9qundprqjprbu37g.jpg",
+              "id": "logo-1754958664170",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621/1_kqcgdh.png",
               "position": "rightSide_top",
               "x": 0,
               "y": 0,
               "scale": 0.25
             },
             {
-              "id": "logo-1754955679474",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955678/dar-aljoud/logos/fsvcqvyb13nlivi1ug26.png",
-              "position": "rightSide_middle",
+              "id": "logo-1754958697200",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754958696/dar-aljoud/logos/dho0poz7vyopt7myvhzd.jpg",
+              "position": "chestRight",
               "x": 0,
               "y": 0,
-              "scale": 0.25
+              "scale": 0.7
+            },
+            {
+              "id": "logo-1754958845829",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754958571/dar-aljoud/predefined-logos/c8hgrawpubrhda0srfnb.jpg",
+              "position": "chestLeft",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
             }
           ],
           "texts": [],
-          "currentView": "front",
-          "totalPrice": 260,
+          "currentView": "left",
+          "totalPrice": 270,
           "isCapturing": false,
           "uploadedImages": [
             {
-              "id": "uploaded-1754955651593",
-              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955650/dar-aljoud/logos/yjbc9qundprqjprbu37g.jpg",
-              "name": "yjbc9qundprqjprbu37g",
-              "uploadedAt": "2025-08-11T23:40:51.593Z"
-            },
-            {
-              "id": "uploaded-1754955679474",
-              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754955678/dar-aljoud/logos/fsvcqvyb13nlivi1ug26.png",
-              "name": "fsvcqvyb13nlivi1ug26",
-              "uploadedAt": "2025-08-11T23:41:19.474Z"
+              "id": "uploaded-1754958697200",
+              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754958696/dar-aljoud/logos/dho0poz7vyopt7myvhzd.jpg",
+              "name": "dho0poz7vyopt7myvhzd",
+              "uploadedAt": "2025-08-12T00:31:37.200Z"
             }
           ],
           "pricingBreakdown": {
-            "basePrice": 260,
-            "additionalCosts": [],
-            "totalPrice": 260,
+            "basePrice": 240,
+            "additionalCosts": [
+              {
+                "item": "عناصر أمامية إضافية",
+                "cost": 30,
+                "quantity": 1
+              }
+            ],
+            "totalPrice": 270,
             "appliedDiscount": null,
-            "finalPrice": 260
+            "finalPrice": 270
           }
         },
         "quantity": 1,
-        "price": 260
+        "price": 270
       }
     ],
-    "totalPrice": 260,
+    "totalPrice": 270,
+    "status": "confirmed",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T00:42:59.010Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      },
+      {
+        "status": "confirmed",
+        "timestamp": "2025-08-12T00:44:58.257Z",
+        "note": "تم التأكيد",
+        "updatedBy": "admin"
+      }
+    ],
+    "createdAt": "2025-08-12T00:42:59.010Z",
+    "updatedAt": "2025-08-12T00:44:58.257Z",
+    "estimatedDelivery": "2025-09-16T00:42:59.010Z",
+    "notes": []
+  },
+  {
+    "id": "order-1754959580456-o6fafpc9k",
+    "orderNumber": "580456508",
+    "trackingCode": "DTNJE1UY",
+    "customerInfo": {
+      "name": "اي اسم",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1754958875649-xv7bn1vp6",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [
+            {
+              "id": "logo-1754958651077",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924658/18_cpbs4b.png",
+              "position": "backCenter",
+              "x": 0,
+              "y": 0,
+              "scale": 1.5
+            },
+            {
+              "id": "logo-1754958664170",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621/1_kqcgdh.png",
+              "position": "rightSide_top",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754958697200",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754958696/dar-aljoud/logos/dho0poz7vyopt7myvhzd.jpg",
+              "position": "chestRight",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
+            },
+            {
+              "id": "logo-1754958845829",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754958571/dar-aljoud/predefined-logos/c8hgrawpubrhda0srfnb.jpg",
+              "position": "chestLeft",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
+            }
+          ],
+          "texts": [],
+          "currentView": "left",
+          "totalPrice": 270,
+          "isCapturing": false,
+          "uploadedImages": [
+            {
+              "id": "uploaded-1754958697200",
+              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754958696/dar-aljoud/logos/dho0poz7vyopt7myvhzd.jpg",
+              "name": "dho0poz7vyopt7myvhzd",
+              "uploadedAt": "2025-08-12T00:31:37.200Z"
+            }
+          ],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [
+              {
+                "item": "عناصر أمامية إضافية",
+                "cost": 30,
+                "quantity": 1
+              }
+            ],
+            "totalPrice": 270,
+            "appliedDiscount": null,
+            "finalPrice": 270
+          }
+        },
+        "quantity": 1,
+        "price": 270
+      }
+    ],
+    "totalPrice": 270,
     "status": "pending",
     "statusHistory": [
       {
         "status": "pending",
-        "timestamp": "2025-08-11T23:42:47.130Z",
+        "timestamp": "2025-08-12T00:46:20.456Z",
         "note": "تم إنشاء الطلب",
         "updatedBy": "system"
       }
     ],
-    "createdAt": "2025-08-11T23:42:47.130Z",
-    "updatedAt": "2025-08-11T23:42:47.130Z",
-    "estimatedDelivery": "2025-09-15T23:42:47.130Z",
+    "createdAt": "2025-08-12T00:46:20.456Z",
+    "updatedAt": "2025-08-12T00:46:20.456Z",
+    "estimatedDelivery": "2025-09-16T00:46:20.456Z",
+    "notes": []
+  },
+  {
+    "id": "order-1754959834599-t9k7luf5u",
+    "orderNumber": "834599657",
+    "trackingCode": "GEUOPWBI",
+    "customerInfo": {
+      "name": "AHM,EDD",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1754958875649-xv7bn1vp6",
+        "jacketConfig": {
+          "colors": {
+            "body": "#161618",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [
+            {
+              "id": "logo-1754958664170",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621/1_kqcgdh.png",
+              "position": "rightSide_top",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754961784939",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924621/8_yoay91.png",
+              "position": "backCenter",
+              "x": 0,
+              "y": 0,
+              "scale": 1.5
+            }
+          ],
+          "texts": [
+            {
+              "id": "text-1754961808347",
+              "content": "SS",
+              "position": "chestRight",
+              "x": 0,
+              "y": 0,
+              "scale": 1,
+              "font": "Katibeh",
+              "color": "#000000",
+              "isConnected": false,
+              "charStyles": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "scale": 1,
+                  "color": "#d4af37"
+                },
+                {
+                  "x": -20,
+                  "y": -20,
+                  "scale": 1,
+                  "color": "#ffffff"
+                }
+              ]
+            }
+          ],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T00:50:34.599Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T01:22:44.230Z",
+        "note": "تم تعديل بيانات الطلب",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T01:23:13.109Z",
+        "note": "تم تعديل بيانات الطلب",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T01:23:50.695Z",
+        "note": "تم تعديل بيانات الطلب",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T01:24:50.913Z",
+        "note": "تم تعديل بيانات الطلب",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T01:28:24.776Z",
+        "note": "تم تعديل بيانات الطلب",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2025-08-12T03:17:48.875Z",
+        "note": "تم تعديل بيانات الطلب",
+        "updatedBy": "admin"
+      }
+    ],
+    "createdAt": "2025-08-12T00:50:34.599Z",
+    "updatedAt": "2025-08-12T03:17:48.875Z",
+    "estimatedDelivery": "2025-09-16T00:50:34.599Z",
     "notes": []
   }
 ]

@@ -1,15 +1,5 @@
 [
   {
-    "id": "logo7",
-    "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924669/20_guvnha.png",
-    "publicId": "20_guvnha",
-    "name": "شعار 7",
-    "category": "شعارات جاهزة",
-    "description": "شعار جاهز للاستخدام",
-    "createdAt": "2025-01-25T10:00:00.000Z",
-    "updatedBy": "system"
-  },
-  {
     "id": "logo9",
     "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924658/18_cpbs4b.png",
     "publicId": "18_cpbs4b",
@@ -98,5 +88,19 @@
     "description": "شعار جاهز للاستخدام",
     "createdAt": "2025-01-25T10:00:00.000Z",
     "updatedBy": "system"
+  },
+  {
+    "id": "logo-1754958572557",
+    "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754958571/dar-aljoud/predefined-logos/c8hgrawpubrhda0srfnb.jpg",
+    "publicId": "dar-aljoud/predefined-logos/c8hgrawpubrhda0srfnb",
+    "name": "شعار  كرة القدم",
+    "category": "شعارات جاهزة",
+    "description": "شعار جاهز للاستخدام",
+    "createdAt": "2025-08-12T00:29:32.557Z",
+    "updatedBy": "admin",
+    "width": 600,
+    "height": 600,
+    "format": "jpg",
+    "size": 39371
   }
 ]

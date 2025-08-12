@@ -1,0 +1,593 @@
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowLeft,
+  Save,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  User,
+  Phone,
+  Package,
+} from "lucide-react";
+import { JacketProvider, useJacket } from "../context/JacketContext";
+import { CartProvider, useCart } from "../context/CartContext";
+import { ImageLibraryProvider } from "../context/ImageLibraryContext";
+import orderService, { OrderData } from "../services/orderService";
+import authService from "../services/authService";
+import JacketViewer from "../components/jacket/JacketViewer";
+import CustomizationSidebar from "../components/sidebar/CustomizationSidebar";
+import TopBar from "../components/ui/TopBar";
+import JacketImageCapture, {
+  JacketImageCaptureRef,
+} from "../components/jacket/JacketImageCapture";
+import ConfirmationModal from "../components/ui/ConfirmationModal";
+import { useModal } from "../hooks/useModal";
+import fontPreloader from "../utils/fontPreloader";
+
+const OrderEditContent: React.FC = () => {
+  const { orderId } = useParams<{ orderId: string }>();
+  const navigate = useNavigate();
+  const {
+    jacketState,
+    setColor,
+    setMaterial,
+    setSize,
+    addLogo,
+    addText,
+    removeLogo,
+    removeText,
+    setCurrentView,
+  } = useJacket();
+  const { addToCart, clearCart } = useCart();
+
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
+  const [customerInfo, setCustomerInfo] = useState({
+    name: "",
+    phone: "",
+  });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCapturingImages, setIsCapturingImages] = useState(false);
+
+  const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const saveConfirmModal = useModal();
+  const exitConfirmModal = useModal();
+
+  const loadOrderData = useCallback(async () => {
+    // منع التحميل المتكرر
+    if (isDataLoaded) return;
+
+    if (!orderId) {
+      setError("معرف الطلب مطلوب");
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const token = authService.getToken();
+      if (!token) {
+        throw new Error("رمز المصادقة غير موجود");
+      }
+
+      const order = await orderService.getOrderById(orderId, token);
+      setOrderData(order);
+      setCustomerInfo(order.customerInfo);
+
+      // تحميل تكوين الجاكيت إلى الـ context
+      if (order.items.length > 0) {
+        const jacketConfig = order.items[0].jacketConfig;
+
+        // مسح البيانات الحالية
+        jacketState.logos.forEach((logo) => removeLogo(logo.id));
+        jacketState.texts.forEach((text) => removeText(text.id));
+
+        // تطبيق الألوان والخامات والمقاس
+        setColor("body", jacketConfig.colors.body);
+        setColor("sleeves", jacketConfig.colors.sleeves);
+        setColor("trim", jacketConfig.colors.trim);
+        setMaterial(
+          "body",
+          jacketConfig.materials.body as "leather" | "cotton"
+        );
+        setMaterial(
+          "sleeves",
+          jacketConfig.materials.sleeves as "leather" | "cotton"
+        );
+        setSize(
+          jacketConfig.size as
+            | "XS"
+            | "S"
+            | "M"
+            | "L"
+            | "XL"
+            | "2XL"
+            | "3XL"
+            | "4XL"
+        );
+
+        // إضافة الشعارات
+        jacketConfig.logos.forEach((logo) => {
+          addLogo({
+            id: logo.id,
+            image: logo.image,
+            position: logo.position as
+              | "chestRight"
+              | "chestLeft"
+              | "backCenter"
+              | "rightSide_top"
+              | "rightSide_middle"
+              | "rightSide_bottom"
+              | "leftSide_top"
+              | "leftSide_middle"
+              | "leftSide_bottom",
+            x: logo.x,
+            y: logo.y,
+            scale: logo.scale,
+            rotation: logo.rotation,
+          });
+        });
+
+        // إضافة النصوص
+        jacketConfig.texts.forEach((text) => {
+          addText({
+            id: text.id,
+            content: text.content,
+            position: text.position as
+              | "chestRight"
+              | "chestLeft"
+              | "backBottom",
+            x: text.x,
+            y: text.y,
+            scale: text.scale,
+            font: text.font,
+            color: text.color,
+            isConnected: text.isConnected,
+            charStyles: text.charStyles,
+          });
+        });
+
+        // تعيين العرض الحالي
+        setCurrentView(
+          jacketConfig.currentView as "front" | "back" | "right" | "left"
+        );
+      }
+
+      setIsDataLoaded(true);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "فشل في تحميل بيانات الطلب"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    orderId,
+    isDataLoaded,
+    jacketState.logos,
+    jacketState.texts,
+    removeLogo,
+    removeText,
+    setColor,
+    setMaterial,
+    setSize,
+    addLogo,
+    addText,
+    setCurrentView,
+  ]);
+
+  useEffect(() => {
+    if (!isDataLoaded) {
+      loadOrderData();
+    }
+  }, [orderId, isDataLoaded, loadOrderData]);
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    setIsCapturingImages(true);
+    setSaveMessage("");
+    setError("");
+
+    try {
+      // التأكد من تحميل الخطوط قبل بدء التقاط الصور
+      await fontPreloader.preloadAllFonts();
+
+      // التقاط صور الجاكيت المحدث
+      let jacketImages: string[] = [];
+
+      try {
+        if (jacketImageCaptureRef.current) {
+          jacketImages = await jacketImageCaptureRef.current.captureAllViews();
+        }
+      } catch (captureError) {
+        console.warn("فشل في التقاط الصور:", captureError);
+        jacketImages = [];
+      }
+
+      // حفظ التعديلات في الباك إند
+      const token = authService.getToken();
+      if (!token) {
+        throw new Error("رمز المصادقة غير موجود");
+      }
+
+      const updateData = {
+        customerInfo,
+        jacketConfig: jacketState,
+        quantity: orderData?.items[0]?.quantity || 1,
+        totalPrice: jacketState.totalPrice,
+      };
+
+      const updatedOrder = await orderService.updateOrder(
+        orderId!,
+        updateData,
+        token
+      );
+
+      // تحديث بيانات الطلب المحلية
+      setOrderData(updatedOrder);
+
+      // تحديث السلة بالتكوين الجديد
+      clearCart();
+      addToCart(jacketState, orderData?.items[0]?.quantity || 1, jacketImages);
+
+      setSaveMessage("تم حفظ التغييرات في النظام بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "فشل في حفظ التغييرات");
+    } finally {
+      setIsSaving(false);
+      setIsCapturingImages(false);
+      saveConfirmModal.closeModal();
+    }
+  };
+
+  const handleCustomerInfoUpdate = (field: string, value: string) => {
+    setCustomerInfo((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleExit = () => {
+    navigate("/admin");
+  };
+
+  // إعادة تعيين حالة التحميل عند تغيير orderId
+  useEffect(() => {
+    setIsDataLoaded(false);
+  }, [orderId]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
+          <p className="text-gray-600">جاري تحميل بيانات الطلب...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !orderData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            خطأ في تحميل الطلب
+          </h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => navigate("/admin")}
+            className="px-6 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
+          >
+            العودة للوحة التحكم
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-white">
+      {/* الشريط العلوي */}
+      <TopBar />
+
+      {/* شريط التنقل */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exitConfirmModal.openModal}
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            العودة للوحة التحكم
+          </button>
+          <div className="h-6 w-px bg-gray-300"></div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">
+              تعديل الطلب {orderData?.orderNumber}
+            </h1>
+            <p className="text-sm text-gray-600">
+              رمز التتبع: {orderData?.trackingCode}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={saveConfirmModal.openModal}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-6 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50"
+          >
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            حفظ التغييرات
+          </button>
+        </div>
+      </div>
+
+      {/* رسائل النجاح والخطأ */}
+      <AnimatePresence>
+        {saveMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-green-50 border border-green-200 p-3 mx-4 mt-2 rounded-lg flex items-center gap-2"
+          >
+            <CheckCircle className="w-4 h-4 text-green-600" />
+            <span className="text-green-700 font-medium text-sm">
+              {saveMessage}
+            </span>
+          </motion.div>
+        )}
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-red-50 border border-red-200 p-3 mx-4 mt-2 rounded-lg flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4 text-red-600" />
+            <span className="text-red-700 font-medium text-sm">{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* المحتوى الرئيسي */}
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* Hidden Jacket Image Capture Component */}
+        <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
+          <JacketImageCapture ref={jacketImageCaptureRef} />
+        </div>
+
+        {/* Sidebar for Desktop */}
+        <div className="hidden lg:block w-[380px]">
+          <CustomizationSidebar setIsSidebarOpen={setIsSidebarOpen} />
+        </div>
+
+        {/* Jacket Viewer */}
+        <div className="flex-1 flex items-center justify-center p-4 lg:p-8 bg-gray-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-[400px] lg:max-w-[500px] relative"
+          >
+            <JacketViewer isSidebarOpen={isSidebarOpen} />
+          </motion.div>
+        </div>
+
+        {/* معلومات العميل والطلب */}
+        <div className="w-80 bg-white shadow-xl p-6 flex-col border-l border-gray-200 rounded-l-2xl hidden lg:flex">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-6 flex-1 flex flex-col"
+          >
+            <h2 className="text-2xl font-light text-gray-900 gold-text-gradient">
+              تعديل الطلب
+            </h2>
+
+            {/* معلومات العميل */}
+            <div className="bg-gray-50 p-4 rounded-xl">
+              <div className="flex items-center gap-2 mb-4">
+                <User className="w-5 h-5 text-[#563660]" />
+                <h3 className="text-lg font-semibold text-gray-900">
+                  معلومات العميل
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    اسم العميل
+                  </label>
+                  <div className="relative">
+                    <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={customerInfo.name}
+                      onChange={(e) =>
+                        handleCustomerInfoUpdate("name", e.target.value)
+                      }
+                      className="w-full pr-10 pl-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                      placeholder="اسم العميل"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    رقم الهاتف
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="tel"
+                      value={customerInfo.phone}
+                      onChange={(e) =>
+                        handleCustomerInfoUpdate("phone", e.target.value)
+                      }
+                      className="w-full pr-10 pl-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                      placeholder="رقم الهاتف"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* معلومات الطلب */}
+            <div className="bg-gray-50 p-4 rounded-xl">
+              <div className="flex items-center gap-2 mb-4">
+                <Package className="w-5 h-5 text-[#563660]" />
+                <h3 className="text-lg font-semibold text-gray-900">
+                  معلومات الطلب
+                </h3>
+              </div>
+
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">رقم الطلب:</span>
+                  <span className="font-medium">{orderData?.orderNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">رمز التتبع:</span>
+                  <span className="font-mono font-medium">
+                    {orderData?.trackingCode}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">الحالة:</span>
+                  <span className="font-medium text-[#563660]">
+                    {orderData?.statusName}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">الكمية:</span>
+                  <span className="font-medium">
+                    {orderData?.items[0]?.quantity || 1}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">السعر:</span>
+                  <span className="font-medium">
+                    {orderData?.totalPrice} ريال
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* عرض المقاس المحدد */}
+            <div className="bg-gray-50 p-4 rounded-xl">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  المقاس المحدد
+                </span>
+              </div>
+              <div className="text-lg font-semibold text-[#563660]">
+                {jacketState.size}
+              </div>
+            </div>
+
+            <div className="space-y-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-xl">
+              <div className="flex justify-between">
+                <span>تاريخ الإنشاء:</span>
+                <span className="font-medium">
+                  {orderData &&
+                    new Date(orderData.createdAt).toLocaleDateString("ar-SA")}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>آخر تحديث:</span>
+                <span className="font-medium">
+                  {orderData &&
+                    new Date(orderData.updatedAt).toLocaleDateString("ar-SA")}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3 mt-auto">
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={saveConfirmModal.openModal}
+                disabled={isSaving}
+                className="w-full py-3 gold-gradient text-white rounded-xl font-semibold shadow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-50"
+              >
+                {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
+              </motion.button>
+
+              <button
+                onClick={exitConfirmModal.openModal}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                العودة للوحة التحكم
+              </button>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Mobile Sidebar */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
+          <CustomizationSidebar
+            isMobile
+            setIsSidebarOpen={setIsSidebarOpen}
+            onAddToCart={saveConfirmModal.openModal}
+            isCapturingImages={isCapturingImages}
+          />
+        </div>
+      </div>
+
+      {/* نافذة تأكيد الحفظ */}
+      <ConfirmationModal
+        isOpen={saveConfirmModal.isOpen}
+        onClose={saveConfirmModal.closeModal}
+        onConfirm={handleSaveChanges}
+        title="تأكيد حفظ التغييرات"
+        message="سيتم حفظ جميع التعديلات التي أجريتها على الطلب. هل تريد المتابعة؟"
+        confirmText={isSaving ? "جاري الحفظ..." : "نعم، احفظ"}
+        cancelText="إلغاء"
+        type="info"
+        isLoading={isSaving}
+      />
+
+      {/* نافذة تأكيد الخروج */}
+      <ConfirmationModal
+        isOpen={exitConfirmModal.isOpen}
+        onClose={exitConfirmModal.closeModal}
+        onConfirm={handleExit}
+        title="تأكيد الخروج"
+        message="هل أنت متأكد من الخروج؟ سيتم فقدان أي تغييرات غير محفوظة."
+        confirmText="نعم، اخرج"
+        cancelText="إلغاء"
+        type="warning"
+      />
+    </div>
+  );
+};
+
+const OrderEditPage: React.FC = () => {
+  return (
+    <JacketProvider>
+      <CartProvider>
+        <ImageLibraryProvider>
+          <OrderEditContent />
+        </ImageLibraryProvider>
+      </CartProvider>
+    </JacketProvider>
+  );
+};
+
+export default OrderEditPage;

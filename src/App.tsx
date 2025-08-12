@@ -22,6 +22,7 @@ import CloudinaryTestPage from "./pages/CloudinaryTestPage";
 import ImageLibraryPage from "./pages/ImageLibraryPage";
 import AdminPanelPage from "./pages/AdminPanelPage";
 import OrderTrackingPage from "./pages/OrderTrackingPage";
+import OrderEditPage from "./pages/OrderEditPage";
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -69,6 +70,14 @@ function App() {
                 <Route path="/image-library" element={<ImageLibraryPage />} />
                 <Route path="/admin" element={<AdminPanelPage />} />
                 <Route path="/track-order" element={<OrderTrackingPage />} />
+                <Route
+                  path="/admin/orders/:orderId/edit"
+                  element={
+                    <div className="min-h-screen">
+                      <OrderEditPage />
+                    </div>
+                  }
+                />
               </Routes>
             </Layout>
           </Router>

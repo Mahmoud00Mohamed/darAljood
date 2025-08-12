@@ -278,6 +278,74 @@ export const getOrderById = async (req, res) => {
   }
 };
 
+// تحديث بيانات الطلب (يتطلب مصادقة المدير)
+export const updateOrder = async (req, res) => {
+  try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بتحديث الطلب",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
+    const { orderId } = req.params;
+    const { customerInfo, jacketConfig, quantity, totalPrice } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف الطلب مطلوب",
+        error: "ORDER_ID_REQUIRED",
+      });
+    }
+
+    // التحقق من البيانات المطلوبة
+    if (!customerInfo || !jacketConfig) {
+      return res.status(400).json({
+        success: false,
+        message: "بيانات العميل وتكوين الجاكيت مطلوبة",
+        error: "MISSING_REQUIRED_DATA",
+      });
+    }
+
+    const updatedOrder = await OrderModel.updateOrder(
+      orderId,
+      {
+        customerInfo,
+        jacketConfig,
+        quantity: quantity || 1,
+        totalPrice: totalPrice || 0,
+      },
+      req.admin.username
+    );
+
+    // إضافة أسماء الحالات
+    const orderWithStatusNames = {
+      ...updatedOrder,
+      statusName: STATUS_NAMES[updatedOrder.status],
+      statusHistory: updatedOrder.statusHistory.map((history) => ({
+        ...history,
+        statusName: STATUS_NAMES[history.status],
+      })),
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "تم تحديث الطلب بنجاح",
+      data: orderWithStatusNames,
+    });
+  } catch (error) {
+    console.error("Error updating order:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "حدث خطأ أثناء تحديث الطلب",
+      error: "UPDATE_ORDER_FAILED",
+    });
+  }
+};
 // تحديث حالة الطلب (يتطلب مصادقة المدير)
 export const updateOrderStatus = async (req, res) => {
   try {

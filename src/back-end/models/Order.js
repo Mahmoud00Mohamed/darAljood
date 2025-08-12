@@ -237,6 +237,64 @@ class OrderModel {
     }
   }
 
+  // تحديث بيانات الطلب
+  async updateOrder(orderId, updateData, updatedBy = "admin") {
+    try {
+      const orders = await this.getOrders();
+      const orderIndex = orders.findIndex((order) => order.id === orderId);
+
+      if (orderIndex === -1) {
+        throw new Error("الطلب غير موجود");
+      }
+
+      const order = orders[orderIndex];
+
+      // تحديث معلومات العميل
+      if (updateData.customerInfo) {
+        order.customerInfo = {
+          ...order.customerInfo,
+          ...updateData.customerInfo,
+        };
+      }
+
+      // تحديث تكوين الجاكيت
+      if (updateData.jacketConfig && order.items.length > 0) {
+        order.items[0].jacketConfig = {
+          ...order.items[0].jacketConfig,
+          ...updateData.jacketConfig,
+        };
+      }
+
+      // تحديث الكمية والسعر
+      if (updateData.quantity && order.items.length > 0) {
+        order.items[0].quantity = updateData.quantity;
+        order.items[0].price = updateData.totalPrice || order.items[0].price;
+      }
+
+      if (updateData.totalPrice) {
+        order.totalPrice = updateData.totalPrice;
+      }
+
+      // تحديث تاريخ التعديل
+      order.updatedAt = new Date().toISOString();
+
+      // إضافة ملاحظة في تاريخ الحالات
+      order.statusHistory.push({
+        status: order.status,
+        timestamp: new Date().toISOString(),
+        note: "تم تعديل بيانات الطلب",
+        updatedBy,
+      });
+
+      orders[orderIndex] = order;
+      await this.saveOrders(orders);
+
+      return order;
+    } catch (error) {
+      console.error("Error updating order:", error);
+      throw new Error(error.message || "فشل في تحديث الطلب");
+    }
+  }
   // إضافة ملاحظة للطلب
   async addOrderNote(orderId, note, addedBy = "admin") {
     try {

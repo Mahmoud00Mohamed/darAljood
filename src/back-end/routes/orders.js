@@ -5,6 +5,7 @@ import {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  updateOrder,
   addOrderNote,
   getOrderStats,
   deleteOrder,
@@ -25,6 +26,7 @@ router.get("/", authenticateAdmin, getAllOrders);
 router.get("/stats", authenticateAdmin, getOrderStats);
 router.get("/:orderId", authenticateAdmin, getOrderById);
 router.put("/:orderId/status", authenticateAdmin, updateOrderStatus);
+router.put("/:orderId", authenticateAdmin, updateOrder);
 router.post("/:orderId/notes", authenticateAdmin, addOrderNote);
 router.delete("/:orderId", authenticateAdmin, deleteOrder);
 

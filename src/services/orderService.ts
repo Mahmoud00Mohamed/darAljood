@@ -391,6 +391,53 @@ class OrderService {
   }
 
   /**
+   * تحديث بيانات الطلب (يتطلب مصادقة)
+   */
+  async updateOrder(
+    orderId: string,
+    updateData: {
+      customerInfo?: {
+        name: string;
+        phone: string;
+      };
+      jacketConfig?: JacketConfig;
+      quantity?: number;
+      totalPrice?: number;
+    },
+    token: string
+  ): Promise<OrderData> {
+    try {
+      const response = await fetch(`${this.baseUrl}/${orderId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      const result: ApiResponse<OrderData> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "فشل في تحديث الطلب");
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error("Error updating order:", error);
+      throw new Error(
+        error instanceof Error ? error.message : "حدث خطأ أثناء تحديث الطلب"
+      );
+    }
+  }
+  /**
    * إضافة ملاحظة للطلب (يتطلب مصادقة)
    */
   async addOrderNote(
