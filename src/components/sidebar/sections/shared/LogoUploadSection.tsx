@@ -350,22 +350,27 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
     positions.some((pos) => pos.id === logo.position)
   );
 
+  // إزالة التكرار من الشعارات المفلترة
+  const uniqueLogos = filteredLogos.filter(
+    (logo, index, self) => index === self.findIndex((l) => l.id === logo.id)
+  );
+
   const selectedLogo = selectedLogoId
-    ? jacketState.logos.find((logo) => logo.id === selectedLogoId)
-    : filteredLogos.length > 0
-    ? filteredLogos[0]
+    ? uniqueLogos.find((logo) => logo.id === selectedLogoId)
+    : uniqueLogos.length > 0
+    ? uniqueLogos[0]
     : null;
 
   useEffect(() => {
-    if (!selectedLogoId && filteredLogos.length > 0) {
-      setSelectedLogoId(filteredLogos[0].id);
+    if (!selectedLogoId && uniqueLogos.length > 0) {
+      setSelectedLogoId(uniqueLogos[0].id);
     } else if (
       selectedLogoId &&
-      !filteredLogos.find((logo) => logo.id === selectedLogoId)
+      !uniqueLogos.find((logo) => logo.id === selectedLogoId)
     ) {
-      setSelectedLogoId(filteredLogos.length > 0 ? filteredLogos[0].id : null);
+      setSelectedLogoId(uniqueLogos.length > 0 ? uniqueLogos[0].id : null);
     }
-  }, [filteredLogos, selectedLogoId]);
+  }, [uniqueLogos, selectedLogoId]);
 
   // تحديث الموقع المحدد للرفع حسب المواقع المتاحة
   useEffect(() => {
@@ -632,7 +637,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
           </div>
         ) : (
           <div className="space-y-2 max-h-40 overflow-y-auto">
-            {filteredLogos.map((logo) => (
+            {uniqueLogos.map((logo) => (
               <div
                 key={logo.id}
                 onClick={() => setSelectedLogoId(logo.id)}

@@ -176,10 +176,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const imageManager = ImageStorageManager.getInstance();
 
+  // تحديد مفتاح التخزين حسب الصفحة الحالية
+  const getCartStorageKey = () => {
+    const currentPath = window.location.pathname;
+    if (
+      currentPath.startsWith("/admin/orders/") &&
+      currentPath.endsWith("/edit")
+    ) {
+      return "orderEditCart";
+    }
+    return "cart";
+  };
+
   // تحميل السلة من localStorage عند بدء التطبيق
   useEffect(() => {
     if (!isInitialized) {
-      const savedCart = localStorage.getItem("cart");
+      const storageKey = getCartStorageKey();
+      const savedCart = localStorage.getItem(storageKey);
       if (savedCart) {
         try {
           const parsedCart = JSON.parse(savedCart);
@@ -195,7 +208,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
           setItems(validatedCart);
         } catch {
-          localStorage.removeItem("cart");
+          localStorage.removeItem(storageKey);
         }
       }
       setIsInitialized(true);
@@ -206,6 +219,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (isInitialized) {
       try {
+        const storageKey = getCartStorageKey();
         // حفظ البيانات الأساسية فقط (بدون الصور)
         const cartData = items.map((item) => ({
           id: item.id,
@@ -216,7 +230,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           imageKeys: item.imageKeys || [],
         }));
 
-        localStorage.setItem("cart", JSON.stringify(cartData));
+        localStorage.setItem(storageKey, JSON.stringify(cartData));
       } catch (error) {
         // في حالة تجاوز الحد المسموح، احتفظ بعنصر واحد فقط
         if (
@@ -226,8 +240,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           try {
             const lastItem = items[items.length - 1];
             if (lastItem) {
+              const storageKey = getCartStorageKey();
               localStorage.setItem(
-                "cart",
+                storageKey,
                 JSON.stringify([
                   {
                     id: lastItem.id,
@@ -244,7 +259,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
               setItems([lastItem]);
             }
           } catch {
-            localStorage.removeItem("cart");
+            const storageKey = getCartStorageKey();
+            localStorage.removeItem(storageKey);
           }
         }
       }
@@ -312,7 +328,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     setItems([]);
-    localStorage.removeItem("cart");
+    const storageKey = getCartStorageKey();
+    localStorage.removeItem(storageKey);
     // لا نحذف جميع الصور عند مسح السلة، فقط الصور المرتبطة بالعناصر المحذوفة
   };
 

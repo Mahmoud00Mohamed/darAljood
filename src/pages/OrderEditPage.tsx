@@ -62,6 +62,28 @@ const OrderEditContent: React.FC = () => {
   const saveConfirmModal = useModal();
   const exitConfirmModal = useModal();
 
+  // تنظيف البيانات عند دخول الصفحة
+  useEffect(() => {
+    // مسح بيانات الـ customizer من localStorage عند دخول صفحة التعديل
+    const customizerState = localStorage.getItem("jacketState");
+    if (customizerState) {
+      // حفظ نسخة احتياطية مؤقتة
+      sessionStorage.setItem("customizerBackup", customizerState);
+    }
+
+    return () => {
+      // عند الخروج من صفحة التعديل، مسح بيانات التعديل
+      localStorage.removeItem("orderEditJacketState");
+
+      // استعادة بيانات الـ customizer إذا كانت موجودة
+      const customizerBackup = sessionStorage.getItem("customizerBackup");
+      if (customizerBackup) {
+        localStorage.setItem("jacketState", customizerBackup);
+        sessionStorage.removeItem("customizerBackup");
+      }
+    };
+  }, []);
+
   const loadOrderData = useCallback(async () => {
     // منع التحميل المتكرر
     if (isDataLoaded) return;

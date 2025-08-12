@@ -55,6 +55,13 @@ const JacketCustomizer: React.FC = () => {
 
   const replaceConfirmModal = useModal();
 
+  // تنظيف بيانات صفحة التعديل عند دخول صفحة التخصيص
+  useEffect(() => {
+    // مسح بيانات صفحة تعديل الطلب
+    localStorage.removeItem("orderEditJacketState");
+    localStorage.removeItem("orderEditCart");
+  }, []);
+
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
   };

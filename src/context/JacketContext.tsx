@@ -152,9 +152,22 @@ const compareImages = (imageData1: string, imageData2: string): boolean => {
 export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  // تحديد مفتاح التخزين حسب الصفحة الحالية
+  const getStorageKey = () => {
+    const currentPath = window.location.pathname;
+    if (
+      currentPath.startsWith("/admin/orders/") &&
+      currentPath.endsWith("/edit")
+    ) {
+      return "orderEditJacketState";
+    }
+    return "jacketState";
+  };
+
   const [jacketState, setJacketState] = useState<JacketState>(() => {
     try {
-      const savedState = localStorage.getItem("jacketState");
+      const storageKey = getStorageKey();
+      const savedState = localStorage.getItem(storageKey);
       if (savedState) {
         const parsedState = JSON.parse(savedState);
         return {
@@ -208,7 +221,8 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const timeoutId = setTimeout(() => {
       try {
-        localStorage.setItem("jacketState", JSON.stringify(jacketState));
+        const storageKey = getStorageKey();
+        localStorage.setItem(storageKey, JSON.stringify(jacketState));
       } catch (error) {
         console.warn("Failed to save jacket state:", error);
       }
