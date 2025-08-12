@@ -548,6 +548,16 @@ button.text-xs {
   font-feature-settings: normal !important;
 }
 
+/* Order Edit Page Specific Styles */
+.order-edit-page {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.order-edit-page .h-full {
+  height: 100% !important;
+}
+
 /* تطبيق الخطوط على عناصر النص بشكل خاص */
 .jacket-image-capture .text-overlay {
   font-weight: bold !important;

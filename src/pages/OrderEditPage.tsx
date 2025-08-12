@@ -10,6 +10,8 @@ import {
   User,
   Phone,
   Package,
+  Edit3,
+  X,
 } from "lucide-react";
 import { JacketProvider, useJacket } from "../context/JacketContext";
 import { CartProvider, useCart } from "../context/CartContext";
@@ -53,6 +55,7 @@ const OrderEditContent: React.FC = () => {
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCapturingImages, setIsCapturingImages] = useState(false);
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -239,6 +242,7 @@ const OrderEditContent: React.FC = () => {
       addToCart(jacketState, orderData?.items[0]?.quantity || 1, jacketImages);
 
       setSaveMessage("تم حفظ التغييرات في النظام بنجاح");
+      setShowMobileDetails(false);
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
       setError(error instanceof Error ? error.message : "فشل في حفظ التغييرات");
@@ -257,6 +261,9 @@ const OrderEditContent: React.FC = () => {
     navigate("/admin");
   };
 
+  const toggleMobileDetails = () => {
+    setShowMobileDetails((prev) => !prev);
+  };
   // إعادة تعيين حالة التحميل عند تغيير orderId
   useEffect(() => {
     setIsDataLoaded(false);
@@ -293,44 +300,46 @@ const OrderEditContent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-white jacket-customizer-container order-edit-page">
       {/* الشريط العلوي */}
       <TopBar />
 
-      {/* شريط التنقل */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={exitConfirmModal.openModal}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            العودة للوحة التحكم
-          </button>
-          <div className="h-6 w-px bg-gray-300"></div>
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">
-              تعديل الطلب {orderData?.orderNumber}
-            </h1>
-            <p className="text-sm text-gray-600">
-              رمز التتبع: {orderData?.trackingCode}
-            </p>
+      {/* شريط التنقل - مخفي في الهواتف */}
+      <div className="hidden lg:block bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={exitConfirmModal.openModal}
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              العودة للوحة التحكم
+            </button>
+            <div className="h-6 w-px bg-gray-300"></div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">
+                تعديل الطلب {orderData?.orderNumber}
+              </h1>
+              <p className="text-sm text-gray-600">
+                رمز التتبع: {orderData?.trackingCode}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={saveConfirmModal.openModal}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50"
-          >
-            {isSaving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            حفظ التغييرات
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={saveConfirmModal.openModal}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-6 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              حفظ التغييرات
+            </button>
+          </div>
         </div>
       </div>
 
@@ -341,10 +350,10 @@ const OrderEditContent: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-green-50 border border-green-200 p-3 mx-4 mt-2 rounded-lg flex items-center gap-2"
+            className="fixed top-[34px] left-1/2 transform -translate-x-1/2 z-[100] bg-green-50 border border-green-200 text-green-700 px-3 py-2 lg:px-6 lg:py-3 rounded-lg shadow-lg flex items-center gap-2 text-sm lg:text-base max-w-[90vw] lg:max-w-none"
           >
             <CheckCircle className="w-4 h-4 text-green-600" />
-            <span className="text-green-700 font-medium text-sm">
+            <span className="font-medium text-xs lg:text-base whitespace-nowrap overflow-hidden text-ellipsis">
               {saveMessage}
             </span>
           </motion.div>
@@ -355,10 +364,12 @@ const OrderEditContent: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-red-50 border border-red-200 p-3 mx-4 mt-2 rounded-lg flex items-center gap-2"
+            className="fixed top-[34px] left-1/2 transform -translate-x-1/2 z-[100] bg-red-50 border border-red-200 text-red-700 px-3 py-2 lg:px-6 lg:py-3 rounded-lg shadow-lg flex items-center gap-2 text-sm lg:text-base max-w-[90vw] lg:max-w-none"
           >
             <AlertCircle className="w-4 h-4 text-red-600" />
-            <span className="text-red-700 font-medium text-sm">{error}</span>
+            <span className="font-medium text-xs lg:text-base whitespace-nowrap overflow-hidden text-ellipsis">
+              {error}
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -370,30 +381,70 @@ const OrderEditContent: React.FC = () => {
           <JacketImageCapture ref={jacketImageCaptureRef} />
         </div>
 
+        {/* Mobile Back to Admin Button */}
+        <button
+          onClick={exitConfirmModal.openModal}
+          className="lg:hidden fixed top-[34px] right-4 z-60 flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-gray-50"
+        >
+          <ArrowLeft className="w-4 h-4 text-gray-600" />
+          <span className="text-sm font-medium text-gray-700">
+            العودة للوحة التحكم
+          </span>
+        </button>
         {/* Sidebar for Desktop */}
-        <div className="hidden lg:block w-[380px]">
-          <CustomizationSidebar setIsSidebarOpen={setIsSidebarOpen} />
+        <div
+          className={`${
+            window.innerWidth > 1250 ? "block" : "hidden"
+          } w-[380px] h-full`}
+        >
+          <div className="h-full">
+            <CustomizationSidebar setIsSidebarOpen={setIsSidebarOpen} />
+          </div>
         </div>
 
-        {/* Jacket Viewer */}
-        <div className="flex-1 flex items-center justify-center p-4 lg:p-8 bg-gray-50">
+        {/* Jacket Viewer - Adjusted for mobile */}
+        <div
+          className={`flex-1 flex items-center justify-center p-4 lg:p-8 bg-gray-50 transition-all duration-300 ${
+            window.innerWidth <= 1250 && isSidebarOpen
+              ? "fixed top-[30px] left-0 right-0 z-20"
+              : "min-h-screen lg:min-h-auto"
+          }`}
+          style={{
+            height:
+              window.innerWidth <= 1250 && isSidebarOpen
+                ? "calc(100vh - 40vh - 8rem - 30px)"
+                : window.innerWidth <= 1250
+                ? "calc(100vh - 4rem - 30px)"
+                : "auto",
+            display: "flex",
+            alignItems: window.innerWidth > 1250 ? "flex-start" : "center",
+            justifyContent: "center",
+            paddingTop: window.innerWidth > 1250 ? "14rem" : "0",
+          }}
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-[400px] lg:max-w-[500px] relative"
+            className={`w-full max-w-[400px] lg:max-w-[500px] relative ${
+              isSidebarOpen && window.innerWidth <= 1250 ? "z-40" : "z-10"
+            }`}
           >
             <JacketViewer isSidebarOpen={isSidebarOpen} />
           </motion.div>
         </div>
 
-        {/* معلومات العميل والطلب */}
-        <div className="w-80 bg-white shadow-xl p-6 flex-col border-l border-gray-200 rounded-l-2xl hidden lg:flex">
+        {/* Desktop Details Panel */}
+        <div
+          className={`${
+            window.innerWidth > 1250 ? "flex" : "hidden"
+          } w-80 bg-white shadow-xl p-6 flex-col border-l border-gray-200 rounded-l-2xl h-full overflow-y-auto`}
+        >
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-6 flex-1 flex flex-col"
+            className="space-y-0 flex-1 flex flex-col h-full"
           >
             <h2 className="text-2xl font-light text-gray-900 gold-text-gradient">
               تعديل الطلب
@@ -539,12 +590,211 @@ const OrderEditContent: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Mobile Sidebar */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
+        {/* Mobile Edit Button */}
+        <motion.div
+          className={`${
+            window.innerWidth <= 1250 ? "block" : "hidden"
+          } fixed top-[34px] left-4 z-60`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <button
+            onClick={toggleMobileDetails}
+            className="p-2 gold-gradient rounded-full shadow-md transition-all"
+            title="تعديل الطلب"
+          >
+            <Edit3 size={18} className="text-white" />
+          </button>
+        </motion.div>
+
+        {/* Mobile Details Panel */}
+        <AnimatePresence>
+          {showMobileDetails && window.innerWidth <= 1250 && (
+            <motion.div
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="fixed top-[30px] left-0 right-0 bottom-0 bg-white shadow-xl z-70 p-4 mobile-details-panel overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-0 p-4">
+                <h2 className="text-lg font-bold text-gray-900 gold-text-gradient">
+                  تعديل الطلب {orderData?.orderNumber}
+                </h2>
+                <button
+                  onClick={toggleMobileDetails}
+                  className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-all"
+                >
+                  <X size={16} className="text-gray-600" />
+                </button>
+              </div>
+
+              <div className="space-y-4 p-4">
+                {/* معلومات العميل للموبايل */}
+                <div className="bg-gray-50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <User className="w-4 h-4 text-[#563660]" />
+                    <h3 className="text-base font-semibold text-gray-900">
+                      معلومات العميل
+                    </h3>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        اسم العميل
+                      </label>
+                      <div className="relative">
+                        <User className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
+                        <input
+                          type="text"
+                          value={customerInfo.name}
+                          onChange={(e) =>
+                            handleCustomerInfoUpdate("name", e.target.value)
+                          }
+                          className="w-full pr-8 pl-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                          placeholder="اسم العميل"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        رقم الهاتف
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
+                        <input
+                          type="tel"
+                          value={customerInfo.phone}
+                          onChange={(e) =>
+                            handleCustomerInfoUpdate("phone", e.target.value)
+                          }
+                          className="w-full pr-8 pl-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                          placeholder="رقم الهاتف"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* معلومات الطلب للموبايل */}
+                <div className="bg-gray-50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Package className="w-4 h-4 text-[#563660]" />
+                    <h3 className="text-base font-semibold text-gray-900">
+                      معلومات الطلب
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">رقم الطلب:</span>
+                      <span className="font-medium">
+                        {orderData?.orderNumber}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">رمز التتبع:</span>
+                      <span className="font-mono font-medium">
+                        {orderData?.trackingCode}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">الحالة:</span>
+                      <span className="font-medium text-[#563660]">
+                        {orderData?.statusName}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">الكمية:</span>
+                      <span className="font-medium">
+                        {orderData?.items[0]?.quantity || 1}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">السعر:</span>
+                      <span className="font-medium">
+                        {orderData?.totalPrice} ريال
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* عرض المقاس المحدد للموبايل */}
+                <div className="bg-gray-50 p-3 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      المقاس المحدد
+                    </span>
+                  </div>
+                  <div className="text-base font-semibold text-[#563660]">
+                    {jacketState.size}
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-xl">
+                  <div className="flex justify-between">
+                    <span>تاريخ الإنشاء:</span>
+                    <span className="font-medium">
+                      {orderData &&
+                        new Date(orderData.createdAt).toLocaleDateString(
+                          "ar-SA"
+                        )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>آخر تحديث:</span>
+                    <span className="font-medium">
+                      {orderData &&
+                        new Date(orderData.updatedAt).toLocaleDateString(
+                          "ar-SA"
+                        )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      saveConfirmModal.openModal();
+                      setShowMobileDetails(false);
+                    }}
+                    disabled={isSaving}
+                    className="w-full py-2 px-3 gold-gradient text-white rounded-xl text-sm font-semibold shadow-gold hover-lift disabled:opacity-50"
+                  >
+                    {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
+                  </motion.button>
+
+                  <button
+                    onClick={() => {
+                      exitConfirmModal.openModal();
+                      setShowMobileDetails(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    العودة للوحة التحكم
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile Sidebar - Fixed at bottom */}
+        <div
+          className={`${
+            window.innerWidth <= 1250 ? "block" : "hidden"
+          } fixed bottom-0 left-0 right-0 z-40 mobile-sidebar transition-all duration-300`}
+        >
           <CustomizationSidebar
             isMobile
             setIsSidebarOpen={setIsSidebarOpen}
-            onAddToCart={saveConfirmModal.openModal}
+            onAddToCart={() => {}} // تعطيل زر إضافة للسلة
             isCapturingImages={isCapturingImages}
           />
         </div>

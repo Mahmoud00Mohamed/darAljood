@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import ColorSection from "./sections/ColorSection";
 import MaterialSection from "./sections/MaterialSection";
 import SizeSection from "./sections/SizeSection";
@@ -28,6 +29,7 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
   onAddToCart,
   isCapturingImages = false,
 }) => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
   const [activeView, setActiveView] = useState<JacketView>("front");
@@ -225,6 +227,11 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
     </div>
   );
 
+  // التحقق من كون الصفحة الحالية هي صفحة تعديل الطلب
+  const isOrderEditPage =
+    location.pathname.startsWith("/admin/orders/") &&
+    location.pathname.endsWith("/edit");
+
   if (isMobile || window.innerWidth <= 1250) {
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-white shadow-md border-t border-gray-200 z-50 mobile-sidebar">
@@ -268,33 +275,38 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
             <ImagePlus size={18} />
             <span className="text-xs mt-1">الإضافات</span>
           </button>
-          <button
-            onClick={handleAddToCartClick}
-            disabled={isCapturingImages}
-            className={`flex flex-col items-center p-2 transition-colors ${
-              isCapturingImages
-                ? "text-gray-400 opacity-50"
-                : items.length > 0
-                ? "text-orange-600"
-                : "text-[#563660]"
-            }`}
-          >
-            <ShoppingCart size={18} />
-            <span className="text-xs mt-1">
-              {isCapturingImages
-                ? "جاري الحفظ..."
-                : items.length > 0
-                ? "استبدال"
-                : "أضف للسلة"}
-            </span>
-          </button>
-          <Link
-            to="/cart"
-            className="flex flex-col items-center p-2 text-[#563660] hover:text-[#4b2e55] transition-colors"
-          >
-            <ShoppingCart size={18} />
-            <span className="text-xs mt-1">الذهاب للسلة</span>
-          </Link>
+          {/* إخفاء أزرار السلة في صفحة تعديل الطلب */}
+          {!isOrderEditPage && (
+            <>
+              <button
+                onClick={handleAddToCartClick}
+                disabled={isCapturingImages}
+                className={`flex flex-col items-center p-2 transition-colors ${
+                  isCapturingImages
+                    ? "text-gray-400 opacity-50"
+                    : items.length > 0
+                    ? "text-orange-600"
+                    : "text-[#563660]"
+                }`}
+              >
+                <ShoppingCart size={18} />
+                <span className="text-xs mt-1">
+                  {isCapturingImages
+                    ? "جاري الحفظ..."
+                    : items.length > 0
+                    ? "استبدال"
+                    : "أضف للسلة"}
+                </span>
+              </button>
+              <Link
+                to="/cart"
+                className="flex flex-col items-center p-2 text-[#563660] hover:text-[#4b2e55] transition-colors"
+              >
+                <ShoppingCart size={18} />
+                <span className="text-xs mt-1">الذهاب للسلة</span>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Expandable Content Area */}
@@ -387,11 +399,23 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
         rel="stylesheet"
       />
       <div
-        className={`h-screen bg-white shadow-xl transition-all duration-300 ${
+        className={`${
+          location.pathname.startsWith("/admin/orders/") &&
+          location.pathname.endsWith("/edit")
+            ? "h-full"
+            : "h-screen"
+        } bg-white shadow-xl transition-all duration-300 ${
           isOpen ? "w-[380px]" : "w-[60px]"
         } border-l border-gray-200`}
       >
-        <div className="flex h-full">
+        <div
+          className={`flex ${
+            location.pathname.startsWith("/admin/orders/") &&
+            location.pathname.endsWith("/edit")
+              ? "h-full"
+              : "h-full"
+          }`}
+        >
           <div className="w-[60px] bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-4 border-r border-gray-100">
             <button
               onClick={() => handleSectionClick("colors")}
@@ -438,7 +462,14 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
           </div>
 
           {isOpen && (
-            <div className="flex-1 overflow-y-auto p-6 bg-white h-full">
+            <div
+              className={`flex-1 overflow-y-auto p-6 bg-white ${
+                location.pathname.startsWith("/admin/orders/") &&
+                location.pathname.endsWith("/edit")
+                  ? "h-full"
+                  : "h-full"
+              }`}
+            >
               {!activeSection && (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <div className="mb-24">
