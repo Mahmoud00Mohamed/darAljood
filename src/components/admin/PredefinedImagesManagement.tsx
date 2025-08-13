@@ -12,6 +12,7 @@ import {
   Info,
   Save,
   Grid,
+  Upload,
 } from "lucide-react";
 import predefinedImagesService, {
   PredefinedImageData,
@@ -38,10 +39,15 @@ const PredefinedImagesManagement: React.FC = () => {
     useState<PredefinedImageData | null>(null);
   const [imageToDelete, setImageToDelete] =
     useState<PredefinedImageData | null>(null);
+  const [uploadedImageData, setUploadedImageData] =
+    useState<CloudinaryImageData | null>(null);
+  const [nameError, setNameError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const deleteImageModal = useModal();
   const editImageModal = useModal();
   const addImageModal = useModal();
+  const confirmUploadModal = useModal();
 
   useEffect(() => {
     loadPredefinedImages();
@@ -62,20 +68,31 @@ const PredefinedImagesManagement: React.FC = () => {
     }
   };
 
-  const handleAddPredefinedImage = async (imageData: CloudinaryImageData) => {
+  const handleImageSelect = (imageData: CloudinaryImageData) => {
+    setUploadedImageData(imageData);
+    addImageModal.closeModal();
+    confirmUploadModal.openModal();
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!uploadedImageData) return;
+
     if (!newImageData.name.trim()) {
-      alert("اسم الشعار مطلوب");
+      setNameError("يجب كتابة اسم الشعار قبل إتمام عملية الرفع");
       return;
     }
 
+    setNameError("");
+    setIsUploading(true);
+
     try {
-      const response = await fetch(imageData.url);
+      const response = await fetch(uploadedImageData.url);
       const blob = await response.blob();
       const file = new File(
         [blob],
-        `${imageData.publicId}.${imageData.format}`,
+        `${uploadedImageData.publicId}.${uploadedImageData.format}`,
         {
-          type: `image/${imageData.format}`,
+          type: `image/${uploadedImageData.format}`,
         }
       );
 
@@ -93,12 +110,15 @@ const PredefinedImagesManagement: React.FC = () => {
         category: "شعارات جاهزة",
         description: "شعار جاهز للاستخدام",
       });
-      addImageModal.closeModal();
+      setUploadedImageData(null);
+      confirmUploadModal.closeModal();
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
       setImagesError(
         error instanceof Error ? error.message : "فشل في إضافة الشعار الجاهز"
       );
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -344,6 +364,7 @@ const PredefinedImagesManagement: React.FC = () => {
         isLoading={isLoadingImages}
       />
 
+      {/* نافذة رفع الشعار */}
       <Modal
         isOpen={addImageModal.isOpen}
         shouldRender={addImageModal.shouldRender}
@@ -353,67 +374,9 @@ const PredefinedImagesManagement: React.FC = () => {
         options={addImageModal.options}
       >
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                اسم الشعار *
-              </label>
-              <input
-                type="text"
-                value={newImageData.name}
-                onChange={(e) =>
-                  setNewImageData((prev) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }))
-                }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                placeholder="مثال: شعار الشركة"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الفئة
-                </label>
-                <input
-                  type="text"
-                  value={newImageData.category}
-                  onChange={(e) =>
-                    setNewImageData((prev) => ({
-                      ...prev,
-                      category: e.target.value,
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الوصف
-                </label>
-                <input
-                  type="text"
-                  value={newImageData.description}
-                  onChange={(e) =>
-                    setNewImageData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                  placeholder="وصف مختصر"
-                />
-              </div>
-            </div>
-          </div>
-
           <div className="sm:hidden">
             <CloudinaryImageUpload
-              onImageSelect={handleAddPredefinedImage}
+              onImageSelect={handleImageSelect}
               acceptedFormats={[
                 "image/jpeg",
                 "image/jpg",
@@ -430,7 +393,7 @@ const PredefinedImagesManagement: React.FC = () => {
 
           <div className="hidden sm:block">
             <CloudinaryImageUpload
-              onImageSelect={handleAddPredefinedImage}
+              onImageSelect={handleImageSelect}
               acceptedFormats={[
                 "image/jpeg",
                 "image/jpg",
@@ -457,6 +420,149 @@ const PredefinedImagesManagement: React.FC = () => {
                 </ul>
               </div>
             </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* نافذة تأكيد الرفع */}
+      <Modal
+        isOpen={confirmUploadModal.isOpen}
+        shouldRender={confirmUploadModal.shouldRender}
+        onClose={() => {
+          confirmUploadModal.closeModal();
+          setUploadedImageData(null);
+          setNameError("");
+          setIsUploading(false);
+        }}
+        title="تأكيد رفع الشعار"
+        size="md"
+        options={{
+          ...confirmUploadModal.options,
+          closeOnBackdropClick: false,
+        }}
+      >
+        <div className="space-y-6">
+          {/* عرض الصورة المرفوعة */}
+          {uploadedImageData && (
+            <div className="text-center">
+              <div className="w-32 h-32 mx-auto mb-4 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                <img
+                  src={uploadedImageData.url}
+                  alt="الشعار المرفوع"
+                  className="w-full h-full object-contain p-2"
+                />
+              </div>
+              <p className="text-xs text-gray-600">
+                حجم الملف: {formatFileSize(uploadedImageData.size)}
+              </p>
+            </div>
+          )}
+
+          {/* حقول إدخال البيانات */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                اسم الشعار *
+              </label>
+              <input
+                type="text"
+                value={newImageData.name}
+                onChange={(e) => {
+                  setNewImageData((prev) => ({
+                    ...prev,
+                    name: e.target.value,
+                  }));
+                  if (nameError) setNameError("");
+                }}
+                className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm ${
+                  nameError ? "border-red-300" : "border-gray-200"
+                }`}
+                placeholder="مثال: شعار الشركة"
+                required
+              />
+              {nameError && (
+                <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {nameError}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  الفئة
+                </label>
+                <input
+                  type="text"
+                  value={newImageData.category}
+                  onChange={(e) =>
+                    setNewImageData((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  الوصف
+                </label>
+                <input
+                  type="text"
+                  value={newImageData.description}
+                  onChange={(e) =>
+                    setNewImageData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                  placeholder="وصف مختصر"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* أزرار التحكم */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <button
+              onClick={handleConfirmUpload}
+              disabled={isUploading}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600"
+            >
+              {isUploading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              {isUploading ? "جاري الرفع..." : "تأكيد الرفع"}
+            </button>
+            <button
+              onClick={() => {
+                confirmUploadModal.closeModal();
+                setUploadedImageData(null);
+                setNameError("");
+                addImageModal.openModal();
+              }}
+              disabled={isUploading}
+              className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              العودة للتعديل
+            </button>
+            <button
+              onClick={() => {
+                confirmUploadModal.closeModal();
+                setUploadedImageData(null);
+                setNameError("");
+              }}
+              disabled={isUploading}
+              className="flex-1 py-2.5 border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              إلغاء
+            </button>
           </div>
         </div>
       </Modal>
