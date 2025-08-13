@@ -342,7 +342,7 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
   const addLogo = useCallback((logo: Logo) => {
     setJacketState((prev) => ({
       ...prev,
-      logos: [...prev.logos, logo],
+      logos: [...prev.logos.filter((l) => l.id !== logo.id), logo],
     }));
   }, []);
 
@@ -365,7 +365,7 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
   const addText = useCallback((text: CustomText) => {
     setJacketState((prev) => ({
       ...prev,
-      texts: [...prev.texts, text],
+      texts: [...prev.texts.filter((t) => t.id !== text.id), text],
     }));
   }, []);
 

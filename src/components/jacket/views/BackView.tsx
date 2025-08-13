@@ -13,12 +13,19 @@ import Patterns from "./BackParts/Patterns";
 const BackView: React.FC = () => {
   const { jacketState } = useJacket();
 
-  const backLogos = jacketState.logos.filter(
-    (logo) => logo.position === "backCenter"
-  );
-  const backBottomTexts = jacketState.texts.filter(
-    (text) => text.position === "backBottom"
-  );
+  // فلترة الشعارات مع إزالة المكررات
+  const backLogos = jacketState.logos
+    .filter((logo) => logo.position === "backCenter")
+    .filter(
+      (logo, index, self) => index === self.findIndex((l) => l.id === logo.id)
+    );
+
+  // فلترة النصوص مع إزالة المكررات
+  const backBottomTexts = jacketState.texts
+    .filter((text) => text.position === "backBottom")
+    .filter(
+      (text, index, self) => index === self.findIndex((t) => t.id === text.id)
+    );
 
   return (
     <div className="w-full h-full relative flex items-center justify-center overflow-hidden">

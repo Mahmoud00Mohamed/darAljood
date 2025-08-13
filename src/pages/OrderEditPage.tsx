@@ -27,6 +27,7 @@ import JacketImageCapture, {
 import ConfirmationModal from "../components/ui/ConfirmationModal";
 import { useModal } from "../hooks/useModal";
 import fontPreloader from "../utils/fontPreloader";
+import { cleanupJacketData, validateDataIntegrity } from "../utils/dataCleanup";
 
 const OrderEditContent: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -111,6 +112,15 @@ const OrderEditContent: React.FC = () => {
       if (order.items.length > 0) {
         const jacketConfig = order.items[0].jacketConfig;
 
+        // تنظيف البيانات من التكرارات
+        const cleanedConfig = cleanupJacketData(jacketConfig);
+
+        // التحقق من سلامة البيانات
+        const validation = validateDataIntegrity(cleanedConfig);
+        if (!validation.isValid) {
+          console.warn("Data integrity issues found:", validation.issues);
+        }
+
         // مسح البيانات الحالية
         jacketState.logos.forEach((logo) => removeLogo(logo.id));
         jacketState.texts.forEach((text) => removeText(text.id));
@@ -139,8 +149,8 @@ const OrderEditContent: React.FC = () => {
             | "4XL"
         );
 
-        // إضافة الشعارات
-        jacketConfig.logos.forEach((logo) => {
+        // إضافة الشعارات المنظفة
+        cleanedConfig.logos.forEach((logo) => {
           addLogo({
             id: logo.id,
             image: logo.image,
@@ -161,8 +171,8 @@ const OrderEditContent: React.FC = () => {
           });
         });
 
-        // إضافة النصوص
-        jacketConfig.texts.forEach((text) => {
+        // إضافة النصوص المنظفة
+        cleanedConfig.texts.forEach((text) => {
           addText({
             id: text.id,
             content: text.content,

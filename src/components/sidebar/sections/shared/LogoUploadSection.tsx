@@ -350,10 +350,16 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
     positions.some((pos) => pos.id === logo.position)
   );
 
-  // إزالة التكرار من الشعارات المفلترة
-  const uniqueLogos = filteredLogos.filter(
-    (logo, index, self) => index === self.findIndex((l) => l.id === logo.id)
-  );
+  // إزالة التكرار من الشعارات المفلترة بشكل محسن
+  const uniqueLogos = filteredLogos.filter((logo, index, self) => {
+    const firstIndex = self.findIndex((l) => l.id === logo.id);
+    if (firstIndex !== index) {
+      console.warn(
+        `Removing duplicate logo with ID: ${logo.id} at position: ${logo.position}`
+      );
+    }
+    return firstIndex === index;
+  });
 
   const selectedLogo = selectedLogoId
     ? uniqueLogos.find((logo) => logo.id === selectedLogoId)

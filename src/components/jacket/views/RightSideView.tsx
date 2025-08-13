@@ -14,11 +14,16 @@ import Patterns from "./RightSideParts/Patterns";
 const RightSideView: React.FC = () => {
   const { jacketState } = useJacket();
 
-  const rightSideLogos = jacketState.logos.filter((logo) =>
-    ["rightSide_top", "rightSide_middle", "rightSide_bottom"].includes(
-      logo.position
+  // فلترة الشعارات مع إزالة المكررات
+  const rightSideLogos = jacketState.logos
+    .filter((logo) =>
+      ["rightSide_top", "rightSide_middle", "rightSide_bottom"].includes(
+        logo.position
+      )
     )
-  );
+    .filter(
+      (logo, index, self) => index === self.findIndex((l) => l.id === logo.id)
+    );
 
   return (
     <div className="w-full h-full relative">

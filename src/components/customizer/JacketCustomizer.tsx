@@ -130,21 +130,32 @@ const JacketCustomizer: React.FC = () => {
     const loadPricingBreakdown = async () => {
       setIsLoadingPricing(true);
       try {
-        const frontLogos = jacketState.logos.filter((logo) =>
+        // فلترة الشعارات مع إزالة المكررات
+        const uniqueLogos = jacketState.logos.filter(
+          (logo, index, self) =>
+            index === self.findIndex((l) => l.id === logo.id)
+        );
+
+        const uniqueTexts = jacketState.texts.filter(
+          (text, index, self) =>
+            index === self.findIndex((t) => t.id === text.id)
+        );
+
+        const frontLogos = uniqueLogos.filter((logo) =>
           ["chestRight", "chestLeft"].includes(logo.position)
         ).length;
 
-        const frontTexts = jacketState.texts.filter((text) =>
+        const frontTexts = uniqueTexts.filter((text) =>
           ["chestRight", "chestLeft"].includes(text.position)
         ).length;
 
-        const rightSideLogos = jacketState.logos.filter((logo) =>
+        const rightSideLogos = uniqueLogos.filter((logo) =>
           ["rightSide_top", "rightSide_middle", "rightSide_bottom"].includes(
             logo.position
           )
         ).length;
 
-        const leftSideLogos = jacketState.logos.filter((logo) =>
+        const leftSideLogos = uniqueLogos.filter((logo) =>
           ["leftSide_top", "leftSide_middle", "leftSide_bottom"].includes(
             logo.position
           )

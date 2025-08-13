@@ -15,13 +15,19 @@ const FrontView: React.FC = () => {
   const { jacketState } = useJacket();
   const { colors } = jacketState;
 
-  const frontLogos = jacketState.logos.filter((logo) =>
-    ["chestRight", "chestLeft"].includes(logo.position)
-  );
+  // فلترة الشعارات مع إزالة المكررات
+  const frontLogos = jacketState.logos
+    .filter((logo) => ["chestRight", "chestLeft"].includes(logo.position))
+    .filter(
+      (logo, index, self) => index === self.findIndex((l) => l.id === logo.id)
+    );
 
-  const frontTexts = jacketState.texts.filter((text) =>
-    ["chestRight", "chestLeft"].includes(text.position)
-  );
+  // فلترة النصوص مع إزالة المكررات
+  const frontTexts = jacketState.texts
+    .filter((text) => ["chestRight", "chestLeft"].includes(text.position))
+    .filter(
+      (text, index, self) => index === self.findIndex((t) => t.id === text.id)
+    );
 
   const collarColor = colors.trim.includes("_stripes")
     ? colors.trim.split("_")[0]

@@ -78,7 +78,7 @@ export const generateOrderPDFWithImages = async (
   pdf.setFontSize(12);
 
   // نص دار الجود ورقم الطلب في أعلى اليسار داخل الهيدر
-  const storeInfo = options.orderNumber 
+  const storeInfo = options.orderNumber
     ? `دار الجود | رقم الطلب: ${options.orderNumber}`
     : "دار الجود | واتساب: 0536065766";
   pdf.text(storeInfo, margin, headerHeight / 2, {
