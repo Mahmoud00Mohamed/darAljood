@@ -420,7 +420,7 @@ const PredefinedImagesManagement: React.FC = () => {
                 "image/png",
                 "image/webp",
               ]}
-              maxFileSize={5}
+              maxFileSize={10}
               placeholder="اختر الشعار"
               aspectRatio={1}
               cropTitle="اقتطاع الشعار"
@@ -437,7 +437,7 @@ const PredefinedImagesManagement: React.FC = () => {
                 "image/png",
                 "image/webp",
               ]}
-              maxFileSize={5}
+              maxFileSize={10}
               placeholder="اسحب الشعار هنا أو انقر للاختيار"
               aspectRatio={1}
               cropTitle="اقتطاع الشعار الجاهز"

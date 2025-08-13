@@ -18,6 +18,7 @@ import {
   RefreshCw,
   TrendingUp,
   DollarSign,
+  Download,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import orderService, {
@@ -28,6 +29,13 @@ import authService from "../../services/authService";
 import ConfirmationModal from "../ui/ConfirmationModal";
 import Modal from "../ui/Modal";
 import { useModal } from "../../hooks/useModal";
+import { generateOrderPDFWithImages } from "../../utils/pdfGenerator";
+import JacketImageCapture, {
+  JacketImageCaptureRef,
+} from "../jacket/JacketImageCapture";
+import LoadingOverlay from "../ui/LoadingOverlay";
+import fontPreloader from "../../utils/fontPreloader";
+import { JacketState, JacketMaterial } from "../../context/JacketContext";
 
 const OrdersManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +50,13 @@ const OrdersManagement: React.FC = () => {
   const [newStatus, setNewStatus] = useState("");
   const [statusNote, setStatusNote] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [pdfLoadingStage, setPdfLoadingStage] = useState<
+    "capturing" | "generating" | "completed"
+  >("capturing");
+  const [showPdfLoadingOverlay, setShowPdfLoadingOverlay] = useState(false);
 
+  const jacketImageCaptureRef = React.useRef<JacketImageCaptureRef>(null);
   const orderDetailsModal = useModal();
   const deleteOrderModal = useModal();
   const updateStatusModal = useModal();
@@ -58,11 +72,6 @@ const OrdersManagement: React.FC = () => {
     { value: "cancelled", name: "ملغي", color: "text-red-600" },
     { value: "returned", name: "مُرجع", color: "text-orange-600" },
   ];
-
-  useEffect(() => {
-    loadOrders();
-    loadStats();
-  }, []);
 
   const loadOrders = async () => {
     setIsLoading(true);
@@ -95,6 +104,11 @@ const OrdersManagement: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    loadOrders();
+    loadStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const handleSearch = () => {
     loadOrders();
   };
@@ -176,6 +190,124 @@ const OrdersManagement: React.FC = () => {
     }).format(price);
   };
 
+  // Convert JacketConfig to JacketState for PDF generation
+  const convertToJacketState = (
+    jacketConfig: OrderData["items"][0]["jacketConfig"]
+  ): JacketState => {
+    return {
+      colors: jacketConfig.colors,
+      materials: {
+        body: jacketConfig.materials.body as JacketMaterial,
+        sleeves: jacketConfig.materials.sleeves as JacketMaterial,
+        trim: jacketConfig.materials.body as JacketMaterial, // Use body material as fallback for trim
+      },
+      size: jacketConfig.size as
+        | "XS"
+        | "S"
+        | "M"
+        | "L"
+        | "XL"
+        | "2XL"
+        | "3XL"
+        | "4XL",
+      logos: jacketConfig.logos.map((logo) => ({
+        ...logo,
+        position: logo.position as
+          | "chestRight"
+          | "chestLeft"
+          | "backCenter"
+          | "rightSide_top"
+          | "rightSide_middle"
+          | "rightSide_bottom"
+          | "leftSide_top"
+          | "leftSide_middle"
+          | "leftSide_bottom",
+      })),
+      texts: jacketConfig.texts.map((text) => ({
+        ...text,
+        position: text.position as "chestRight" | "chestLeft" | "backBottom",
+      })),
+      currentView: jacketConfig.currentView as
+        | "front"
+        | "back"
+        | "right"
+        | "left",
+      totalPrice: jacketConfig.totalPrice,
+      isCapturing: jacketConfig.isCapturing || false,
+      uploadedImages: jacketConfig.uploadedImages || [],
+    };
+  };
+  const handleDownloadPDF = async (order: OrderData) => {
+    setIsGeneratingPDF(true);
+    setShowPdfLoadingOverlay(true);
+    setPdfLoadingStage("capturing");
+
+    try {
+      // التأكد من تحميل الخطوط قبل بدء العملية
+      await fontPreloader.preloadAllFonts();
+
+      let jacketImages: string[] = [];
+
+      // التقاط صور الجاكيت من التكوين المحفوظ
+      if (jacketImageCaptureRef.current && order.items.length > 0) {
+        try {
+          const convertedConfig = convertToJacketState(
+            order.items[0].jacketConfig
+          );
+          jacketImages = await jacketImageCaptureRef.current.captureFromConfig(
+            convertedConfig
+          );
+        } catch (captureError) {
+          console.warn("فشل في التقاط الصور:", captureError);
+          jacketImages = [];
+        }
+      }
+
+      // الانتقال لمرحلة إنشاء PDF
+      setPdfLoadingStage("generating");
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // إنشاء PDF
+      const pdfBlob = await generateOrderPDFWithImages(
+        {
+          cartItems: order.items.map((item) => ({
+            id: item.id,
+            jacketConfig: convertToJacketState(item.jacketConfig),
+            quantity: item.quantity,
+            price: item.price,
+            addedAt: new Date(order.createdAt),
+          })),
+          totalPrice: order.totalPrice,
+          customerInfo: order.customerInfo,
+          orderNumber: order.orderNumber,
+        },
+        jacketImages
+      );
+
+      // مرحلة الإكمال
+      setPdfLoadingStage("completed");
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // تحميل الملف
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `طلب-${order.orderNumber}-${order.customerInfo.name}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      setError("حدث خطأ أثناء إنشاء ملف PDF");
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const handlePdfLoadingComplete = () => {
+    setShowPdfLoadingOverlay(false);
+  };
   const getStatusColor = (status: string) => {
     const statusObj = orderStatuses.find((s) => s.value === status);
     return statusObj?.color || "text-gray-600";
@@ -330,6 +462,18 @@ const OrdersManagement: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Hidden Jacket Image Capture Component */}
+      <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
+        <JacketImageCapture ref={jacketImageCaptureRef} />
+      </div>
+
+      {/* PDF Loading Overlay */}
+      <LoadingOverlay
+        isVisible={showPdfLoadingOverlay}
+        stage={pdfLoadingStage}
+        onComplete={handlePdfLoadingComplete}
+      />
+
       {/* قائمة الطلبات */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -432,6 +576,18 @@ const OrdersManagement: React.FC = () => {
                           title="تعديل الطلب"
                         >
                           <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDownloadPDF(order)}
+                          disabled={isGeneratingPDF}
+                          className="text-green-600 hover:text-green-800 transition-colors disabled:opacity-50"
+                          title="تحميل PDF"
+                        >
+                          {isGeneratingPDF ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Download className="w-4 h-4" />
+                          )}
                         </button>
                         <button
                           onClick={() => {
@@ -616,6 +772,20 @@ const OrdersManagement: React.FC = () => {
                       <p className="text-sm text-gray-600">
                         {formatPrice(item.price)} × {item.quantity}
                       </p>
+                    </div>
+                    <div className="mt-3">
+                      <button
+                        onClick={() => handleDownloadPDF(selectedOrder)}
+                        disabled={isGeneratingPDF}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-sm rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50"
+                      >
+                        {isGeneratingPDF ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4" />
+                        )}
+                        تحميل PDF
+                      </button>
                     </div>
                   </div>
                 ))}

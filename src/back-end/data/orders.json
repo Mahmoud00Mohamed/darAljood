@@ -24,14 +24,6 @@
           "size": "4XL",
           "logos": [
             {
-              "id": "logo-1755070646696-p04vr3i4-rf4s",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924609/5_oupz1k.png",
-              "position": "chestLeft",
-              "x": 0,
-              "y": 0,
-              "scale": 0.7
-            },
-            {
               "id": "logo-1755070650272-9vsl46f7-pscr",
               "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924691/16_ubbdbh.png",
               "position": "backCenter",
@@ -86,6 +78,22 @@
               "x": 0,
               "y": 0,
               "scale": 0.25
+            },
+            {
+              "id": "logo-1755077512113",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924650/17_k8axov.png",
+              "position": "chestRight",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
+            },
+            {
+              "id": "logo-1755077516235",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924603/3_k7zsjo.png",
+              "position": "chestLeft",
+              "x": 0,
+              "y": 0,
+              "scale": 0.7
             }
           ],
           "texts": [
@@ -102,12 +110,17 @@
             }
           ],
           "currentView": "front",
-          "totalPrice": 290,
+          "totalPrice": 315,
           "isCapturing": false,
           "uploadedImages": [],
           "pricingBreakdown": {
             "basePrice": 240,
             "additionalCosts": [
+              {
+                "item": "عناصر أمامية إضافية",
+                "cost": 25,
+                "quantity": 1
+              },
               {
                 "item": "شعارات إضافية - جهة يمنى",
                 "cost": 25,
@@ -119,16 +132,16 @@
                 "quantity": 1
               }
             ],
-            "totalPrice": 290,
+            "totalPrice": 315,
             "appliedDiscount": null,
-            "finalPrice": 290
+            "finalPrice": 315
           }
         },
         "quantity": 1,
-        "price": 290
+        "price": 315
       }
     ],
-    "totalPrice": 290,
+    "totalPrice": 315,
     "status": "pending",
     "statusHistory": [
       {
@@ -148,10 +161,22 @@
         "timestamp": "2025-08-13T08:39:45.322Z",
         "note": "تم تعديل بيانات الطلب",
         "updatedBy": "admin"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2025-08-13T09:32:13.972Z",
+        "note": "تم تعديل بيانات الطلب",
+        "updatedBy": "admin"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2025-08-13T09:32:30.981Z",
+        "note": "تم تعديل بيانات الطلب",
+        "updatedBy": "admin"
       }
     ],
     "createdAt": "2025-08-13T07:38:21.589Z",
-    "updatedAt": "2025-08-13T08:39:45.322Z",
+    "updatedAt": "2025-08-13T09:32:30.981Z",
     "estimatedDelivery": "2025-09-17T07:38:21.589Z",
     "notes": []
   }
