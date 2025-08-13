@@ -43,6 +43,7 @@ const PredefinedImagesManagement: React.FC = () => {
     useState<CloudinaryImageData | null>(null);
   const [nameError, setNameError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
 
   const deleteImageModal = useModal();
   const editImageModal = useModal();
@@ -68,14 +69,24 @@ const PredefinedImagesManagement: React.FC = () => {
     }
   };
 
-  const handleImageSelect = (imageData: CloudinaryImageData) => {
+  const handleImageSelect = (
+    imageData: CloudinaryImageData,
+    originalFile?: File
+  ) => {
+    // حفظ الصورة المرفوعة مؤقتاً بدون إرسالها للسيرفر
     setUploadedImageData(imageData);
+
+    // إذا كان هناك ملف أصلي، احفظه للرفع لاحقاً
+    if (originalFile) {
+      setPendingImageFile(originalFile);
+    }
+
     addImageModal.closeModal();
     confirmUploadModal.openModal();
   };
 
   const handleConfirmUpload = async () => {
-    if (!uploadedImageData) return;
+    if (!uploadedImageData || !pendingImageFile) return;
 
     if (!newImageData.name.trim()) {
       setNameError("يجب كتابة اسم الشعار قبل إتمام عملية الرفع");
@@ -86,18 +97,9 @@ const PredefinedImagesManagement: React.FC = () => {
     setIsUploading(true);
 
     try {
-      const response = await fetch(uploadedImageData.url);
-      const blob = await response.blob();
-      const file = new File(
-        [blob],
-        `${uploadedImageData.publicId}.${uploadedImageData.format}`,
-        {
-          type: `image/${uploadedImageData.format}`,
-        }
-      );
-
+      // استخدام الملف الأصلي المحفوظ مؤقتاً
       const newImage = await predefinedImagesService.addPredefinedImage(
-        file,
+        pendingImageFile,
         newImageData.name,
         newImageData.category,
         newImageData.description
@@ -111,6 +113,7 @@ const PredefinedImagesManagement: React.FC = () => {
         description: "شعار جاهز للاستخدام",
       });
       setUploadedImageData(null);
+      setPendingImageFile(null);
       confirmUploadModal.closeModal();
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
@@ -339,13 +342,6 @@ const PredefinedImagesManagement: React.FC = () => {
           <p className="text-sm text-gray-600 mb-4 px-4">
             ابدأ بإضافة شعارات جاهزة للمجموعة
           </p>
-          <button
-            onClick={addImageModal.openModal}
-            className="flex items-center gap-2 px-4 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors font-medium text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            إضافة شعار جديد
-          </button>
         </div>
       )}
 
@@ -417,6 +413,7 @@ const PredefinedImagesManagement: React.FC = () => {
                   <li>• الحد الأقصى: 5MB</li>
                   <li>• الأنواع: JPG, PNG, WEBP</li>
                   <li>• يفضل الشكل المربع</li>
+                  <li>• لن يتم رفع الشعار للسيرفر إلا بعد التأكيد</li>
                 </ul>
               </div>
             </div>
@@ -431,6 +428,7 @@ const PredefinedImagesManagement: React.FC = () => {
         onClose={() => {
           confirmUploadModal.closeModal();
           setUploadedImageData(null);
+          setPendingImageFile(null);
           setNameError("");
           setIsUploading(false);
         }}
@@ -455,6 +453,14 @@ const PredefinedImagesManagement: React.FC = () => {
               <p className="text-xs text-gray-600">
                 حجم الملف: {formatFileSize(uploadedImageData.size)}
               </p>
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-700 font-medium">
+                  ⚠️ الشعار لم يتم رفعه للسيرفر بعد
+                </p>
+                <p className="text-xs text-blue-600">
+                  سيتم الرفع فقط بعد تأكيد البيانات والضغط على "تأكيد الرفع"
+                </p>
+              </div>
             </div>
           )}
 
@@ -538,12 +544,13 @@ const PredefinedImagesManagement: React.FC = () => {
               ) : (
                 <Upload className="w-4 h-4" />
               )}
-              {isUploading ? "جاري الرفع..." : "تأكيد الرفع"}
+              {isUploading ? "جاري الرفع للسيرفر..." : "تأكيد الرفع للسيرفر"}
             </button>
             <button
               onClick={() => {
                 confirmUploadModal.closeModal();
                 setUploadedImageData(null);
+                setPendingImageFile(null);
                 setNameError("");
                 addImageModal.openModal();
               }}
@@ -556,6 +563,7 @@ const PredefinedImagesManagement: React.FC = () => {
               onClick={() => {
                 confirmUploadModal.closeModal();
                 setUploadedImageData(null);
+                setPendingImageFile(null);
                 setNameError("");
               }}
               disabled={isUploading}
