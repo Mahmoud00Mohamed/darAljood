@@ -1,15 +1,15 @@
 [
   {
-    "id": "order-1754986295025-nau3rwtj4",
-    "orderNumber": "295025390",
-    "trackingCode": "IUJXNI9J",
+    "id": "order-1755057603600-dqozw1382",
+    "orderNumber": "603600411",
+    "trackingCode": "GNIJG3HY",
     "customerInfo": {
-      "name": "ةةة",
+      "name": "سسس",
       "phone": "0512345678"
     },
     "items": [
       {
-        "id": "cart-1754985899653-au97xjwmp",
+        "id": "cart-1754988085219-0d07gm00c",
         "jacketConfig": {
           "colors": {
             "body": "#1B263B",
@@ -24,44 +24,12 @@
           "size": "M",
           "logos": [
             {
-              "id": "logo-1754984320582",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
-              "position": "backCenter",
-              "x": 0,
-              "y": 0,
-              "scale": 1.5
-            },
-            {
-              "id": "logo-1754984348405",
+              "id": "logo-1754984302259",
               "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_top",
+              "position": "chestRight",
               "x": 0,
               "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984351907",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984427615",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_middle",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984429987",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
+              "scale": 0.9
             },
             {
               "id": "logo-1754984320582",
@@ -80,41 +48,9 @@
               "scale": 0.25
             },
             {
-              "id": "logo-1754984351907",
+              "id": "logo-1754984350140",
               "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984427615",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_middle",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984429987",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984320582",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
-              "position": "backCenter",
-              "x": 0,
-              "y": 0,
-              "scale": 1.5
-            },
-            {
-              "id": "logo-1754984348405",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_top",
+              "position": "rightSide_middle",
               "x": 0,
               "y": 0,
               "scale": 0.25
@@ -128,201 +64,9 @@
               "scale": 0.25
             },
             {
-              "id": "logo-1754984427615",
+              "id": "logo-1754984423514",
               "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_middle",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984429987",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984320582",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
-              "position": "backCenter",
-              "x": 0,
-              "y": 0,
-              "scale": 1.5
-            },
-            {
-              "id": "logo-1754984348405",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_top",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984351907",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984427615",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_middle",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984429987",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984320582",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
-              "position": "backCenter",
-              "x": 0,
-              "y": 0,
-              "scale": 1.5
-            },
-            {
-              "id": "logo-1754984348405",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_top",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984351907",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984427615",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_middle",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984429987",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984320582",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
-              "position": "backCenter",
-              "x": 0,
-              "y": 0,
-              "scale": 1.5
-            },
-            {
-              "id": "logo-1754984348405",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_top",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984351907",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984427615",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_middle",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984429987",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984320582",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
-              "position": "backCenter",
-              "x": 0,
-              "y": 0,
-              "scale": 1.5
-            },
-            {
-              "id": "logo-1754984348405",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_top",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984351907",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984427615",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_middle",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984429987",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
-              "position": "leftSide_bottom",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984320582",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
-              "position": "backCenter",
-              "x": 0,
-              "y": 0,
-              "scale": 1.5
-            },
-            {
-              "id": "logo-1754984348405",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_top",
-              "x": 0,
-              "y": 0,
-              "scale": 0.25
-            },
-            {
-              "id": "logo-1754984351907",
-              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
-              "position": "rightSide_bottom",
+              "position": "leftSide_top",
               "x": 0,
               "y": 0,
               "scale": 0.25
@@ -381,229 +125,158 @@
                   "font": "Amiri"
                 }
               ]
+            }
+          ],
+          "currentView": "right",
+          "totalPrice": 315,
+          "isCapturing": false,
+          "uploadedImages": [
+            {
+              "id": "uploaded-1754984302259",
+              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
+              "name": "hwjucl6oierbm3qaikgo",
+              "uploadedAt": "2025-08-12T07:38:22.259Z"
             },
             {
-              "id": "text-1754982834598",
-              "content": "R A W A N",
-              "position": "backBottom",
-              "x": 0,
-              "y": 8,
-              "scale": 1.5,
-              "font": "Scheherazade New",
-              "color": "#c41e3a",
-              "isConnected": true
-            },
+              "id": "uploaded-1754984423514",
+              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
+              "name": "z7mjqdbmmfumzqufoifg",
+              "uploadedAt": "2025-08-12T07:40:23.514Z"
+            }
+          ],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [
+              {
+                "item": "عناصر أمامية إضافية",
+                "cost": 25,
+                "quantity": 1
+              },
+              {
+                "item": "شعارات إضافية - جهة يمنى",
+                "cost": 25,
+                "quantity": 1
+              },
+              {
+                "item": "شعارات إضافية - جهة يسرى",
+                "cost": 25,
+                "quantity": 1
+              }
+            ],
+            "totalPrice": 315,
+            "appliedDiscount": null,
+            "finalPrice": 315
+          }
+        },
+        "quantity": 1,
+        "price": 315
+      }
+    ],
+    "totalPrice": 315,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-13T04:00:03.600Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-13T04:00:03.600Z",
+    "updatedAt": "2025-08-13T04:00:03.600Z",
+    "estimatedDelivery": "2025-09-17T04:00:03.600Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755057628359-oj3ygp13t",
+    "orderNumber": "628359910",
+    "trackingCode": "QWSK8HY9",
+    "customerInfo": {
+      "name": "سسس",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1754988085219-0d07gm00c",
+        "jacketConfig": {
+          "colors": {
+            "body": "#1B263B",
+            "sleeves": "#F5F6F5",
+            "trim": "#161618_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [
             {
-              "id": "text-1754984206110",
-              "content": "R7",
-              "position": "chestLeft",
-              "x": 0,
-              "y": 0,
-              "scale": 1,
-              "font": "Katibeh",
-              "color": "#000000",
-              "isConnected": false,
-              "charStyles": [
-                {
-                  "x": 0,
-                  "y": 0,
-                  "scale": 1,
-                  "color": "#d4af37"
-                },
-                {
-                  "x": -2,
-                  "y": 2,
-                  "scale": 1,
-                  "color": "#ffffff",
-                  "font": "Amiri"
-                }
-              ]
-            },
-            {
-              "id": "text-1754982834598",
-              "content": "R A W A N",
-              "position": "backBottom",
-              "x": 0,
-              "y": 8,
-              "scale": 1.5,
-              "font": "Scheherazade New",
-              "color": "#c41e3a",
-              "isConnected": true
-            },
-            {
-              "id": "text-1754984206110",
-              "content": "R7",
-              "position": "chestLeft",
-              "x": 0,
-              "y": 0,
-              "scale": 1,
-              "font": "Katibeh",
-              "color": "#000000",
-              "isConnected": false,
-              "charStyles": [
-                {
-                  "x": 0,
-                  "y": 0,
-                  "scale": 1,
-                  "color": "#d4af37"
-                },
-                {
-                  "x": -2,
-                  "y": 2,
-                  "scale": 1,
-                  "color": "#ffffff",
-                  "font": "Amiri"
-                }
-              ]
-            },
-            {
-              "id": "text-1754982834598",
-              "content": "R A W A N",
-              "position": "backBottom",
-              "x": 0,
-              "y": 8,
-              "scale": 1.5,
-              "font": "Scheherazade New",
-              "color": "#c41e3a",
-              "isConnected": true
-            },
-            {
-              "id": "text-1754984206110",
-              "content": "R7",
-              "position": "chestLeft",
-              "x": 0,
-              "y": 0,
-              "scale": 1,
-              "font": "Katibeh",
-              "color": "#000000",
-              "isConnected": false,
-              "charStyles": [
-                {
-                  "x": 0,
-                  "y": 0,
-                  "scale": 1,
-                  "color": "#d4af37"
-                },
-                {
-                  "x": -2,
-                  "y": 2,
-                  "scale": 1,
-                  "color": "#ffffff",
-                  "font": "Amiri"
-                }
-              ]
-            },
-            {
-              "id": "text-1754982834598",
-              "content": "R A W A N",
-              "position": "backBottom",
-              "x": 0,
-              "y": 8,
-              "scale": 1.5,
-              "font": "Scheherazade New",
-              "color": "#c41e3a",
-              "isConnected": true
-            },
-            {
-              "id": "text-1754984206110",
-              "content": "R7",
-              "position": "chestLeft",
+              "id": "logo-1754984302259",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
+              "position": "chestRight",
               "x": 0,
               "y": 0,
-              "scale": 1,
-              "font": "Katibeh",
-              "color": "#000000",
-              "isConnected": false,
-              "charStyles": [
-                {
-                  "x": 0,
-                  "y": 0,
-                  "scale": 1,
-                  "color": "#d4af37"
-                },
-                {
-                  "x": -2,
-                  "y": 2,
-                  "scale": 1,
-                  "color": "#ffffff",
-                  "font": "Amiri"
-                }
-              ]
+              "scale": 0.9
             },
             {
-              "id": "text-1754982834598",
-              "content": "R A W A N",
-              "position": "backBottom",
-              "x": 0,
-              "y": 8,
-              "scale": 1.5,
-              "font": "Scheherazade New",
-              "color": "#c41e3a",
-              "isConnected": true
-            },
-            {
-              "id": "text-1754984206110",
-              "content": "R7",
-              "position": "chestLeft",
+              "id": "logo-1754984320582",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1749924629/9_ysz5vg.png",
+              "position": "backCenter",
               "x": 0,
               "y": 0,
-              "scale": 1,
-              "font": "Katibeh",
-              "color": "#000000",
-              "isConnected": false,
-              "charStyles": [
-                {
-                  "x": 0,
-                  "y": 0,
-                  "scale": 1,
-                  "color": "#d4af37"
-                },
-                {
-                  "x": -2,
-                  "y": 2,
-                  "scale": 1,
-                  "color": "#ffffff",
-                  "font": "Amiri"
-                }
-              ]
+              "scale": 1.5
             },
             {
-              "id": "text-1754982834598",
-              "content": "R A W A N",
-              "position": "backBottom",
-              "x": 0,
-              "y": 8,
-              "scale": 1.5,
-              "font": "Scheherazade New",
-              "color": "#c41e3a",
-              "isConnected": true
-            },
-            {
-              "id": "text-1754984206110",
-              "content": "R7",
-              "position": "chestLeft",
+              "id": "logo-1754984348405",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
+              "position": "rightSide_top",
               "x": 0,
               "y": 0,
-              "scale": 1,
-              "font": "Katibeh",
-              "color": "#000000",
-              "isConnected": false,
-              "charStyles": [
-                {
-                  "x": 0,
-                  "y": 0,
-                  "scale": 1,
-                  "color": "#d4af37"
-                },
-                {
-                  "x": -2,
-                  "y": 2,
-                  "scale": 1,
-                  "color": "#ffffff",
-                  "font": "Amiri"
-                }
-              ]
+              "scale": 0.25
             },
+            {
+              "id": "logo-1754984350140",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
+              "position": "rightSide_middle",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754984351907",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
+              "position": "rightSide_bottom",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754984423514",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
+              "position": "leftSide_top",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754984427615",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
+              "position": "leftSide_middle",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            },
+            {
+              "id": "logo-1754984429987",
+              "image": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
+              "position": "leftSide_bottom",
+              "x": 0,
+              "y": 0,
+              "scale": 0.25
+            }
+          ],
+          "texts": [
             {
               "id": "text-1754982834598",
               "content": "R A W A N",
@@ -642,32 +315,45 @@
               ]
             }
           ],
-          "currentView": "left",
+          "currentView": "right",
           "totalPrice": 315,
           "isCapturing": false,
-          "uploadedImages": [],
+          "uploadedImages": [
+            {
+              "id": "uploaded-1754984302259",
+              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984297/dar-aljoud/logos/hwjucl6oierbm3qaikgo.png",
+              "name": "hwjucl6oierbm3qaikgo",
+              "uploadedAt": "2025-08-12T07:38:22.259Z"
+            },
+            {
+              "id": "uploaded-1754984423514",
+              "url": "https://res.cloudinary.com/dnuthlqsb/image/upload/v1754984422/dar-aljoud/logos/z7mjqdbmmfumzqufoifg.png",
+              "name": "z7mjqdbmmfumzqufoifg",
+              "uploadedAt": "2025-08-12T07:40:23.514Z"
+            }
+          ],
           "pricingBreakdown": {
             "basePrice": 240,
             "additionalCosts": [
               {
                 "item": "عناصر أمامية إضافية",
                 "cost": 25,
-                "quantity": 7
+                "quantity": 1
               },
               {
                 "item": "شعارات إضافية - جهة يمنى",
                 "cost": 25,
-                "quantity": 14
+                "quantity": 1
               },
               {
                 "item": "شعارات إضافية - جهة يسرى",
                 "cost": 25,
-                "quantity": 14
+                "quantity": 1
               }
             ],
-            "totalPrice": 1115,
+            "totalPrice": 315,
             "appliedDiscount": null,
-            "finalPrice": 1115
+            "finalPrice": 315
           }
         },
         "quantity": 1,
@@ -679,38 +365,14 @@
     "statusHistory": [
       {
         "status": "pending",
-        "timestamp": "2025-08-12T08:11:35.026Z",
+        "timestamp": "2025-08-13T04:00:28.359Z",
         "note": "تم إنشاء الطلب",
         "updatedBy": "system"
-      },
-      {
-        "status": "pending",
-        "timestamp": "2025-08-12T08:12:10.425Z",
-        "note": "تم تعديل بيانات الطلب",
-        "updatedBy": "admin"
-      },
-      {
-        "status": "pending",
-        "timestamp": "2025-08-12T08:12:32.963Z",
-        "note": "تم تعديل بيانات الطلب",
-        "updatedBy": "admin"
-      },
-      {
-        "status": "pending",
-        "timestamp": "2025-08-12T08:13:27.717Z",
-        "note": "تم تعديل بيانات الطلب",
-        "updatedBy": "admin"
-      },
-      {
-        "status": "pending",
-        "timestamp": "2025-08-12T08:13:39.405Z",
-        "note": "تم تعديل بيانات الطلب",
-        "updatedBy": "admin"
       }
     ],
-    "createdAt": "2025-08-12T08:11:35.026Z",
-    "updatedAt": "2025-08-12T08:13:39.405Z",
-    "estimatedDelivery": "2025-09-16T08:11:35.026Z",
+    "createdAt": "2025-08-13T04:00:28.359Z",
+    "updatedAt": "2025-08-13T04:00:28.359Z",
+    "estimatedDelivery": "2025-09-17T04:00:28.359Z",
     "notes": []
   }
 ]
