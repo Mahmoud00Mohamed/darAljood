@@ -638,158 +638,217 @@ const OrdersManagement: React.FC = () => {
           size="lg"
           options={orderDetailsModal.options}
         >
-          <div className="space-y-6">
-            {/* معلومات أساسية */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  معلومات الطلب
-                </h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">رقم الطلب:</span>
-                    <span className="font-medium">
+          <div className="space-y-3 max-h-[70vh] sm:max-h-[80vh] overflow-y-auto">
+            {/* معلومات مضغوطة للجوال */}
+            <div className="grid grid-cols-1 gap-3">
+              {/* بطاقة معلومات الطلب */}
+              <div className="bg-gradient-to-r from-[#563660] to-[#4b2e55] rounded-lg p-3 sm:p-4 text-white">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                  <div>
+                    <span className="text-purple-100 block text-xs">
+                      رقم الطلب
+                    </span>
+                    <span className="font-medium text-sm sm:text-base">
                       {selectedOrder.orderNumber}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">رمز التتبع:</span>
-                    <span className="font-mono font-medium">
-                      {selectedOrder.trackingCode}
+                  <div>
+                    <span className="text-purple-100 block text-xs">
+                      الإجمالي
                     </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">الحالة:</span>
-                    <span
-                      className={`font-medium ${getStatusColor(
-                        selectedOrder.status
-                      )}`}
-                    >
-                      {selectedOrder.statusName}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">الإجمالي:</span>
-                    <span className="font-medium">
+                    <span className="font-bold text-sm sm:text-lg">
                       {formatPrice(selectedOrder.totalPrice)}
                     </span>
                   </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <span className="text-purple-100 block text-xs">
+                      الحالة
+                    </span>
+                    <span className="font-medium text-sm">
+                      {selectedOrder.statusName}
+                    </span>
+                  </div>
+                  <div className="hidden sm:block">
+                    <span className="text-purple-100 block text-xs">
+                      رمز التتبع
+                    </span>
+                    <span className="font-mono text-xs">
+                      {selectedOrder.trackingCode}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  معلومات العميل
-                </h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-400" />
-                    <span>{selectedOrder.customerInfo.name}</span>
+              {/* معلومات العميل والتاريخ */}
+              <div className="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-100">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2 text-blue-800">
+                    <User className="w-3 h-3" />
+                    <span className="font-medium truncate">
+                      {selectedOrder.customerInfo.name}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-400" />
-                    <span>{selectedOrder.customerInfo.phone}</span>
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <Phone className="w-3 h-3" />
+                    <span className="truncate">
+                      {selectedOrder.customerInfo.phone}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span>{formatDate(selectedOrder.createdAt)}</span>
+                  <div className="flex items-center gap-2 text-blue-600">
+                    <Calendar className="w-3 h-3" />
+                    <span className="text-xs">
+                      {new Date(selectedOrder.createdAt).toLocaleDateString(
+                        "ar-SA",
+                        {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* تاريخ الحالات */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                تاريخ حالات الطلب
+            {/* عناصر الطلب مضغوطة */}
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+              <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <Package className="w-4 h-4 text-[#563660]" />
+                العناصر ({selectedOrder.items.length})
               </h3>
-              <div className="space-y-3 max-h-60 overflow-y-auto">
-                {selectedOrder.statusHistory
-                  .slice()
-                  .reverse()
-                  .map((history, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${getStatusColor(
-                          history.status
-                        )} bg-opacity-20`}
-                      >
-                        {getStatusIcon(history.status)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-gray-900">
-                            {history.statusName}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {formatDate(history.timestamp)}
-                          </span>
-                        </div>
-                        {history.note && (
-                          <p className="text-sm text-gray-600">
-                            {history.note}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500">
-                          بواسطة: {history.updatedBy}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* عناصر الطلب */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                عناصر الطلب
-              </h3>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {selectedOrder.items.map((item, index) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="bg-white rounded-lg p-2 sm:p-3 border border-gray-100"
                   >
-                    <div className="flex items-center gap-3">
-                      <Package className="w-5 h-5 text-[#563660]" />
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          جاكيت مخصص {index + 1}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          المقاس: {item.jacketConfig.size} | الكمية:{" "}
-                          {item.quantity}
-                        </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 bg-[#563660] text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-900 text-xs sm:text-sm block">
+                            جاكيت مخصص
+                          </span>
+                          <span className="text-xs text-gray-600">
+                            {item.jacketConfig.size} | ك{item.quantity}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-gray-900">
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {formatPrice(item.price)} × {item.quantity}
-                      </p>
-                    </div>
-                    <div className="mt-3">
-                      <button
-                        onClick={() => handleDownloadPDF(selectedOrder)}
-                        disabled={isGeneratingPDF}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-sm rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50"
-                      >
-                        {isGeneratingPDF ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Download className="w-4 h-4" />
-                        )}
-                        تحميل PDF
-                      </button>
+                      <div className="text-left">
+                        <span className="font-bold text-[#563660] text-xs sm:text-sm block">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                        <button
+                          onClick={() => handleDownloadPDF(selectedOrder)}
+                          disabled={isGeneratingPDF}
+                          className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors disabled:opacity-50 mt-1"
+                        >
+                          {isGeneratingPDF ? "..." : "PDF"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* تاريخ الحالات مضغوط جداً للجوال */}
+            <div className="bg-amber-50 rounded-lg p-3 sm:p-4 border border-amber-100">
+              <h3 className="text-sm sm:text-base font-semibold text-amber-900 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                الحالات ({selectedOrder.statusHistory.length})
+              </h3>
+              <div className="max-h-24 sm:max-h-32 overflow-y-auto space-y-1">
+                {selectedOrder.statusHistory
+                  .slice()
+                  .reverse()
+                  .slice(0, 3) // عرض آخر 3 حالات فقط في الجوال
+                  .map((history, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-white rounded p-2 border border-amber-100"
+                    >
+                      <div
+                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center flex-shrink-0 ${getStatusColor(
+                          history.status
+                        )} bg-opacity-20`}
+                      >
+                        {React.cloneElement(
+                          getStatusIcon(history.status) as React.ReactElement,
+                          { className: "w-2 h-2 sm:w-3 sm:h-3" }
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-gray-900 text-xs sm:text-sm truncate">
+                            {history.statusName}
+                          </span>
+                          <span className="text-xs text-gray-500 whitespace-nowrap ml-1">
+                            {new Date(history.timestamp).toLocaleDateString(
+                              "ar-SA",
+                              {
+                                month: "numeric",
+                                day: "numeric",
+                              }
+                            )}
+                          </span>
+                        </div>
+                        {history.note && (
+                          <p className="text-xs text-gray-600 truncate sm:line-clamp-1">
+                            {history.note}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                {selectedOrder.statusHistory.length > 3 && (
+                  <div className="text-center text-xs text-gray-500 py-1">
+                    +{selectedOrder.statusHistory.length - 3} حالات أخرى
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* أزرار مضغوطة للجوال */}
+            <div className="grid grid-cols-3 gap-2 pt-2">
+              <button
+                onClick={() => {
+                  setNewStatus(selectedOrder.status);
+                  orderDetailsModal.closeModal();
+                  updateStatusModal.openModal();
+                }}
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-blue-50 text-blue-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">تحديث</span>
+                <span className="sm:hidden">حالة</span>
+              </button>
+              <button
+                onClick={() => handleDownloadPDF(selectedOrder)}
+                disabled={isGeneratingPDF}
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-green-50 text-green-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50"
+              >
+                {isGeneratingPDF ? (
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                ) : (
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                )}
+                <span>PDF</span>
+              </button>
+              <button
+                onClick={() =>
+                  navigate(`/admin/orders/${selectedOrder.id}/edit`)
+                }
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-purple-50 text-purple-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-purple-100 transition-colors"
+              >
+                <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">تعديل</span>
+                <span className="sm:hidden">طلب</span>
+              </button>
             </div>
           </div>
         </Modal>
