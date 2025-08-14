@@ -10,8 +10,6 @@ import "react-image-crop/dist/ReactCrop.css";
 import {
   X,
   RotateCw,
-  ZoomIn,
-  ZoomOut,
   Check,
   Circle,
   RefreshCw,
@@ -28,12 +26,6 @@ interface ImageCropModalProps {
   title?: string;
 }
 
-interface TouchState {
-  initialDistance: number;
-  initialScale: number;
-  center: { x: number; y: number };
-}
-
 // تعريف نوع البيانات بشكل صريح
 type CropMode = "flexible" | "circle" | "full";
 
@@ -48,17 +40,10 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const [imageSrc, setImageSrc] = useState<string>("");
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
-  const [scale, setScale] = useState(1);
   const [rotate, setRotate] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   // استخدام النوع المُعرّف صراحة
   const [cropMode, setCropMode] = useState<CropMode>("flexible");
-
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [touchState, setTouchState] = useState<TouchState | null>(null);
-  const [isZooming, setIsZooming] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   const imgRef = useRef<HTMLImageElement>(null);
@@ -70,11 +55,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
       const reader = new FileReader();
       reader.onload = () => {
         setImageSrc(reader.result as string);
-        setScale(1);
         setRotate(0);
         setCrop(undefined);
         setCompletedCrop(undefined);
-        setImagePosition({ x: 0, y: 0 });
       };
       reader.readAsDataURL(imageFile);
     }
@@ -95,7 +78,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
       const { width, height } = e.currentTarget;
-      setImagePosition({ x: 0, y: 0 });
 
       if (cropMode === "full") {
         // للصورة الكاملة، لا نحتاج إلى crop
@@ -137,118 +119,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     },
     [cropMode, aspectRatio]
   );
-
-  const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
-    const dx = touch1.clientX - touch2.clientX;
-    const dy = touch1.clientY - touch2.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  };
-
-  const getCenter = (touch1: React.Touch, touch2: React.Touch) => {
-    return {
-      x: (touch1.clientX + touch2.clientX) / 2,
-      y: (touch1.clientY + touch2.clientY) / 2,
-    };
-  };
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1; // خطوات أكبر
-    setScale((prev) => Math.max(0.5, Math.min(4, prev + delta)));
-  }, []);
-
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      // تعطيل السحب على الهواتف
-      if (isMobile) return;
-
-      if (e.target === imgRef.current) {
-        setIsDragging(true);
-        setDragStart({
-          x: e.clientX - imagePosition.x,
-          y: e.clientY - imagePosition.y,
-        });
-        e.preventDefault();
-      }
-    },
-    [imagePosition, isMobile]
-  );
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      // تعطيل السحب على الهواتف
-      if (isMobile) return;
-
-      if (isDragging) {
-        e.preventDefault();
-        setImagePosition({
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
-        });
-      }
-    },
-    [isDragging, dragStart, isMobile]
-  );
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      e.preventDefault();
-
-      // في وضع الهاتف: فقط التكبير بإصبعين، بدون سحب الصورة
-      if (e.touches.length === 2) {
-        const touch1 = e.touches[0];
-        const touch2 = e.touches[1];
-        const distance = getDistance(touch1, touch2);
-        const center = getCenter(touch1, touch2);
-
-        setTouchState({
-          initialDistance: distance,
-          initialScale: scale,
-          center,
-        });
-        setIsZooming(true);
-        setIsDragging(false);
-      }
-      // إلغاء السحب بإصبع واحد على الهواتف
-    },
-    [scale]
-  );
-
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      e.preventDefault();
-
-      // في وضع الهاتف: فقط التكبير، بدون سحب
-      if (e.touches.length === 2 && touchState && isZooming) {
-        const touch1 = e.touches[0];
-        const touch2 = e.touches[1];
-        const distance = getDistance(touch1, touch2);
-        const scaleChange = distance / touchState.initialDistance;
-
-        // تحسين حساسية التكبير للهواتف
-        const newScale = Math.max(
-          0.5, // حد أدنى أكبر
-          Math.min(4, touchState.initialScale * scaleChange) // حد أقصى أقل
-        );
-
-        setScale(newScale);
-      }
-    },
-    [touchState, isZooming]
-  );
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 0) {
-      setIsDragging(false);
-      setIsZooming(false);
-      setTouchState(null);
-    }
-    // إزالة منطق السحب بإصبع واحد للهواتف
-  }, []);
 
   const handleCropModeChange = (mode: CropMode) => {
     setCropMode(mode);
@@ -326,7 +196,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate((rotate * Math.PI) / 180);
-        ctx.scale(scale, scale);
         ctx.translate(-centerX, -centerY);
 
         ctx.drawImage(
@@ -357,7 +226,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         ctx.translate(-cropX, -cropY);
         ctx.translate(centerX, centerY);
         ctx.rotate((rotate * Math.PI) / 180);
-        ctx.scale(scale, scale);
         ctx.translate(-centerX, -centerY);
 
         ctx.drawImage(
@@ -395,24 +263,14 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   };
 
   const handleReset = () => {
-    setScale(1);
     setRotate(0);
     setCropMode("flexible");
-    setImagePosition({ x: 0, y: 0 });
     if (imgRef.current) {
       onImageLoad({ currentTarget: imgRef.current } as React.SyntheticEvent<
         HTMLImageElement,
         Event
       >);
     }
-  };
-
-  const handleZoomIn = () => {
-    setScale((prev) => Math.min(4, prev + 0.2)); // خطوات أكبر للهواتف
-  };
-
-  const handleZoomOut = () => {
-    setScale((prev) => Math.max(0.5, prev - 0.2)); // خطوات أكبر للهواتف
   };
 
   const getImageDisplayStyle = () => {
@@ -501,27 +359,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
               </button>
             </div>
 
-            {/* أدوات التحكم */}
-            <div className="flex items-center gap-1 md:gap-2">
-              <button
-                onClick={handleZoomOut}
-                className="p-1.5 md:p-2 bg-white border text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
-                disabled={scale <= 0.3}
-              >
-                <ZoomOut className="w-3 h-3 md:w-4 md:h-4" />
-              </button>
-              <span className="text-xs md:text-sm text-gray-700 min-w-[2.5rem] md:min-w-[3rem] text-center font-medium">
-                {Math.round(scale * 100)}%
-              </span>
-              <button
-                onClick={handleZoomIn}
-                className="p-1.5 md:p-2 bg-white border text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
-                disabled={scale >= 5}
-              >
-                <ZoomIn className="w-3 h-3 md:w-4 md:h-4" />
-              </button>
-            </div>
-
             {/* أدوات إضافية */}
             <div className="flex gap-1 md:gap-2">
               <button
@@ -546,24 +383,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
             <div
               ref={containerRef}
               className="relative w-full h-full flex items-center justify-center p-2 md:p-4"
-              style={{
-                cursor:
-                  !isMobile && cropMode === "full"
-                    ? isDragging
-                      ? "grabbing"
-                      : "grab"
-                    : "default",
-                touchAction: "none",
-                userSelect: "none",
-              }}
-              onWheel={handleWheel}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
             >
               <div className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-300 max-w-full max-h-full flex items-center justify-center">
                 {cropMode === "full" ? (
@@ -573,21 +392,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                     src={imageSrc}
                     style={{
                       ...getImageDisplayStyle(),
-                      transform: `scale(${scale}) rotate(${rotate}deg) translate(${
-                        !isMobile ? imagePosition.x / scale : 0
-                      }px, ${!isMobile ? imagePosition.y / scale : 0}px)`,
+                      transform: `rotate(${rotate}deg)`,
                       userSelect: "none",
                       WebkitUserSelect: "none",
-                      cursor:
-                        !isMobile && cropMode === "full"
-                          ? isDragging
-                            ? "grabbing"
-                            : "grab"
-                          : "default",
-                      transition:
-                        isDragging || isZooming
-                          ? "none"
-                          : "transform 0.1s ease",
                       display: "block",
                       margin: "auto",
                     }}
@@ -619,16 +426,20 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                       locked={false}
                       renderSelectionAddon={() => (
                         <div className="absolute inset-0 pointer-events-none">
-                          {/* مقابض مخصصة للهواتف */}
+                          {/* مقابض الزوايا - دائماً موجودة */}
                           <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
                           <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
                           <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
                           <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
-                          {/* مقابض جانبية إضافية للهواتف */}
-                          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
-                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
-                          <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
-                          <div className="absolute -right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          {/* مقابض جانبية - تظهر فقط في أجهزة الكمبيوتر وليس في الاقتصاص الدائري */}
+                          {!isMobile && cropMode !== "circle" && (
+                            <>
+                              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#563660] border-2 border-white rounded-full shadow-lg"></div>
+                              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#563660] border-2 border-white rounded-full shadow-lg"></div>
+                              <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-[#563660] border-2 border-white rounded-full shadow-lg"></div>
+                              <div className="absolute -right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-[#563660] border-2 border-white rounded-full shadow-lg"></div>
+                            </>
+                          )}
                         </div>
                       )}
                     >
@@ -638,22 +449,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                         src={imageSrc}
                         style={{
                           ...getImageDisplayStyle(),
-                          transform: `scale(${scale}) rotate(${rotate}deg) translate(${
-                            !isMobile ? imagePosition.x / scale : 0
-                          }px, ${!isMobile ? imagePosition.y / scale : 0}px)`,
+                          transform: `rotate(${rotate}deg)`,
                           userSelect: "none",
                           WebkitUserSelect: "none",
-                          cursor: !isMobile
-                            ? isDragging
-                              ? "grabbing"
-                              : isZooming
-                              ? "zoom-in"
-                              : "grab"
-                            : "default",
-                          transition:
-                            isDragging || isZooming
-                              ? "none"
-                              : "transform 0.1s ease",
                           display: "block",
                           margin: "auto",
                         }}
@@ -665,13 +463,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                   </div>
                 )}
               </div>
-
-              {/* مساعدات بصرية للهواتف */}
-              {isZooming && isMobile && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm">
-                  تكبير: {Math.round(scale * 100)}%
-                </div>
-              )}
             </div>
           )}
         </div>
