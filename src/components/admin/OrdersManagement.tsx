@@ -19,6 +19,10 @@ import {
   TrendingUp,
   DollarSign,
   Download,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import orderService, {
@@ -45,6 +49,10 @@ const OrdersManagement: React.FC = () => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [ordersPerPage] = useState(10); // عدد الطلبات في كل صفحة
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<OrderData | null>(null);
   const [newStatus, setNewStatus] = useState("");
@@ -81,10 +89,14 @@ const OrdersManagement: React.FC = () => {
       if (!token) throw new Error("رمز المصادقة غير موجود");
 
       const result = await orderService.getAllOrders(token, {
+        page: currentPage,
+        limit: ordersPerPage,
         search: searchTerm,
         status: statusFilter,
       });
       setOrders(result.orders);
+      setTotalPages(result.pagination.totalPages);
+      setTotalOrders(result.pagination.totalOrders);
     } catch (error) {
       setError(error instanceof Error ? error.message : "فشل في تحميل الطلبات");
     } finally {
@@ -108,11 +120,22 @@ const OrdersManagement: React.FC = () => {
     loadOrders();
     loadStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentPage]);
   const handleSearch = () => {
+    setCurrentPage(1); // إعادة تعيين الصفحة للأولى عند البحث
     loadOrders();
   };
 
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    setCurrentPage(1); // إعادة تعيين الصفحة للأولى عند تغيير الفلتر
+  };
   const handleViewOrder = (order: OrderData) => {
     setSelectedOrder(order);
     orderDetailsModal.openModal();
@@ -130,6 +153,13 @@ const OrdersManagement: React.FC = () => {
         prev.filter((order) => order.id !== orderToDelete.id)
       );
       await loadStats();
+
+      // إذا كانت الصفحة الحالية فارغة بعد الحذف، انتقل للصفحة السابقة
+      if (orders.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else {
+        loadOrders(); // إعادة تحميل الطلبات لتحديث العدد
+      }
 
       deleteOrderModal.closeModal();
       setOrderToDelete(null);
@@ -328,6 +358,121 @@ const OrdersManagement: React.FC = () => {
     return icons[status] || <Package className="w-4 h-4" />;
   };
 
+  // مكون Pagination
+  const PaginationComponent = () => {
+    if (totalPages <= 1) return null;
+
+    const getPageNumbers = () => {
+      const pages = [];
+      const maxVisiblePages = 5;
+
+      if (totalPages <= maxVisiblePages) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        if (currentPage <= 3) {
+          for (let i = 1; i <= 4; i++) {
+            pages.push(i);
+          }
+          pages.push("...");
+          pages.push(totalPages);
+        } else if (currentPage >= totalPages - 2) {
+          pages.push(1);
+          pages.push("...");
+          for (let i = totalPages - 3; i <= totalPages; i++) {
+            pages.push(i);
+          }
+        } else {
+          pages.push(1);
+          pages.push("...");
+          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+            pages.push(i);
+          }
+          pages.push("...");
+          pages.push(totalPages);
+        }
+      }
+
+      return pages;
+    };
+
+    return (
+      <div className="flex items-center justify-between mt-6 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>
+            عرض {(currentPage - 1) * ordersPerPage + 1} إلى{" "}
+            {Math.min(currentPage * ordersPerPage, totalOrders)} من{" "}
+            {totalOrders} طلب
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1">
+          {/* الذهاب للصفحة الأولى */}
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="الصفحة الأولى"
+          >
+            <ChevronsRight className="w-4 h-4" />
+          </button>
+
+          {/* الصفحة السابقة */}
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="الصفحة السابقة"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          {/* أرقام الصفحات */}
+          <div className="flex items-center gap-1">
+            {getPageNumbers().map((page, index) => (
+              <React.Fragment key={index}>
+                {page === "..." ? (
+                  <span className="px-3 py-2 text-gray-500">...</span>
+                ) : (
+                  <button
+                    onClick={() => handlePageChange(page as number)}
+                    className={`px-3 py-2 rounded-lg border transition-colors ${
+                      currentPage === page
+                        ? "bg-[#563660] text-white border-[#563660]"
+                        : "border-gray-300 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* الصفحة التالية */}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="الصفحة التالية"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {/* الذهاب للصفحة الأخيرة */}
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="الصفحة الأخيرة"
+          >
+            <ChevronsLeft className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  };
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -338,7 +483,7 @@ const OrdersManagement: React.FC = () => {
             إدارة الطلبات
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            عرض وإدارة جميع طلبات العملاء
+            عرض وإدارة جميع طلبات العملاء ({totalOrders} طلب)
           </p>
         </div>
 
@@ -424,7 +569,7 @@ const OrdersManagement: React.FC = () => {
           <div className="flex gap-2">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
               className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
             >
               <option value="">جميع الحالات</option>
@@ -483,7 +628,7 @@ const OrdersManagement: React.FC = () => {
           </div>
         </div>
       ) : orders.length > 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden space-y-0">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -617,6 +762,9 @@ const OrdersManagement: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          <PaginationComponent />
         </div>
       ) : (
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
@@ -624,7 +772,11 @@ const OrdersManagement: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             لا توجد طلبات
           </h3>
-          <p className="text-sm text-gray-600">لم يتم إنشاء أي طلبات بعد</p>
+          <p className="text-sm text-gray-600">
+            {searchTerm || statusFilter
+              ? "لا توجد طلبات تطابق معايير البحث"
+              : "لم يتم إنشاء أي طلبات بعد"}
+          </p>
         </div>
       )}
 
