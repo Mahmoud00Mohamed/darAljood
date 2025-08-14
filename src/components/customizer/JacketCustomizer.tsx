@@ -458,7 +458,7 @@ const JacketCustomizer: React.FC = () => {
               {/* زر الانتقال إلى عربة التسوق */}
               <Link
                 to="/cart"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
               >
                 <ShoppingCart className="w-4 h-4" />
                 الذهاب إلى السلة

@@ -613,14 +613,14 @@ const OrderEditContent: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
                 onClick={saveConfirmModal.openModal}
                 disabled={isSaving}
-                className="w-full py-3 gold-gradient text-white rounded-xl font-semibold shadow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-50"
+                className="w-full py-3 gold-gradient text-white rounded-xl font-semibold shadow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-50 relative z-10"
               >
                 {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
               </motion.button>
 
               <button
                 onClick={exitConfirmModal.openModal}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
               >
                 <ArrowLeft className="w-4 h-4" />
                 العودة للوحة التحكم
