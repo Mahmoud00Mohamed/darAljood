@@ -29,6 +29,15 @@ import { useModal } from "../hooks/useModal";
 import fontPreloader from "../utils/fontPreloader";
 import { cleanupJacketData, validateDataIntegrity } from "../utils/dataCleanup";
 
+// دالة مساعدة لتحويل التاريخ إلى الصيغة المطلوبة YYYY/MM/DD
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}/${month}/${day}`;
+};
+
 const OrderEditContent: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
@@ -588,15 +597,13 @@ const OrderEditContent: React.FC = () => {
               <div className="flex justify-between">
                 <span>تاريخ الإنشاء:</span>
                 <span className="font-medium">
-                  {orderData &&
-                    new Date(orderData.createdAt).toLocaleDateString("ar-SA")}
+                  {orderData && formatDate(orderData.createdAt)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>آخر تحديث:</span>
                 <span className="font-medium">
-                  {orderData &&
-                    new Date(orderData.updatedAt).toLocaleDateString("ar-SA")}
+                  {orderData && formatDate(orderData.updatedAt)}
                 </span>
               </div>
             </div>
@@ -770,19 +777,13 @@ const OrderEditContent: React.FC = () => {
                   <div className="flex justify-between">
                     <span>تاريخ الإنشاء:</span>
                     <span className="font-medium">
-                      {orderData &&
-                        new Date(orderData.createdAt).toLocaleDateString(
-                          "ar-SA"
-                        )}
+                      {orderData && formatDate(orderData.createdAt)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>آخر تحديث:</span>
                     <span className="font-medium">
-                      {orderData &&
-                        new Date(orderData.updatedAt).toLocaleDateString(
-                          "ar-SA"
-                        )}
+                      {orderData && formatDate(orderData.updatedAt)}
                     </span>
                   </div>
                 </div>

@@ -305,7 +305,17 @@ const CartPage: React.FC = () => {
                           )}
                         </div>
                         <div className="text-xs text-gray-500">
-                          أُضيف في: {item.addedAt.toLocaleDateString("en-GB")}
+                          أُضيف في:{" "}
+                          {(() => {
+                            const date = item.addedAt;
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(
+                              2,
+                              "0"
+                            );
+                            const day = String(date.getDate()).padStart(2, "0");
+                            return `${year}/${month}/${day}`;
+                          })()}
                         </div>
                       </div>
                       <div className="flex flex-col justify-between items-end">

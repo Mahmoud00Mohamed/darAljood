@@ -174,13 +174,13 @@ const OrdersManagement: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ar-SA", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}/${month}/${day} ${hours}:${minutes}`;
   };
 
   const formatPrice = (price: number) => {
@@ -697,15 +697,21 @@ const OrdersManagement: React.FC = () => {
                   <div className="flex items-center gap-2 text-blue-600">
                     <Calendar className="w-3 h-3" />
                     <span className="text-xs">
-                      {new Date(selectedOrder.createdAt).toLocaleDateString(
-                        "ar-SA",
-                        {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}
+                      {(() => {
+                        const date = new Date(selectedOrder.createdAt);
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(
+                          2,
+                          "0"
+                        );
+                        const day = String(date.getDate()).padStart(2, "0");
+                        const hours = String(date.getHours()).padStart(2, "0");
+                        const minutes = String(date.getMinutes()).padStart(
+                          2,
+                          "0"
+                        );
+                        return `${year}/${month}/${day} ${hours}:${minutes}`;
+                      })()}
                     </span>
                   </div>
                 </div>
@@ -788,13 +794,18 @@ const OrdersManagement: React.FC = () => {
                             {history.statusName}
                           </span>
                           <span className="text-xs text-gray-500 whitespace-nowrap ml-1">
-                            {new Date(history.timestamp).toLocaleDateString(
-                              "ar-SA",
-                              {
-                                month: "numeric",
-                                day: "numeric",
-                              }
-                            )}
+                            {(() => {
+                              const date = new Date(history.timestamp);
+                              const year = date.getFullYear();
+                              const month = String(
+                                date.getMonth() + 1
+                              ).padStart(2, "0");
+                              const day = String(date.getDate()).padStart(
+                                2,
+                                "0"
+                              );
+                              return `${year}/${month}/${day}`;
+                            })()}
                           </span>
                         </div>
                         {history.note && (

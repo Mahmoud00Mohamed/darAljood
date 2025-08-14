@@ -178,5 +178,5661 @@
     "updatedAt": "2025-08-13T23:09:54.975Z",
     "estimatedDelivery": "2025-09-17T23:07:51.237Z",
     "notes": []
+  },
+  {
+    "id": "order-1755129159786-xh7f6ktbj",
+    "orderNumber": "159786889",
+    "trackingCode": "D21OKHZF",
+    "customerInfo": {
+      "name": "أحمد",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-13T23:52:39.786Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-13T23:52:39.786Z",
+    "updatedAt": "2025-08-13T23:52:39.786Z",
+    "estimatedDelivery": "2025-09-17T23:52:39.786Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136109053-z6iw0lk6l",
+    "orderNumber": "109053583",
+    "trackingCode": "YJLOFPV6",
+    "customerInfo": {
+      "name": "سسس",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T01:48:29.053Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T01:48:29.053Z",
+    "updatedAt": "2025-08-14T01:48:29.053Z",
+    "estimatedDelivery": "2025-09-18T01:48:29.053Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136161898-f68qwik20",
+    "orderNumber": "161898113",
+    "trackingCode": "084RXSBN",
+    "customerInfo": {
+      "name": "سسس",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T01:49:21.898Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T01:49:21.898Z",
+    "updatedAt": "2025-08-14T01:49:21.898Z",
+    "estimatedDelivery": "2025-09-18T01:49:21.898Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136262941-jmqa6fpnm",
+    "orderNumber": "262941715",
+    "trackingCode": "4X8U2QEA",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T01:51:02.941Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T01:51:02.941Z",
+    "updatedAt": "2025-08-14T01:51:02.941Z",
+    "estimatedDelivery": "2025-09-18T01:51:02.941Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136302052-dnp7we623",
+    "orderNumber": "302052565",
+    "trackingCode": "GPT2OHFU",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T01:51:42.052Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T01:51:42.052Z",
+    "updatedAt": "2025-08-14T01:51:42.052Z",
+    "estimatedDelivery": "2025-09-18T01:51:42.052Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136586217-mx772ytlp",
+    "orderNumber": "586217687",
+    "trackingCode": "8S7J62LW",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T01:56:26.217Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T01:56:26.217Z",
+    "updatedAt": "2025-08-14T01:56:26.217Z",
+    "estimatedDelivery": "2025-09-18T01:56:26.217Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136602134-acw1ey4jp",
+    "orderNumber": "602134868",
+    "trackingCode": "UYG1F63N",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T01:56:42.134Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T01:56:42.134Z",
+    "updatedAt": "2025-08-14T01:56:42.134Z",
+    "estimatedDelivery": "2025-09-18T01:56:42.134Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136715459-9s9v2hot9",
+    "orderNumber": "715459392",
+    "trackingCode": "55RM9A6E",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T01:58:35.459Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T01:58:35.459Z",
+    "updatedAt": "2025-08-14T01:58:35.459Z",
+    "estimatedDelivery": "2025-09-18T01:58:35.459Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136756882-j0tgvu7gk",
+    "orderNumber": "756882079",
+    "trackingCode": "3FO5U3A3",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T01:59:16.882Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T01:59:16.882Z",
+    "updatedAt": "2025-08-14T01:59:16.882Z",
+    "estimatedDelivery": "2025-09-18T01:59:16.882Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136841681-sy4aqxr89",
+    "orderNumber": "841681737",
+    "trackingCode": "3G2FSZGW",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:00:41.681Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:00:41.681Z",
+    "updatedAt": "2025-08-14T02:00:41.681Z",
+    "estimatedDelivery": "2025-09-18T02:00:41.681Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136891004-gcn1joaim",
+    "orderNumber": "891004363",
+    "trackingCode": "XA43T7JX",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:01:31.004Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:01:31.004Z",
+    "updatedAt": "2025-08-14T02:01:31.004Z",
+    "estimatedDelivery": "2025-09-18T02:01:31.004Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136935980-1vymr1ag8",
+    "orderNumber": "935980129",
+    "trackingCode": "G39I3NII",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:02:15.980Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:02:15.980Z",
+    "updatedAt": "2025-08-14T02:02:15.980Z",
+    "estimatedDelivery": "2025-09-18T02:02:15.980Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136963804-4oa6a10pu",
+    "orderNumber": "963804909",
+    "trackingCode": "IFR8JBFR",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:02:43.804Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:02:43.804Z",
+    "updatedAt": "2025-08-14T02:02:43.804Z",
+    "estimatedDelivery": "2025-09-18T02:02:43.804Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755136987013-7o7vq639v",
+    "orderNumber": "987013827",
+    "trackingCode": "NZRTCGA7",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:03:07.013Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:03:07.013Z",
+    "updatedAt": "2025-08-14T02:03:07.013Z",
+    "estimatedDelivery": "2025-09-18T02:03:07.013Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137037230-j5yap6lbh",
+    "orderNumber": "037229365",
+    "trackingCode": "T23WCWV8",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:03:57.230Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:03:57.230Z",
+    "updatedAt": "2025-08-14T02:03:57.230Z",
+    "estimatedDelivery": "2025-09-18T02:03:57.230Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137084753-y9v7tc05k",
+    "orderNumber": "084753864",
+    "trackingCode": "49QC09H6",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:04:44.753Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:04:44.753Z",
+    "updatedAt": "2025-08-14T02:04:44.753Z",
+    "estimatedDelivery": "2025-09-18T02:04:44.753Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137103061-tarodpk6m",
+    "orderNumber": "103061030",
+    "trackingCode": "0B5ZLOVY",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:05:03.061Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:05:03.061Z",
+    "updatedAt": "2025-08-14T02:05:03.061Z",
+    "estimatedDelivery": "2025-09-18T02:05:03.061Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137116196-wider3cpu",
+    "orderNumber": "116196550",
+    "trackingCode": "64VB7BUV",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:05:16.196Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:05:16.196Z",
+    "updatedAt": "2025-08-14T02:05:16.196Z",
+    "estimatedDelivery": "2025-09-18T02:05:16.196Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137145581-j8vgnv2ln",
+    "orderNumber": "145581681",
+    "trackingCode": "9BPPYGP0",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:05:45.581Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:05:45.581Z",
+    "updatedAt": "2025-08-14T02:05:45.581Z",
+    "estimatedDelivery": "2025-09-18T02:05:45.581Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137161438-65la3t4rs",
+    "orderNumber": "161438095",
+    "trackingCode": "UM2L62MT",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:06:01.438Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:06:01.438Z",
+    "updatedAt": "2025-08-14T02:06:01.438Z",
+    "estimatedDelivery": "2025-09-18T02:06:01.438Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137199155-sjfoql0ur",
+    "orderNumber": "199155044",
+    "trackingCode": "0VEEE508",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:06:39.155Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:06:39.155Z",
+    "updatedAt": "2025-08-14T02:06:39.155Z",
+    "estimatedDelivery": "2025-09-18T02:06:39.155Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137282842-n34yib446",
+    "orderNumber": "282842452",
+    "trackingCode": "S74DLGHW",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:08:02.842Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:08:02.842Z",
+    "updatedAt": "2025-08-14T02:08:02.842Z",
+    "estimatedDelivery": "2025-09-18T02:08:02.842Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137300926-xtq0dagly",
+    "orderNumber": "300926275",
+    "trackingCode": "HOICXGHH",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:08:20.926Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:08:20.926Z",
+    "updatedAt": "2025-08-14T02:08:20.926Z",
+    "estimatedDelivery": "2025-09-18T02:08:20.926Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137312517-l9ntw63uu",
+    "orderNumber": "312517431",
+    "trackingCode": "Z8R1AAIG",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:08:32.517Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:08:32.517Z",
+    "updatedAt": "2025-08-14T02:08:32.517Z",
+    "estimatedDelivery": "2025-09-18T02:08:32.517Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137481146-bp5rpbb9z",
+    "orderNumber": "481146093",
+    "trackingCode": "XNQ3NZ91",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:11:21.146Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:11:21.146Z",
+    "updatedAt": "2025-08-14T02:11:21.146Z",
+    "estimatedDelivery": "2025-09-18T02:11:21.146Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137590918-hdi9la155",
+    "orderNumber": "590918359",
+    "trackingCode": "98LI4FZV",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:13:10.918Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:13:10.918Z",
+    "updatedAt": "2025-08-14T02:13:10.918Z",
+    "estimatedDelivery": "2025-09-18T02:13:10.918Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137656447-tibb7kd61",
+    "orderNumber": "656447964",
+    "trackingCode": "JZ2HOZVY",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:14:16.447Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:14:16.447Z",
+    "updatedAt": "2025-08-14T02:14:16.447Z",
+    "estimatedDelivery": "2025-09-18T02:14:16.447Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137753470-g091raimb",
+    "orderNumber": "753470177",
+    "trackingCode": "0POYLRV1",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:15:53.470Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:15:53.470Z",
+    "updatedAt": "2025-08-14T02:15:53.470Z",
+    "estimatedDelivery": "2025-09-18T02:15:53.470Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137777959-g9f5hsnck",
+    "orderNumber": "777959044",
+    "trackingCode": "2A53XQ2P",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:16:17.959Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:16:17.959Z",
+    "updatedAt": "2025-08-14T02:16:17.959Z",
+    "estimatedDelivery": "2025-09-18T02:16:17.959Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137798013-7jaw4050v",
+    "orderNumber": "798013734",
+    "trackingCode": "8UOLJ5VD",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:16:38.013Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:16:38.013Z",
+    "updatedAt": "2025-08-14T02:16:38.013Z",
+    "estimatedDelivery": "2025-09-18T02:16:38.013Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137816589-ep1wwpc7i",
+    "orderNumber": "816589047",
+    "trackingCode": "TMTOW0BS",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:16:56.589Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:16:56.589Z",
+    "updatedAt": "2025-08-14T02:16:56.589Z",
+    "estimatedDelivery": "2025-09-18T02:16:56.589Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137865199-ffpzkuh51",
+    "orderNumber": "865199098",
+    "trackingCode": "RMOD0ODF",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:17:45.199Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:17:45.199Z",
+    "updatedAt": "2025-08-14T02:17:45.199Z",
+    "estimatedDelivery": "2025-09-18T02:17:45.199Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137884471-zigko3xcl",
+    "orderNumber": "884471282",
+    "trackingCode": "UE79AX8S",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:18:04.471Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:18:04.471Z",
+    "updatedAt": "2025-08-14T02:18:04.471Z",
+    "estimatedDelivery": "2025-09-18T02:18:04.471Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137896981-93fiyi5mx",
+    "orderNumber": "896981199",
+    "trackingCode": "AEKSBCZJ",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:18:16.981Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:18:16.981Z",
+    "updatedAt": "2025-08-14T02:18:16.981Z",
+    "estimatedDelivery": "2025-09-18T02:18:16.981Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755137986101-potlwlgqk",
+    "orderNumber": "986101929",
+    "trackingCode": "I8JUN08D",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:19:46.101Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:19:46.101Z",
+    "updatedAt": "2025-08-14T02:19:46.101Z",
+    "estimatedDelivery": "2025-09-18T02:19:46.101Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138020004-q0d99dt0u",
+    "orderNumber": "020004007",
+    "trackingCode": "OJQF0QDD",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:20:20.004Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:20:20.004Z",
+    "updatedAt": "2025-08-14T02:20:20.004Z",
+    "estimatedDelivery": "2025-09-18T02:20:20.004Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138031845-7wx16kgzu",
+    "orderNumber": "031845599",
+    "trackingCode": "Y04QSCEX",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:20:31.845Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:20:31.845Z",
+    "updatedAt": "2025-08-14T02:20:31.845Z",
+    "estimatedDelivery": "2025-09-18T02:20:31.845Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138067007-6q7i91mv2",
+    "orderNumber": "067007134",
+    "trackingCode": "U1IZO895",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:21:07.007Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:21:07.007Z",
+    "updatedAt": "2025-08-14T02:21:07.007Z",
+    "estimatedDelivery": "2025-09-18T02:21:07.007Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138185332-crzr6pagj",
+    "orderNumber": "185332221",
+    "trackingCode": "YCVZV1T3",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:23:05.332Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:23:05.332Z",
+    "updatedAt": "2025-08-14T02:23:05.332Z",
+    "estimatedDelivery": "2025-09-18T02:23:05.332Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138246230-7gbwj9nwn",
+    "orderNumber": "246230747",
+    "trackingCode": "8TZ638M6",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:24:06.230Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:24:06.230Z",
+    "updatedAt": "2025-08-14T02:24:06.230Z",
+    "estimatedDelivery": "2025-09-18T02:24:06.230Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138341183-sej6u76fp",
+    "orderNumber": "341182938",
+    "trackingCode": "CD9AXZZW",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:25:41.183Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:25:41.183Z",
+    "updatedAt": "2025-08-14T02:25:41.183Z",
+    "estimatedDelivery": "2025-09-18T02:25:41.183Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138404391-0lnuxvitw",
+    "orderNumber": "404391575",
+    "trackingCode": "3XKAG8OA",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:26:44.391Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:26:44.391Z",
+    "updatedAt": "2025-08-14T02:26:44.391Z",
+    "estimatedDelivery": "2025-09-18T02:26:44.391Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138428717-9csvo86ne",
+    "orderNumber": "428717405",
+    "trackingCode": "RDNN4WN3",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:27:08.717Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:27:08.717Z",
+    "updatedAt": "2025-08-14T02:27:08.717Z",
+    "estimatedDelivery": "2025-09-18T02:27:08.717Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138497604-ls1wjc6ru",
+    "orderNumber": "497604139",
+    "trackingCode": "J6XU2ZA2",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:28:17.604Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:28:17.604Z",
+    "updatedAt": "2025-08-14T02:28:17.604Z",
+    "estimatedDelivery": "2025-09-18T02:28:17.604Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138576510-mt1leqeul",
+    "orderNumber": "576510217",
+    "trackingCode": "9S83D3D6",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:29:36.510Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:29:36.510Z",
+    "updatedAt": "2025-08-14T02:29:36.510Z",
+    "estimatedDelivery": "2025-09-18T02:29:36.510Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138615062-kh94tjtme",
+    "orderNumber": "615062852",
+    "trackingCode": "A4SDWMT5",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:30:15.062Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:30:15.062Z",
+    "updatedAt": "2025-08-14T02:30:15.062Z",
+    "estimatedDelivery": "2025-09-18T02:30:15.062Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138637079-312jir2yd",
+    "orderNumber": "637079286",
+    "trackingCode": "CGDUNMCQ",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:30:37.079Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:30:37.079Z",
+    "updatedAt": "2025-08-14T02:30:37.079Z",
+    "estimatedDelivery": "2025-09-18T02:30:37.079Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138699599-4euxgkv9l",
+    "orderNumber": "699598564",
+    "trackingCode": "FZOLU7DJ",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:31:39.599Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:31:39.599Z",
+    "updatedAt": "2025-08-14T02:31:39.599Z",
+    "estimatedDelivery": "2025-09-18T02:31:39.599Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138794013-rhxgo2cp0",
+    "orderNumber": "794013749",
+    "trackingCode": "Q45J0S5L",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:33:14.013Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:33:14.013Z",
+    "updatedAt": "2025-08-14T02:33:14.013Z",
+    "estimatedDelivery": "2025-09-18T02:33:14.013Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138807940-0kanxj0js",
+    "orderNumber": "807940111",
+    "trackingCode": "3X0LA0BN",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:33:27.941Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:33:27.941Z",
+    "updatedAt": "2025-08-14T02:33:27.941Z",
+    "estimatedDelivery": "2025-09-18T02:33:27.941Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138837764-vcvi10bu8",
+    "orderNumber": "837764085",
+    "trackingCode": "67XUL8OF",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:33:57.764Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:33:57.764Z",
+    "updatedAt": "2025-08-14T02:33:57.764Z",
+    "estimatedDelivery": "2025-09-18T02:33:57.764Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138854821-5h3fiu25c",
+    "orderNumber": "854821365",
+    "trackingCode": "DWQH5F56",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:34:14.821Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:34:14.821Z",
+    "updatedAt": "2025-08-14T02:34:14.821Z",
+    "estimatedDelivery": "2025-09-18T02:34:14.821Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138868631-7rldcp0se",
+    "orderNumber": "868630636",
+    "trackingCode": "ETRQ29FK",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:34:28.631Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:34:28.631Z",
+    "updatedAt": "2025-08-14T02:34:28.631Z",
+    "estimatedDelivery": "2025-09-18T02:34:28.631Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138923862-d0gqsik3p",
+    "orderNumber": "923862516",
+    "trackingCode": "2062TDLC",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:35:23.862Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:35:23.862Z",
+    "updatedAt": "2025-08-14T02:35:23.862Z",
+    "estimatedDelivery": "2025-09-18T02:35:23.862Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138939880-gr2wceayy",
+    "orderNumber": "939880996",
+    "trackingCode": "DIOPO8W3",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:35:39.880Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:35:39.880Z",
+    "updatedAt": "2025-08-14T02:35:39.880Z",
+    "estimatedDelivery": "2025-09-18T02:35:39.880Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138955279-i9syzrcbu",
+    "orderNumber": "955279023",
+    "trackingCode": "IQBE14G5",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:35:55.279Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:35:55.279Z",
+    "updatedAt": "2025-08-14T02:35:55.279Z",
+    "estimatedDelivery": "2025-09-18T02:35:55.279Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755138989686-95twq7do6",
+    "orderNumber": "989686953",
+    "trackingCode": "JNYXG45V",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:36:29.686Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:36:29.686Z",
+    "updatedAt": "2025-08-14T02:36:29.686Z",
+    "estimatedDelivery": "2025-09-18T02:36:29.686Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139003423-xldlcje33",
+    "orderNumber": "003422737",
+    "trackingCode": "O9C6AULO",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:36:43.423Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:36:43.423Z",
+    "updatedAt": "2025-08-14T02:36:43.423Z",
+    "estimatedDelivery": "2025-09-18T02:36:43.423Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139047086-j6lpx2aw9",
+    "orderNumber": "047086808",
+    "trackingCode": "OODCWY5L",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:37:27.086Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:37:27.086Z",
+    "updatedAt": "2025-08-14T02:37:27.086Z",
+    "estimatedDelivery": "2025-09-18T02:37:27.086Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139059430-qmaty88l2",
+    "orderNumber": "059430636",
+    "trackingCode": "0SU3BHS4",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:37:39.430Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:37:39.430Z",
+    "updatedAt": "2025-08-14T02:37:39.430Z",
+    "estimatedDelivery": "2025-09-18T02:37:39.430Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139162296-t3xro9psw",
+    "orderNumber": "162296235",
+    "trackingCode": "JVHV8WR6",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:39:22.296Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:39:22.296Z",
+    "updatedAt": "2025-08-14T02:39:22.296Z",
+    "estimatedDelivery": "2025-09-18T02:39:22.296Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139204639-jb8xyld0j",
+    "orderNumber": "204639826",
+    "trackingCode": "EWB68UPW",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:40:04.639Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:40:04.639Z",
+    "updatedAt": "2025-08-14T02:40:04.639Z",
+    "estimatedDelivery": "2025-09-18T02:40:04.639Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139278070-mnrgl2w7g",
+    "orderNumber": "278070552",
+    "trackingCode": "QMYB2YRC",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:41:18.070Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:41:18.070Z",
+    "updatedAt": "2025-08-14T02:41:18.070Z",
+    "estimatedDelivery": "2025-09-18T02:41:18.070Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139309192-gapeg2j03",
+    "orderNumber": "309192428",
+    "trackingCode": "AOQSZQND",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:41:49.192Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:41:49.192Z",
+    "updatedAt": "2025-08-14T02:41:49.192Z",
+    "estimatedDelivery": "2025-09-18T02:41:49.192Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139396487-4i0ieora3",
+    "orderNumber": "396487395",
+    "trackingCode": "IA298AMV",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:43:16.487Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:43:16.487Z",
+    "updatedAt": "2025-08-14T02:43:16.487Z",
+    "estimatedDelivery": "2025-09-18T02:43:16.487Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139488613-0wwuruj21",
+    "orderNumber": "488613891",
+    "trackingCode": "CFURFCT5",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:44:48.613Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:44:48.613Z",
+    "updatedAt": "2025-08-14T02:44:48.613Z",
+    "estimatedDelivery": "2025-09-18T02:44:48.613Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139574207-r8ca6n2jx",
+    "orderNumber": "574207525",
+    "trackingCode": "IE9HR8SY",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:46:14.207Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:46:14.207Z",
+    "updatedAt": "2025-08-14T02:46:14.207Z",
+    "estimatedDelivery": "2025-09-18T02:46:14.207Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139669102-0tghmd5pp",
+    "orderNumber": "669102883",
+    "trackingCode": "9D5AYMRZ",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:47:49.102Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:47:49.102Z",
+    "updatedAt": "2025-08-14T02:47:49.102Z",
+    "estimatedDelivery": "2025-09-18T02:47:49.102Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139748383-4z0czzpx8",
+    "orderNumber": "748383859",
+    "trackingCode": "3JHXQ2Q9",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:49:08.383Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:49:08.383Z",
+    "updatedAt": "2025-08-14T02:49:08.383Z",
+    "estimatedDelivery": "2025-09-18T02:49:08.383Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139788878-41hon3yuz",
+    "orderNumber": "788878261",
+    "trackingCode": "S27FQ6KU",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:49:48.878Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:49:48.878Z",
+    "updatedAt": "2025-08-14T02:49:48.878Z",
+    "estimatedDelivery": "2025-09-18T02:49:48.878Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139867479-w3xhyc7ox",
+    "orderNumber": "867479835",
+    "trackingCode": "LJ37JVK5",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:51:07.479Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:51:07.479Z",
+    "updatedAt": "2025-08-14T02:51:07.479Z",
+    "estimatedDelivery": "2025-09-18T02:51:07.479Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139957030-hvbo8hrwh",
+    "orderNumber": "957030632",
+    "trackingCode": "XGQKI2RN",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:52:37.030Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:52:37.030Z",
+    "updatedAt": "2025-08-14T02:52:37.030Z",
+    "estimatedDelivery": "2025-09-18T02:52:37.030Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755139985454-3ox3kcqcp",
+    "orderNumber": "985454194",
+    "trackingCode": "GQFAE0Z8",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:53:05.454Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:53:05.454Z",
+    "updatedAt": "2025-08-14T02:53:05.454Z",
+    "estimatedDelivery": "2025-09-18T02:53:05.454Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140039471-4c32vvw6b",
+    "orderNumber": "039471951",
+    "trackingCode": "DINZ20A0",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:53:59.471Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:53:59.471Z",
+    "updatedAt": "2025-08-14T02:53:59.471Z",
+    "estimatedDelivery": "2025-09-18T02:53:59.471Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140056894-ywr0dnora",
+    "orderNumber": "056894159",
+    "trackingCode": "9BR0OI82",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:54:16.894Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:54:16.894Z",
+    "updatedAt": "2025-08-14T02:54:16.894Z",
+    "estimatedDelivery": "2025-09-18T02:54:16.894Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140070255-57roioz28",
+    "orderNumber": "070255336",
+    "trackingCode": "J9DEESX1",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:54:30.255Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:54:30.255Z",
+    "updatedAt": "2025-08-14T02:54:30.255Z",
+    "estimatedDelivery": "2025-09-18T02:54:30.255Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140084927-h66he8mlc",
+    "orderNumber": "084927763",
+    "trackingCode": "E5YUBT4K",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:54:44.927Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:54:44.927Z",
+    "updatedAt": "2025-08-14T02:54:44.927Z",
+    "estimatedDelivery": "2025-09-18T02:54:44.927Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140248783-tqp9hnwyj",
+    "orderNumber": "248783457",
+    "trackingCode": "CBIO6FQZ",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:57:28.783Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:57:28.783Z",
+    "updatedAt": "2025-08-14T02:57:28.783Z",
+    "estimatedDelivery": "2025-09-18T02:57:28.783Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140330048-fz4hq6rh3",
+    "orderNumber": "330048867",
+    "trackingCode": "XVLA98KR",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T02:58:50.048Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T02:58:50.048Z",
+    "updatedAt": "2025-08-14T02:58:50.048Z",
+    "estimatedDelivery": "2025-09-18T02:58:50.048Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140407647-4gi3c9ss0",
+    "orderNumber": "407647295",
+    "trackingCode": "ZRW7BYUG",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:00:07.647Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:00:07.647Z",
+    "updatedAt": "2025-08-14T03:00:07.647Z",
+    "estimatedDelivery": "2025-09-18T03:00:07.647Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140481158-jdszd3ipw",
+    "orderNumber": "481158367",
+    "trackingCode": "FBYAHBS1",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:01:21.158Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:01:21.158Z",
+    "updatedAt": "2025-08-14T03:01:21.158Z",
+    "estimatedDelivery": "2025-09-18T03:01:21.158Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140548823-vrue2d1jb",
+    "orderNumber": "548823640",
+    "trackingCode": "7H5ZOIGY",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:02:28.823Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:02:28.823Z",
+    "updatedAt": "2025-08-14T03:02:28.823Z",
+    "estimatedDelivery": "2025-09-18T03:02:28.823Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140632144-ar6qvd8v6",
+    "orderNumber": "632144176",
+    "trackingCode": "L1PHK0D5",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:03:52.144Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:03:52.144Z",
+    "updatedAt": "2025-08-14T03:03:52.144Z",
+    "estimatedDelivery": "2025-09-18T03:03:52.144Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140659022-gs8l3a2si",
+    "orderNumber": "659022811",
+    "trackingCode": "ZJLQ23UX",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:04:19.022Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:04:19.022Z",
+    "updatedAt": "2025-08-14T03:04:19.022Z",
+    "estimatedDelivery": "2025-09-18T03:04:19.022Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140677928-b7a1lne92",
+    "orderNumber": "677928648",
+    "trackingCode": "B5TJLL0O",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:04:37.928Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:04:37.928Z",
+    "updatedAt": "2025-08-14T03:04:37.928Z",
+    "estimatedDelivery": "2025-09-18T03:04:37.928Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140710479-y8pq843bn",
+    "orderNumber": "710479193",
+    "trackingCode": "1PYG6NBL",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:05:10.479Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:05:10.479Z",
+    "updatedAt": "2025-08-14T03:05:10.479Z",
+    "estimatedDelivery": "2025-09-18T03:05:10.479Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140758456-qv3vvedxu",
+    "orderNumber": "758456467",
+    "trackingCode": "1JPTW89N",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:05:58.456Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:05:58.456Z",
+    "updatedAt": "2025-08-14T03:05:58.456Z",
+    "estimatedDelivery": "2025-09-18T03:05:58.456Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140830271-dkeymw25s",
+    "orderNumber": "830271753",
+    "trackingCode": "X0VWHOSO",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:07:10.271Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:07:10.271Z",
+    "updatedAt": "2025-08-14T03:07:10.271Z",
+    "estimatedDelivery": "2025-09-18T03:07:10.271Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140901687-dt74veo5h",
+    "orderNumber": "901687327",
+    "trackingCode": "HQG0MTE9",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:08:21.687Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:08:21.687Z",
+    "updatedAt": "2025-08-14T03:08:21.687Z",
+    "estimatedDelivery": "2025-09-18T03:08:21.687Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755140930847-njahws8k0",
+    "orderNumber": "930847629",
+    "trackingCode": "Q1XWGDJ5",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:08:50.847Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:08:50.847Z",
+    "updatedAt": "2025-08-14T03:08:50.847Z",
+    "estimatedDelivery": "2025-09-18T03:08:50.847Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141049361-pvz6z9mf4",
+    "orderNumber": "049361493",
+    "trackingCode": "3DQUR0WQ",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:10:49.361Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:10:49.361Z",
+    "updatedAt": "2025-08-14T03:10:49.361Z",
+    "estimatedDelivery": "2025-09-18T03:10:49.361Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141075271-4mzpodd4o",
+    "orderNumber": "075270852",
+    "trackingCode": "03FR26OW",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:11:15.271Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:11:15.271Z",
+    "updatedAt": "2025-08-14T03:11:15.271Z",
+    "estimatedDelivery": "2025-09-18T03:11:15.271Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141120598-iowi0zf5p",
+    "orderNumber": "120598042",
+    "trackingCode": "DKI8U8O1",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:12:00.598Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:12:00.598Z",
+    "updatedAt": "2025-08-14T03:12:00.598Z",
+    "estimatedDelivery": "2025-09-18T03:12:00.598Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141147223-0yx6cxsjs",
+    "orderNumber": "147223400",
+    "trackingCode": "GHXP9GCS",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:12:27.223Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:12:27.223Z",
+    "updatedAt": "2025-08-14T03:12:27.223Z",
+    "estimatedDelivery": "2025-09-18T03:12:27.224Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141320122-sr908lr3i",
+    "orderNumber": "320122152",
+    "trackingCode": "ZQKM3ISW",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:15:20.122Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:15:20.122Z",
+    "updatedAt": "2025-08-14T03:15:20.122Z",
+    "estimatedDelivery": "2025-09-18T03:15:20.122Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141351384-j684eh121",
+    "orderNumber": "351384322",
+    "trackingCode": "PB0X00WK",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:15:51.384Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:15:51.384Z",
+    "updatedAt": "2025-08-14T03:15:51.384Z",
+    "estimatedDelivery": "2025-09-18T03:15:51.384Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141437864-6mcb84ixq",
+    "orderNumber": "437864997",
+    "trackingCode": "XCJGRPTS",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:17:17.864Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:17:17.864Z",
+    "updatedAt": "2025-08-14T03:17:17.864Z",
+    "estimatedDelivery": "2025-09-18T03:17:17.864Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141580458-jckthr2cw",
+    "orderNumber": "580458723",
+    "trackingCode": "G01GCAMZ",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755127937222-4km5946nj",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:19:40.458Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:19:40.458Z",
+    "updatedAt": "2025-08-14T03:19:40.458Z",
+    "estimatedDelivery": "2025-09-18T03:19:40.458Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141694294-413ob2qly",
+    "orderNumber": "694294744",
+    "trackingCode": "81URKS79",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:21:34.294Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:21:34.294Z",
+    "updatedAt": "2025-08-14T03:21:34.294Z",
+    "estimatedDelivery": "2025-09-18T03:21:34.294Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141801200-9d37rafm0",
+    "orderNumber": "801200076",
+    "trackingCode": "Q4WHC59W",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:23:21.200Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:23:21.200Z",
+    "updatedAt": "2025-08-14T03:23:21.200Z",
+    "estimatedDelivery": "2025-09-18T03:23:21.200Z",
+    "notes": []
+  },
+  {
+    "id": "order-1755141813536-ihyowjwfw",
+    "orderNumber": "813536874",
+    "trackingCode": "3VTZWXEX",
+    "customerInfo": {
+      "name": "ييي",
+      "phone": "0512345678"
+    },
+    "items": [
+      {
+        "id": "cart-1755137580712-dd3n1abkm",
+        "jacketConfig": {
+          "colors": {
+            "body": "#5C1A2B",
+            "sleeves": "#1B263B",
+            "trim": "#1B263B_stripes"
+          },
+          "materials": {
+            "body": "cotton",
+            "sleeves": "leather",
+            "trim": "cotton"
+          },
+          "size": "M",
+          "logos": [],
+          "texts": [],
+          "currentView": "front",
+          "totalPrice": 240,
+          "isCapturing": false,
+          "uploadedImages": [],
+          "pricingBreakdown": {
+            "basePrice": 240,
+            "additionalCosts": [],
+            "totalPrice": 240,
+            "appliedDiscount": null,
+            "finalPrice": 240
+          }
+        },
+        "quantity": 1,
+        "price": 240
+      }
+    ],
+    "totalPrice": 240,
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2025-08-14T03:23:33.536Z",
+        "note": "تم إنشاء الطلب",
+        "updatedBy": "system"
+      }
+    ],
+    "createdAt": "2025-08-14T03:23:33.536Z",
+    "updatedAt": "2025-08-14T03:23:33.536Z",
+    "estimatedDelivery": "2025-09-18T03:23:33.536Z",
+    "notes": []
   }
 ]
