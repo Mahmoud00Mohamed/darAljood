@@ -197,7 +197,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: "100%" }}
                 transition={{ type: "tween", duration: 0.3 }}
-                className="lg:hidden fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-50 overflow-y-auto"
+                className="lg:hidden fixed top-0 right-0 h-screen w-80 max-w-[85vw] bg-white shadow-xl z-50 overflow-y-auto"
               >
                 {/* Mobile Menu Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
@@ -219,7 +219,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
 
                 {/* Mobile Menu Items */}
-                <div className="p-4 space-y-2">
+                <div className="p-4 space-y-2 flex-1 overflow-y-auto">
                   {navigation.map((item) => {
                     const Icon = item.icon;
                     return (
@@ -246,7 +246,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
 
                 {/* Mobile Menu Footer */}
-                <div className="mt-auto p-4 border-t border-gray-200 bg-gray-50">
+                <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
                   <div className="flex items-center justify-center space-x-4 rtl:space-x-reverse">
                     {footerLinks.social.map((social) => {
                       const Icon = social.icon;

@@ -22,14 +22,35 @@ export const generateOrderPDFWithImages = async (
   });
 
   const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 15;
   const pxToMm = 0.264583;
 
-  // 🎯 إعدادات التحكم في السهم
-  const arrowLength = 10; // طول السهم
-  const arrowColor = { r: 128, g: 0, b: 128 }; // لون السهم
-  const arrowHeadColor = { r: 90, g: 0, b: 90 }; // لون رأس السهم
-  const arrowOffsetFromText = 3; // المسافة بين النص وبداية السهم
+  const arrowLength = 10;
+  const arrowColor = { r: 101, g: 61, b: 112 };
+  const arrowHeadColor = { r: 85, g: 51, b: 94 };
+  const arrowOffsetFromText = 3;
+  const purpleColor = { r: 101, g: 61, b: 112 };
+
+  const getColorNameInArabic = (colorHex: string): string => {
+    const colorMap: { [key: string]: string } = {
+      "#161618": "أسود",
+      "#1B263B": "كحلي",
+      "#5C1A2B": "عنابي",
+      "#F5F6F5": "أبيض",
+      "#E7D7C1": "بيج",
+      "#4A4A4A": "رمادي غامق",
+    };
+    return colorMap[colorHex] || "ملون";
+  };
+
+  const getMaterialNameInArabic = (material: string): string => {
+    const materialMap: { [key: string]: string } = {
+      cotton: "قطن",
+      leather: "جلد",
+    };
+    return materialMap[material] || material;
+  };
 
   let AmiriBold;
   try {
@@ -48,16 +69,16 @@ export const generateOrderPDFWithImages = async (
     pdf.setFont("Helvetica");
   }
 
-  // الشريط العلوي
   const topStripHeight = 40 * pxToMm;
   pdf.setFillColor(0, 0, 0);
+  // (101, 61, 112)
   pdf.rect(0, 0, pageWidth, topStripHeight, "F");
 
-  // شكل المقاس
   const sizeBgWidthTop = 150 * pxToMm;
   const sizeBgWidthBottom = 80 * pxToMm;
   const sizeBgHeight = 60 * pxToMm;
   pdf.setFillColor(0, 0, 0);
+  // (101, 61, 112)
   pdf.triangle(
     (pageWidth - sizeBgWidthTop) / 2,
     topStripHeight,
@@ -89,16 +110,14 @@ export const generateOrderPDFWithImages = async (
     align: "center",
   });
 
-  // مستطيل بنفسجي + Tracking No
   const rectWidth = 8;
   const rectHeight = 5;
-  const purpleColor = { r: 128, g: 0, b: 128 };
 
   const trackingNumberText = options.orderNumber
     ? `Tracking No. ${options.orderNumber}`
     : "Tracking No. 000000";
 
-  const topOffset = 20; // mm
+  const topOffset = 20;
   const textX = rectWidth + 2;
   const textY = topOffset;
 
@@ -109,7 +128,6 @@ export const generateOrderPDFWithImages = async (
   pdf.setFontSize(12);
   pdf.text(trackingNumberText, textX, textY, { baseline: "middle" });
 
-  // إعداد الصور
   const imagesStartY = topStripHeight + sizeBgHeight + 50 * pxToMm;
   const imageSpacing = 5;
   const extraVerticalSpacing = 5;
@@ -161,7 +179,6 @@ export const generateOrderPDFWithImages = async (
           pdf.setTextColor(0, 0, 0);
           pdf.setFontSize(10);
 
-          // الكتف الأيسر → الجهة اليمنى
           const leftLabel = "الجهة اليمنى";
           const leftTextX = imagePositions[i].x + 20;
           const leftTextY = imagePositions[i].y - 5;
@@ -188,7 +205,6 @@ export const generateOrderPDFWithImages = async (
             "F"
           );
 
-          // الكتف الأيمن → الجهة اليسرى
           const rightLabel = "الجهة اليسرى";
           const rightTextX = imagePositions[i].x + imageWidth - 20;
           const rightTextY = imagePositions[i].y - 5;
@@ -215,12 +231,23 @@ export const generateOrderPDFWithImages = async (
             "F"
           );
 
-          // نص الواجهة الأمامية أسفل الصورة
           const labelWidth =
             (pdf.getStringUnitWidth(imagePositions[i].label) *
               pdf.internal.getFontSize()) /
             pdf.internal.scaleFactor;
           pdf.setTextColor(0, 0, 0);
+          pdf.text(
+            imagePositions[i].label,
+            imagePositions[i].x + (imageWidth - labelWidth) / 2,
+            imagePositions[i].y + imageHeight + 5
+          );
+        } else if (i === 2) {
+          const labelWidth =
+            (pdf.getStringUnitWidth(imagePositions[i].label) *
+              pdf.internal.getFontSize()) /
+            pdf.internal.scaleFactor;
+          pdf.setTextColor(0, 0, 0);
+          pdf.setFontSize(10);
           pdf.text(
             imagePositions[i].label,
             imagePositions[i].x + (imageWidth - labelWidth) / 2,
@@ -243,6 +270,74 @@ export const generateOrderPDFWithImages = async (
         console.error(`Error adding image ${i}:`, error);
       }
     }
+
+    const bodyColor =
+      options.cartItems[0]?.jacketConfig.colors.body || "#161618";
+    const bodyMaterial =
+      options.cartItems[0]?.jacketConfig.materials.body || "cotton";
+
+    const colorNameArabic = getColorNameInArabic(bodyColor);
+    const materialNameArabic = getMaterialNameInArabic(bodyMaterial);
+
+    const bodyInfoText = `الجسم ${materialNameArabic} لون ${colorNameArabic}`;
+
+    const centerX = pageWidth / 2;
+    const centerY = pageHeight / 1.6;
+
+    pdf.setFontSize(12);
+
+    const textParts = [
+      { text: colorNameArabic, color: purpleColor },
+      { text: " لون ", color: { r: 0, g: 0, b: 0 } },
+      { text: materialNameArabic + " ", color: purpleColor },
+      { text: "الجسم", color: { r: 0, g: 0, b: 0 } },
+    ];
+
+    let currentX =
+      centerX -
+      (pdf.getStringUnitWidth(bodyInfoText) * pdf.internal.getFontSize()) /
+        (2 * pdf.internal.scaleFactor);
+    textParts.forEach((part) => {
+      pdf.setTextColor(part.color.r, part.color.g, part.color.b);
+      pdf.text(part.text, currentX, centerY);
+      currentX +=
+        (pdf.getStringUnitWidth(part.text) * pdf.internal.getFontSize()) /
+        pdf.internal.scaleFactor;
+    });
+
+    const arrowStartX = centerX;
+    const arrowStartY = centerY + 3;
+    const verticalDistance = 50 * pxToMm;
+    const bendPointX = arrowStartX;
+    const bendPointY = arrowStartY + verticalDistance;
+
+    const angle = 145 * (Math.PI / 180);
+    const diagonalLength = 36;
+
+    const arrowEndX = bendPointX + Math.cos(angle) * diagonalLength;
+    const arrowEndY = bendPointY + Math.sin(angle) * diagonalLength;
+
+    pdf.setDrawColor(arrowColor.r, arrowColor.g, arrowColor.b);
+    pdf.setLineWidth(0.5);
+    pdf.line(arrowStartX, arrowStartY, bendPointX, bendPointY);
+    pdf.line(bendPointX, bendPointY, arrowEndX, arrowEndY);
+
+    const arrowHeadSize = 5;
+    pdf.setFillColor(arrowHeadColor.r, arrowHeadColor.g, arrowHeadColor.b);
+    const arrowHeadAdvance = 2;
+    const arrowTipX = arrowEndX + Math.cos(angle) * arrowHeadAdvance;
+    const arrowTipY = arrowEndY + Math.sin(angle) * arrowHeadAdvance;
+
+    const headAngle1 = angle + Math.PI / 6;
+    const headAngle2 = angle - Math.PI / 6;
+
+    const head1X = arrowTipX - Math.cos(headAngle1) * arrowHeadSize;
+    const head1Y = arrowTipY - Math.sin(headAngle1) * arrowHeadSize;
+
+    const head2X = arrowTipX - Math.cos(headAngle2) * arrowHeadSize;
+    const head2Y = arrowTipY - Math.sin(headAngle2) * arrowHeadSize;
+
+    pdf.triangle(arrowTipX, arrowTipY, head1X, head1Y, head2X, head2Y, "F");
   } else {
     pdf.setTextColor(100, 100, 100);
     pdf.setFontSize(12);
@@ -270,6 +365,89 @@ export const generateOrderPDFWithImages = async (
       );
     });
   }
+
+  const sleevesColor =
+    options.cartItems[0]?.jacketConfig.colors.sleeves || "#1B263B";
+  const sleevesMaterial =
+    options.cartItems[0]?.jacketConfig.materials.sleeves || "leather";
+
+  const sleevesColorNameArabic = getColorNameInArabic(sleevesColor);
+  const sleevesMaterialNameArabic = getMaterialNameInArabic(sleevesMaterial);
+
+  const sleevesInfoText = `الأكمام ${sleevesMaterialNameArabic} لون ${sleevesColorNameArabic}`;
+
+  const sleevesTextX = pageWidth / 2;
+  const sleevesTextY = pageHeight - 20;
+
+  pdf.setFontSize(12);
+
+  const sleevesTextParts = [
+    { text: sleevesColorNameArabic, color: purpleColor },
+    { text: " لون ", color: { r: 0, g: 0, b: 0 } },
+    { text: sleevesMaterialNameArabic + " ", color: purpleColor },
+    { text: "الأكمام", color: { r: 0, g: 0, b: 0 } },
+  ];
+
+  let sleevesCurrentX =
+    sleevesTextX -
+    (pdf.getStringUnitWidth(sleevesInfoText) * pdf.internal.getFontSize()) /
+      (2 * pdf.internal.scaleFactor);
+  sleevesTextParts.forEach((part) => {
+    pdf.setTextColor(part.color.r, part.color.g, part.color.b);
+    pdf.text(part.text, sleevesCurrentX, sleevesTextY);
+    sleevesCurrentX +=
+      (pdf.getStringUnitWidth(part.text) * pdf.internal.getFontSize()) /
+      pdf.internal.scaleFactor;
+  });
+
+  const sleevesArrowSettings = {
+    verticalPartLength: 15,
+    diagonalAngleDegrees: 210,
+    diagonalLength: 43,
+    arrowHeadSize: 5,
+    arrowStartOffset: 5,
+  };
+
+  const sleevesArrowStartX = sleevesTextX;
+  const sleevesArrowStartY =
+    sleevesTextY - sleevesArrowSettings.arrowStartOffset;
+
+  const bendX = sleevesArrowStartX;
+  const bendY = sleevesArrowStartY - sleevesArrowSettings.verticalPartLength;
+
+  const angleRad = (sleevesArrowSettings.diagonalAngleDegrees * Math.PI) / 180;
+  const sleevesArrowEndX =
+    bendX + Math.cos(angleRad) * sleevesArrowSettings.diagonalLength;
+  const sleevesArrowEndY =
+    bendY + Math.sin(angleRad) * sleevesArrowSettings.diagonalLength;
+
+  pdf.setDrawColor(arrowColor.r, arrowColor.g, arrowColor.b);
+  pdf.setLineWidth(0.5);
+  pdf.line(sleevesArrowStartX, sleevesArrowStartY, bendX, bendY);
+  pdf.line(bendX, bendY, sleevesArrowEndX, sleevesArrowEndY);
+
+  const headSize = sleevesArrowSettings.arrowHeadSize;
+  pdf.setFillColor(arrowHeadColor.r, arrowHeadColor.g, arrowHeadColor.b);
+
+  const arrowHeadAdvance = 2;
+  const arrowTipX = sleevesArrowEndX + Math.cos(angleRad) * arrowHeadAdvance;
+  const arrowTipY = sleevesArrowEndY + Math.sin(angleRad) * arrowHeadAdvance;
+
+  const headAngle1 = angleRad + Math.PI / 6;
+  const headAngle2 = angleRad - Math.PI / 6;
+
+  const head1X = arrowTipX - Math.cos(headAngle1) * headSize;
+  const head1Y = arrowTipY - Math.sin(headAngle1) * headSize;
+
+  const head2X = arrowTipX - Math.cos(headAngle2) * headSize;
+  const head2Y = arrowTipY - Math.sin(headAngle2) * headSize;
+
+  pdf.triangle(arrowTipX, arrowTipY, head1X, head1Y, head2X, head2Y, "F");
+  // Footer
+  const footerHeight = 25 * pxToMm; // 20px
+  pdf.setFillColor(0, 0, 0); // نفس لون الهيدر الجديد
+  // (101, 61, 112)
+  pdf.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
 
   return pdf.output("blob");
 };
