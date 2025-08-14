@@ -575,7 +575,7 @@ const OrdersManagement: React.FC = () => {
                           className="text-purple-600 hover:text-purple-800 transition-colors"
                           title="تعديل الطلب"
                         >
-                          <Edit3 className="w-4 h-4" />
+                          <RefreshCw className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDownloadPDF(order)}

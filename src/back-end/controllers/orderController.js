@@ -30,12 +30,12 @@ export const createOrder = async (req, res) => {
       });
     }
 
-    // التحقق من صحة رقم الهاتف السعودي
-    const phoneRegex = /^(05|5|\+9665)[0-9]{8}$/;
+    const phoneRegex =
+      /^(05|5|\+9665|9665|\+966[0-9]|966[0-9]|\+66[0-9]|66[0-9])[0-9]{8,10}$/;
     if (!phoneRegex.test(customerInfo.phone.replace(/[\s()-]/g, ""))) {
       return res.status(400).json({
         success: false,
-        message: "رقم الهاتف غير صحيح. يجب أن يكون رقم سعودي صحيح",
+        message: "رقم الهاتف غير صحيح. يجب أن يكون رقم سعودي أو تايلندي صحيح",
         error: "INVALID_PHONE_NUMBER",
       });
     }
