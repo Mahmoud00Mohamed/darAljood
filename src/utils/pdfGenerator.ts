@@ -73,6 +73,22 @@ export const generateOrderPDFWithImages = async (
   pdf.setFillColor(0, 0, 0);
   // (101, 61, 112)
   pdf.rect(0, 0, pageWidth, topStripHeight, "F");
+  // النصوص داخل الشريط الأسود
+  pdf.setTextColor(255, 255, 255);
+
+  // متجر دار الجود على اليمين
+  pdf.setFontSize(16); // أكبر ليكون بارز
+  pdf.text("متجر دار الجود", pageWidth - margin, topStripHeight / 2, {
+    align: "right",
+    baseline: "middle",
+  });
+
+  // رقم الواتساب على اليسار
+  pdf.setFontSize(14); // كبير وواضح
+  pdf.text("0536065766 واتساب", margin, topStripHeight / 2, {
+    align: "left",
+    baseline: "middle",
+  });
 
   const sizeBgWidthTop = 150 * pxToMm;
   const sizeBgWidthBottom = 80 * pxToMm;
@@ -444,10 +460,22 @@ export const generateOrderPDFWithImages = async (
 
   pdf.triangle(arrowTipX, arrowTipY, head1X, head1Y, head2X, head2Y, "F");
   // Footer
-  const footerHeight = 25 * pxToMm; // 20px
-  pdf.setFillColor(0, 0, 0); // نفس لون الهيدر الجديد
-  // (101, 61, 112)
+  const footerHeight = 40 * pxToMm; // 40px
+  pdf.setFillColor(0, 0, 0);
   pdf.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
+
+  // نص الفوتر باللون الأبيض
+  pdf.setTextColor(255, 255, 255);
+
+  // النص في المنتصف فقط
+  const footerTextCenter = "شكرًا لاختيارك دار الجود… وفخورين بتخرجك";
+  const footerTextY = pageHeight - footerHeight / 2;
+
+  pdf.setFontSize(12);
+  pdf.text(footerTextCenter, pageWidth / 2, footerTextY, {
+    align: "center",
+    baseline: "middle",
+  });
 
   return pdf.output("blob");
 };
