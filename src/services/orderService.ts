@@ -117,6 +117,11 @@ export interface OrderStats {
   averageOrderValue: number;
   thisMonth: number;
   lastMonth: number;
+  pendingReview: {
+    total: number;
+    totalValue: number;
+    thisMonth: number;
+  };
 }
 
 export interface CreateOrderRequest {
@@ -251,6 +256,7 @@ class OrderService {
       search?: string;
       dateFrom?: string;
       dateTo?: string;
+      includePending?: boolean;
     } = {}
   ): Promise<{
     orders: OrderData[];
@@ -270,6 +276,8 @@ class OrderService {
       if (options.search) params.set("search", options.search);
       if (options.dateFrom) params.set("dateFrom", options.dateFrom);
       if (options.dateTo) params.set("dateTo", options.dateTo);
+      if (options.includePending !== undefined)
+        params.set("includePending", options.includePending.toString());
 
       const url = `${this.baseUrl}?${params.toString()}`;
 

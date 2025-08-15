@@ -16,7 +16,6 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
-  TrendingUp,
   DollarSign,
   Download,
   ChevronLeft,
@@ -44,14 +43,19 @@ import { JacketState, JacketMaterial } from "../../context/JacketContext";
 const OrdersManagement: React.FC = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<OrderData[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<OrderData[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pendingCurrentPage, setPendingCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [pendingTotalPages, setPendingTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
+  const [totalPendingOrders, setTotalPendingOrders] = useState(0);
   const [ordersPerPage] = useState(10); // عدد الطلبات في كل صفحة
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<OrderData | null>(null);
@@ -63,6 +67,9 @@ const OrdersManagement: React.FC = () => {
     "capturing" | "generating" | "completed"
   >("capturing");
   const [showPdfLoadingOverlay, setShowPdfLoadingOverlay] = useState(false);
+  const [activeTab, setActiveTab] = useState<"confirmed" | "pending">(
+    "confirmed"
+  );
 
   const jacketImageCaptureRef = React.useRef<JacketImageCaptureRef>(null);
   const orderDetailsModal = useModal();
@@ -93,6 +100,7 @@ const OrdersManagement: React.FC = () => {
         limit: ordersPerPage,
         search: searchTerm,
         status: statusFilter,
+        includePending: false, // استبعاد الطلبات قيد المراجعة
       });
       setOrders(result.orders);
       setTotalPages(result.pagination.totalPages);
@@ -101,6 +109,33 @@ const OrdersManagement: React.FC = () => {
       setError(error instanceof Error ? error.message : "فشل في تحميل الطلبات");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadPendingOrders = async () => {
+    setIsLoadingPending(true);
+    setError("");
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      const result = await orderService.getAllOrders(token, {
+        page: pendingCurrentPage,
+        limit: ordersPerPage,
+        status: "pending", // فقط الطلبات قيد المراجعة
+        includePending: true,
+      });
+      setPendingOrders(result.orders);
+      setPendingTotalPages(result.pagination.totalPages);
+      setTotalPendingOrders(result.pagination.totalOrders);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "فشل في تحميل الطلبات قيد المراجعة"
+      );
+    } finally {
+      setIsLoadingPending(false);
     }
   };
 
@@ -117,24 +152,43 @@ const OrdersManagement: React.FC = () => {
   };
 
   useEffect(() => {
-    loadOrders();
+    if (activeTab === "confirmed") {
+      loadOrders();
+    } else {
+      loadPendingOrders();
+    }
     loadStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  }, [currentPage, pendingCurrentPage, activeTab]);
   const handleSearch = () => {
-    setCurrentPage(1); // إعادة تعيين الصفحة للأولى عند البحث
-    loadOrders();
+    if (activeTab === "confirmed") {
+      setCurrentPage(1); // إعادة تعيين الصفحة للأولى عند البحث
+      loadOrders();
+    } else {
+      setPendingCurrentPage(1);
+      loadPendingOrders();
+    }
   };
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
+    if (activeTab === "confirmed" && page >= 1 && page <= totalPages) {
       setCurrentPage(page);
+    } else if (
+      activeTab === "pending" &&
+      page >= 1 &&
+      page <= pendingTotalPages
+    ) {
+      setPendingCurrentPage(page);
     }
   };
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilter(status);
-    setCurrentPage(1); // إعادة تعيين الصفحة للأولى عند تغيير الفلتر
+    if (activeTab === "confirmed") {
+      setCurrentPage(1); // إعادة تعيين الصفحة للأولى عند تغيير الفلتر
+    } else {
+      setPendingCurrentPage(1);
+    }
   };
   const handleViewOrder = (order: OrderData) => {
     setSelectedOrder(order);
@@ -149,16 +203,36 @@ const OrdersManagement: React.FC = () => {
       if (!token) throw new Error("رمز المصادقة غير موجود");
 
       await orderService.deleteOrder(orderToDelete.id, token);
-      setOrders((prev) =>
-        prev.filter((order) => order.id !== orderToDelete.id)
-      );
+
+      // حذف من القائمة المناسبة
+      if (orderToDelete.status === "pending") {
+        setPendingOrders((prev) =>
+          prev.filter((order) => order.id !== orderToDelete.id)
+        );
+      } else {
+        setOrders((prev) =>
+          prev.filter((order) => order.id !== orderToDelete.id)
+        );
+      }
+
       await loadStats();
 
       // إذا كانت الصفحة الحالية فارغة بعد الحذف، انتقل للصفحة السابقة
-      if (orders.length === 1 && currentPage > 1) {
+      if (activeTab === "confirmed" && orders.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
+      } else if (
+        activeTab === "pending" &&
+        pendingOrders.length === 1 &&
+        pendingCurrentPage > 1
+      ) {
+        setPendingCurrentPage(pendingCurrentPage - 1);
       } else {
-        loadOrders(); // إعادة تحميل الطلبات لتحديث العدد
+        // إعادة تحميل الطلبات لتحديث العدد
+        if (activeTab === "confirmed") {
+          loadOrders();
+        } else {
+          loadPendingOrders();
+        }
       }
 
       deleteOrderModal.closeModal();
@@ -183,11 +257,33 @@ const OrdersManagement: React.FC = () => {
         token
       );
 
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.id === selectedOrder.id ? updatedOrder : order
-        )
-      );
+      // إذا تم تأكيد طلب كان قيد المراجعة، انقله من قائمة المراجعة إلى الطلبات المؤكدة
+      if (selectedOrder.status === "pending" && newStatus === "confirmed") {
+        // إزالة من قائمة المراجعة
+        setPendingOrders((prev) =>
+          prev.filter((order) => order.id !== selectedOrder.id)
+        );
+        // إضافة إلى الطلبات المؤكدة (سيتم تحديثها في التحميل التالي)
+        if (activeTab === "confirmed") {
+          loadOrders();
+        }
+      } else {
+        // تحديث في القائمة المناسبة
+        if (selectedOrder.status === "pending") {
+          setPendingOrders((prev) =>
+            prev.map((order) =>
+              order.id === selectedOrder.id ? updatedOrder : order
+            )
+          );
+        } else {
+          setOrders((prev) =>
+            prev.map((order) =>
+              order.id === selectedOrder.id ? updatedOrder : order
+            )
+          );
+        }
+      }
+
       setSelectedOrder(updatedOrder);
       await loadStats();
 
@@ -359,38 +455,48 @@ const OrdersManagement: React.FC = () => {
   };
 
   // مكون Pagination
-  const PaginationComponent = () => {
-    if (totalPages <= 1) return null;
+  const PaginationComponent = ({
+    currentPageProp,
+    totalPagesProp,
+    totalOrdersProp,
+    onPageChange,
+  }: {
+    currentPageProp: number;
+    totalPagesProp: number;
+    totalOrdersProp: number;
+    onPageChange: (page: number) => void;
+  }) => {
+    if (totalPagesProp <= 1) return null;
 
     const getPageNumbers = () => {
       const pages = [];
       const maxVisiblePages = 5;
 
-      if (totalPages <= maxVisiblePages) {
-        for (let i = 1; i <= totalPages; i++) {
+      if (totalPagesProp <= maxVisiblePages) {
+        for (let i = 1; i <= totalPagesProp; i++) {
           pages.push(i);
         }
       } else {
-        if (currentPage <= 3) {
+        if (currentPageProp <= 3) {
           for (let i = 1; i <= 4; i++) {
             pages.push(i);
           }
           pages.push("...");
-          pages.push(totalPages);
-        } else if (currentPage >= totalPages - 2) {
+          pages.push(totalPagesProp);
+        } else if (currentPageProp >= totalPagesProp - 2) {
           pages.push(1);
           pages.push("...");
-          for (let i = totalPages - 3; i <= totalPages; i++) {
+          for (let i = totalPagesProp - 3; i <= totalPagesProp; i++) {
             pages.push(i);
           }
         } else {
           pages.push(1);
           pages.push("...");
-          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          for (let i = currentPageProp - 1; i <= currentPageProp + 1; i++) {
             pages.push(i);
           }
           pages.push("...");
-          pages.push(totalPages);
+          pages.push(totalPagesProp);
         }
       }
 
@@ -401,17 +507,17 @@ const OrdersManagement: React.FC = () => {
       <div className="flex items-center justify-between mt-6 p-4 bg-gray-50 rounded-lg">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>
-            عرض {(currentPage - 1) * ordersPerPage + 1} إلى{" "}
-            {Math.min(currentPage * ordersPerPage, totalOrders)} من{" "}
-            {totalOrders} طلب
+            عرض {(currentPageProp - 1) * ordersPerPage + 1} إلى{" "}
+            {Math.min(currentPageProp * ordersPerPage, totalOrdersProp)} من{" "}
+            {totalOrdersProp} طلب
           </span>
         </div>
 
         <div className="flex items-center gap-1">
           {/* الذهاب للصفحة الأولى */}
           <button
-            onClick={() => handlePageChange(1)}
-            disabled={currentPage === 1}
+            onClick={() => onPageChange(1)}
+            disabled={currentPageProp === 1}
             className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="الصفحة الأولى"
           >
@@ -420,8 +526,8 @@ const OrdersManagement: React.FC = () => {
 
           {/* الصفحة السابقة */}
           <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            onClick={() => onPageChange(currentPageProp - 1)}
+            disabled={currentPageProp === 1}
             className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="الصفحة السابقة"
           >
@@ -436,9 +542,9 @@ const OrdersManagement: React.FC = () => {
                   <span className="px-3 py-2 text-gray-500">...</span>
                 ) : (
                   <button
-                    onClick={() => handlePageChange(page as number)}
+                    onClick={() => onPageChange(page as number)}
                     className={`px-3 py-2 rounded-lg border transition-colors ${
-                      currentPage === page
+                      currentPageProp === page
                         ? "bg-[#563660] text-white border-[#563660]"
                         : "border-gray-300 text-gray-600 hover:bg-gray-100"
                     }`}
@@ -452,8 +558,8 @@ const OrdersManagement: React.FC = () => {
 
           {/* الصفحة التالية */}
           <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(currentPageProp + 1)}
+            disabled={currentPageProp === totalPagesProp}
             className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="الصفحة التالية"
           >
@@ -462,8 +568,8 @@ const OrdersManagement: React.FC = () => {
 
           {/* الذهاب للصفحة الأخيرة */}
           <button
-            onClick={() => handlePageChange(totalPages)}
-            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(totalPagesProp)}
+            disabled={currentPageProp === totalPagesProp}
             className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="الصفحة الأخيرة"
           >
@@ -483,17 +589,17 @@ const OrdersManagement: React.FC = () => {
             إدارة الطلبات
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            عرض وإدارة جميع طلبات العملاء ({totalOrders} طلب)
+            عرض وإدارة جميع طلبات العملاء
           </p>
         </div>
 
         <div className="flex gap-2">
           <button
-            onClick={loadOrders}
-            disabled={isLoading}
+            onClick={activeTab === "confirmed" ? loadOrders : loadPendingOrders}
+            disabled={isLoading || isLoadingPending}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 text-sm"
           >
-            {isLoading ? (
+            {isLoading || isLoadingPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <RefreshCw className="w-4 h-4" />
@@ -509,10 +615,22 @@ const OrdersManagement: React.FC = () => {
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm">إجمالي الطلبات</p>
+                <p className="text-blue-100 text-sm">الطلبات المؤكدة</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <Package className="w-8 h-8 text-blue-200" />
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-amber-100 text-sm">قيد المراجعة</p>
+                <p className="text-2xl font-bold">
+                  {stats.pendingReview.total}
+                </p>
+              </div>
+              <Clock className="w-8 h-8 text-amber-200" />
             </div>
           </div>
 
@@ -537,18 +655,37 @@ const OrdersManagement: React.FC = () => {
               <Package className="w-8 h-8 text-purple-200" />
             </div>
           </div>
-
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm">هذا الشهر</p>
-                <p className="text-2xl font-bold">{stats.thisMonth}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-orange-200" />
-            </div>
-          </div>
         </div>
       )}
+
+      {/* تبويبات الطلبات */}
+      {/* تبويبات الطلبات */}
+      <div className="bg-white rounded-lg border border-gray-200 p-1">
+        <div className="flex flex-wrap gap-1">
+          <button
+            onClick={() => setActiveTab("confirmed")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+              activeTab === "confirmed"
+                ? "bg-[#563660] text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            <CheckCircle className="w-4 h-4" />
+            الطلبات المؤكدة ({totalOrders})
+          </button>
+          <button
+            onClick={() => setActiveTab("pending")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+              activeTab === "pending"
+                ? "bg-amber-500 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            قيد المراجعة ({totalPendingOrders})
+          </button>
+        </div>
+      </div>
 
       {/* أدوات البحث والفلترة */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -567,22 +704,26 @@ const OrdersManagement: React.FC = () => {
           </div>
 
           <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => handleStatusFilterChange(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-            >
-              <option value="">جميع الحالات</option>
-              {orderStatuses.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.name}
-                </option>
-              ))}
-            </select>
+            {activeTab === "confirmed" && (
+              <select
+                value={statusFilter}
+                onChange={(e) => handleStatusFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+              >
+                <option value="">جميع الحالات</option>
+                {orderStatuses
+                  .filter((status) => status.value !== "pending")
+                  .map((status) => (
+                    <option key={status.value} value={status.value}>
+                      {status.name}
+                    </option>
+                  ))}
+              </select>
+            )}
 
             <button
               onClick={handleSearch}
-              disabled={isLoading}
+              disabled={isLoading || isLoadingPending}
               className="flex items-center gap-2 px-4 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-all duration-200 disabled:opacity-50 text-sm"
             >
               <Filter className="w-4 h-4" />
@@ -620,15 +761,35 @@ const OrdersManagement: React.FC = () => {
       />
 
       {/* قائمة الطلبات */}
-      {isLoading ? (
+      {isLoading || isLoadingPending ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
-            <p className="text-gray-600 text-sm">جاري تحميل الطلبات...</p>
+            <p className="text-gray-600 text-sm">
+              جاري تحميل{" "}
+              {activeTab === "confirmed"
+                ? "الطلبات المؤكدة"
+                : "الطلبات قيد المراجعة"}
+              ...
+            </p>
           </div>
         </div>
-      ) : orders.length > 0 ? (
+      ) : (activeTab === "confirmed" ? orders : pendingOrders).length > 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden space-y-0">
+          <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-700">
+                {activeTab === "confirmed"
+                  ? `الطلبات المؤكدة (${totalOrders} طلب)`
+                  : `الطلبات قيد المراجعة (${totalPendingOrders} طلب)`}
+              </h3>
+              {activeTab === "pending" && (
+                <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium">
+                  لا تُحتسب في الإيرادات
+                </div>
+              )}
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -654,128 +815,158 @@ const OrdersManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {orders.map((order, index) => (
-                  <motion.tr
-                    key={order.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <Package className="w-4 h-4 text-[#563660] mr-2" />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {order.orderNumber}
-                          </div>
-                          <div className="text-xs text-gray-500 font-mono">
-                            {order.trackingCode}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <User className="w-4 h-4 text-gray-400 mr-2" />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {order.customerInfo.name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {order.customerInfo.phone}
+                {(activeTab === "confirmed" ? orders : pendingOrders).map(
+                  (order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Package className="w-4 h-4 text-[#563660] mr-2" />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {order.orderNumber}
+                            </div>
+                            <div className="text-xs text-gray-500 font-mono">
+                              {order.trackingCode}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          order.status
-                        )} bg-opacity-10 border`}
-                      >
-                        {getStatusIcon(order.status)}
-                        {order.statusName}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatPrice(order.totalPrice)}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(order.createdAt)}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleViewOrder(order)}
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
-                          title="عرض التفاصيل"
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <User className="w-4 h-4 text-gray-400 mr-2" />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {order.customerInfo.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {order.customerInfo.phone}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            order.status
+                          )} bg-opacity-10 border`}
                         >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() =>
-                            navigate(`/admin/orders/${order.id}/edit`)
-                          }
-                          className="text-purple-600 hover:text-purple-800 transition-colors"
-                          title="تعديل الطلب"
-                        >
-                          <RefreshCw className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDownloadPDF(order)}
-                          disabled={isGeneratingPDF}
-                          className="text-green-600 hover:text-green-800 transition-colors disabled:opacity-50"
-                          title="تحميل PDF"
-                        >
-                          {isGeneratingPDF ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Download className="w-4 h-4" />
+                          {getStatusIcon(order.status)}
+                          {order.statusName}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <div className="flex flex-col">
+                          <span>{formatPrice(order.totalPrice)}</span>
+                          {activeTab === "pending" && (
+                            <span className="text-xs text-amber-600">
+                              غير محتسب
+                            </span>
                           )}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setNewStatus(order.status);
-                            updateStatusModal.openModal();
-                          }}
-                          className="text-green-600 hover:text-green-800 transition-colors"
-                          title="تحديث الحالة"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setOrderToDelete(order);
-                            deleteOrderModal.openModal();
-                          }}
-                          className="text-red-600 hover:text-red-800 transition-colors"
-                          title="حذف"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(order.createdAt)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewOrder(order)}
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            title="عرض التفاصيل"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              navigate(`/admin/orders/${order.id}/edit`)
+                            }
+                            className="text-purple-600 hover:text-purple-800 transition-colors"
+                            title="تعديل الطلب"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDownloadPDF(order)}
+                            disabled={isGeneratingPDF}
+                            className="text-green-600 hover:text-green-800 transition-colors disabled:opacity-50"
+                            title="تحميل PDF"
+                          >
+                            {isGeneratingPDF ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setNewStatus(order.status);
+                              updateStatusModal.openModal();
+                            }}
+                            className="text-green-600 hover:text-green-800 transition-colors"
+                            title="تحديث الحالة"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setOrderToDelete(order);
+                              deleteOrderModal.openModal();
+                            }}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                            title="حذف"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>
 
           {/* Pagination */}
-          <PaginationComponent />
+          <PaginationComponent
+            currentPageProp={
+              activeTab === "confirmed" ? currentPage : pendingCurrentPage
+            }
+            totalPagesProp={
+              activeTab === "confirmed" ? totalPages : pendingTotalPages
+            }
+            totalOrdersProp={
+              activeTab === "confirmed" ? totalOrders : totalPendingOrders
+            }
+            onPageChange={handlePageChange}
+          />
         </div>
       ) : (
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
           <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            لا توجد طلبات
+            {activeTab === "confirmed"
+              ? "لا توجد طلبات مؤكدة"
+              : "لا توجد طلبات قيد المراجعة"}
           </h3>
           <p className="text-sm text-gray-600">
             {searchTerm || statusFilter
-              ? "لا توجد طلبات تطابق معايير البحث"
-              : "لم يتم إنشاء أي طلبات بعد"}
+              ? `لا توجد ${
+                  activeTab === "confirmed"
+                    ? "طلبات مؤكدة"
+                    : "طلبات قيد المراجعة"
+                } تطابق معايير البحث`
+              : `لا توجد ${
+                  activeTab === "confirmed"
+                    ? "طلبات مؤكدة"
+                    : "طلبات قيد المراجعة"
+                } حالياً`}
           </p>
         </div>
       )}
@@ -1028,6 +1219,25 @@ const OrdersManagement: React.FC = () => {
           options={updateStatusModal.options}
         >
           <div className="space-y-4">
+            {/* تنبيه خاص للطلبات قيد المراجعة */}
+            {selectedOrder.status === "pending" && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-amber-800 font-medium mb-1">
+                      ملاحظة مهمة
+                    </h4>
+                    <p className="text-amber-700 text-sm">
+                      هذا الطلب قيد المراجعة ولا يُحتسب ضمن الإيرادات أو
+                      الإحصائيات. عند تأكيده، سيتم نقله تلقائياً إلى الطلبات
+                      المؤكدة.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 الحالة الجديدة
@@ -1043,6 +1253,13 @@ const OrdersManagement: React.FC = () => {
                   </option>
                 ))}
               </select>
+              {selectedOrder.status === "pending" &&
+                newStatus === "confirmed" && (
+                  <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4" />
+                    سيتم نقل الطلب إلى الطلبات المؤكدة وإدراجه في الحسابات
+                  </p>
+                )}
             </div>
 
             <div>
@@ -1069,7 +1286,9 @@ const OrdersManagement: React.FC = () => {
                 ) : (
                   <CheckCircle className="w-4 h-4" />
                 )}
-                تحديث الحالة
+                {selectedOrder.status === "pending" && newStatus === "confirmed"
+                  ? "تأكيد الطلب ونقله"
+                  : "تحديث الحالة"}
               </button>
               <button
                 onClick={updateStatusModal.closeModal}

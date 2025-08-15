@@ -11813,17 +11813,23 @@
       }
     ],
     "totalPrice": 240,
-    "status": "pending",
+    "status": "confirmed",
     "statusHistory": [
       {
         "status": "pending",
         "timestamp": "2025-08-14T05:29:45.531Z",
         "note": "تم إنشاء الطلب",
         "updatedBy": "system"
+      },
+      {
+        "status": "confirmed",
+        "timestamp": "2025-08-15T03:06:40.108Z",
+        "note": "تم تأكيد الطلب ونقله إلى الطلبات الفعلية",
+        "updatedBy": "admin"
       }
     ],
     "createdAt": "2025-08-14T05:29:45.531Z",
-    "updatedAt": "2025-08-14T05:29:45.531Z",
+    "updatedAt": "2025-08-15T03:06:40.108Z",
     "estimatedDelivery": "2025-09-18T05:29:45.531Z",
     "notes": []
   },
@@ -11981,17 +11987,23 @@
       }
     ],
     "totalPrice": 240,
-    "status": "pending",
+    "status": "in_production",
     "statusHistory": [
       {
         "status": "pending",
         "timestamp": "2025-08-14T05:31:52.874Z",
         "note": "تم إنشاء الطلب",
         "updatedBy": "system"
+      },
+      {
+        "status": "in_production",
+        "timestamp": "2025-08-15T03:23:16.734Z",
+        "note": "قيد التنفيذ",
+        "updatedBy": "admin"
       }
     ],
     "createdAt": "2025-08-14T05:31:52.875Z",
-    "updatedAt": "2025-08-14T05:31:52.875Z",
+    "updatedAt": "2025-08-15T03:23:16.734Z",
     "estimatedDelivery": "2025-09-18T05:31:52.875Z",
     "notes": []
   },
@@ -12037,17 +12049,23 @@
       }
     ],
     "totalPrice": 240,
-    "status": "pending",
+    "status": "confirmed",
     "statusHistory": [
       {
         "status": "pending",
         "timestamp": "2025-08-14T05:32:23.619Z",
         "note": "تم إنشاء الطلب",
         "updatedBy": "system"
+      },
+      {
+        "status": "confirmed",
+        "timestamp": "2025-08-15T03:22:48.444Z",
+        "note": "تم التأكيد",
+        "updatedBy": "admin"
       }
     ],
     "createdAt": "2025-08-14T05:32:23.619Z",
-    "updatedAt": "2025-08-14T05:32:23.619Z",
+    "updatedAt": "2025-08-15T03:22:48.444Z",
     "estimatedDelivery": "2025-09-18T05:32:23.619Z",
     "notes": []
   },
@@ -12093,17 +12111,23 @@
       }
     ],
     "totalPrice": 240,
-    "status": "pending",
+    "status": "confirmed",
     "statusHistory": [
       {
         "status": "pending",
         "timestamp": "2025-08-14T05:32:44.507Z",
         "note": "تم إنشاء الطلب",
         "updatedBy": "system"
+      },
+      {
+        "status": "confirmed",
+        "timestamp": "2025-08-15T03:06:48.525Z",
+        "note": "تم تأكيد الطلب ونقله إلى الطلبات الفعلية",
+        "updatedBy": "admin"
       }
     ],
     "createdAt": "2025-08-14T05:32:44.507Z",
-    "updatedAt": "2025-08-14T05:32:44.507Z",
+    "updatedAt": "2025-08-15T03:06:48.525Z",
     "estimatedDelivery": "2025-09-18T05:32:44.507Z",
     "notes": []
   },
@@ -12149,17 +12173,23 @@
       }
     ],
     "totalPrice": 240,
-    "status": "pending",
+    "status": "confirmed",
     "statusHistory": [
       {
         "status": "pending",
         "timestamp": "2025-08-14T05:33:36.674Z",
         "note": "تم إنشاء الطلب",
         "updatedBy": "system"
+      },
+      {
+        "status": "confirmed",
+        "timestamp": "2025-08-15T03:06:28.529Z",
+        "note": "تم تأكيد الطلب ونقله إلى الطلبات الفعلية",
+        "updatedBy": "admin"
       }
     ],
     "createdAt": "2025-08-14T05:33:36.674Z",
-    "updatedAt": "2025-08-14T05:33:36.674Z",
+    "updatedAt": "2025-08-15T03:06:28.529Z",
     "estimatedDelivery": "2025-09-18T05:33:36.674Z",
     "notes": []
   }

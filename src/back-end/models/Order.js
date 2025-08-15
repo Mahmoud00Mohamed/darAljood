@@ -399,32 +399,63 @@ class OrderModel {
     try {
       const orders = await this.getOrders();
 
+      // فصل الطلبات قيد المراجعة عن باقي الطلبات
+      const pendingOrders = orders.filter(
+        (o) => o.status === ORDER_STATUSES.PENDING
+      );
+      const confirmedOrders = orders.filter(
+        (o) => o.status !== ORDER_STATUSES.PENDING
+      );
+
       const stats = {
-        total: orders.length,
+        total: confirmedOrders.length, // استبعاد الطلبات قيد المراجعة من العدد الإجمالي
         pending: orders.filter((o) => o.status === ORDER_STATUSES.PENDING)
           .length,
-        confirmed: orders.filter((o) => o.status === ORDER_STATUSES.CONFIRMED)
-          .length,
-        inProduction: orders.filter(
+        confirmed: confirmedOrders.filter(
+          (o) => o.status === ORDER_STATUSES.CONFIRMED
+        ).length,
+        inProduction: confirmedOrders.filter(
           (o) => o.status === ORDER_STATUSES.IN_PRODUCTION
         ).length,
-        shipped: orders.filter((o) => o.status === ORDER_STATUSES.SHIPPED)
-          .length,
-        delivered: orders.filter((o) => o.status === ORDER_STATUSES.DELIVERED)
-          .length,
-        cancelled: orders.filter((o) => o.status === ORDER_STATUSES.CANCELLED)
-          .length,
-        totalRevenue: orders
-          .filter((o) => o.status !== ORDER_STATUSES.CANCELLED)
+        shipped: confirmedOrders.filter(
+          (o) => o.status === ORDER_STATUSES.SHIPPED
+        ).length,
+        delivered: confirmedOrders.filter(
+          (o) => o.status === ORDER_STATUSES.DELIVERED
+        ).length,
+        cancelled: confirmedOrders.filter(
+          (o) => o.status === ORDER_STATUSES.CANCELLED
+        ).length,
+        totalRevenue: confirmedOrders
+          .filter(
+            (o) =>
+              o.status !== ORDER_STATUSES.CANCELLED &&
+              o.status !== ORDER_STATUSES.PENDING
+          )
           .reduce((sum, order) => sum + order.totalPrice, 0),
         averageOrderValue: 0,
         thisMonth: 0,
         lastMonth: 0,
+        // إضافة إحصائيات منفصلة للطلبات قيد المراجعة
+        pendingReview: {
+          total: pendingOrders.length,
+          totalValue: pendingOrders.reduce(
+            (sum, order) => sum + order.totalPrice,
+            0
+          ),
+          thisMonth: pendingOrders.filter(
+            (o) =>
+              new Date(o.createdAt) >=
+              new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+          ).length,
+        },
       };
 
       // حساب متوسط قيمة الطلب
-      const validOrders = orders.filter(
-        (o) => o.status !== ORDER_STATUSES.CANCELLED
+      const validOrders = confirmedOrders.filter(
+        (o) =>
+          o.status !== ORDER_STATUSES.CANCELLED &&
+          o.status !== ORDER_STATUSES.PENDING
       );
       stats.averageOrderValue =
         validOrders.length > 0 ? stats.totalRevenue / validOrders.length : 0;
@@ -435,11 +466,11 @@ class OrderModel {
       const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-      stats.thisMonth = orders.filter(
+      stats.thisMonth = confirmedOrders.filter(
         (o) => new Date(o.createdAt) >= thisMonthStart
       ).length;
 
-      stats.lastMonth = orders.filter(
+      stats.lastMonth = confirmedOrders.filter(
         (o) =>
           new Date(o.createdAt) >= lastMonthStart &&
           new Date(o.createdAt) <= lastMonthEnd

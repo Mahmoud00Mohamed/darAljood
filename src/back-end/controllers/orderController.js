@@ -168,6 +168,7 @@ export const getAllOrders = async (req, res) => {
       search,
       dateFrom,
       dateTo,
+      includePending = false, // معامل جديد لتحديد ما إذا كان يجب تضمين الطلبات قيد المراجعة
     } = req.query;
 
     // إعداد الفلاتر
@@ -179,10 +180,16 @@ export const getAllOrders = async (req, res) => {
     // البحث والفلترة
     const allOrders = await OrderModel.searchOrders(search || "", filters);
 
+    // فلترة الطلبات حسب معامل includePending
+    const filteredOrders =
+      includePending === "true"
+        ? allOrders
+        : allOrders.filter((order) => order.status !== "pending");
+
     // تطبيق pagination
     const startIndex = (parseInt(page) - 1) * parseInt(limit);
     const endIndex = startIndex + parseInt(limit);
-    const paginatedOrders = allOrders.slice(startIndex, endIndex);
+    const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
 
     // إضافة أسماء الحالات
     const ordersWithStatusNames = paginatedOrders.map((order) => ({
@@ -201,9 +208,9 @@ export const getAllOrders = async (req, res) => {
         orders: ordersWithStatusNames,
         pagination: {
           currentPage: parseInt(page),
-          totalPages: Math.ceil(allOrders.length / parseInt(limit)),
-          totalOrders: allOrders.length,
-          hasNext: endIndex < allOrders.length,
+          totalPages: Math.ceil(filteredOrders.length / parseInt(limit)),
+          totalOrders: filteredOrders.length,
+          hasNext: endIndex < filteredOrders.length,
           hasPrev: startIndex > 0,
         },
       },
