@@ -15,9 +15,6 @@ import {
   RefreshCw,
   Image as ImageIcon,
   Crop as CropIcon,
-  Move,
-  ZoomIn,
-  ZoomOut,
 } from "lucide-react";
 
 interface ImageCropModalProps {
@@ -48,16 +45,10 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   // استخدام النوع المُعرّف صراحة
   const [cropMode, setCropMode] = useState<CropMode>("flexible");
   const [isMobile, setIsMobile] = useState(false);
-  const [imageScale, setImageScale] = useState(1);
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [showInstructions, setShowInstructions] = useState(true);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen && imageFile) {
@@ -67,9 +58,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         setRotate(0);
         setCrop(undefined);
         setCompletedCrop(undefined);
-        setImageScale(1);
-        setImagePosition({ x: 0, y: 0 });
-        setShowInstructions(true);
       };
       reader.readAsDataURL(imageFile);
     }
@@ -87,100 +75,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // إخفاء التعليمات بعد 3 ثوان
-  useEffect(() => {
-    if (showInstructions && isMobile) {
-      const timer = setTimeout(() => {
-        setShowInstructions(false);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showInstructions, isMobile]);
-
-  // معالجة اللمس للهواتف
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1 && imageScale > 1) {
-      setIsDragging(true);
-      const touch = e.touches[0];
-      setDragStart({
-        x: touch.clientX - imagePosition.x,
-        y: touch.clientY - imagePosition.y,
-      });
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault(); // منع التمرير
-    
-    if (e.touches.length === 1 && isDragging && imageScale > 1) {
-      const touch = e.touches[0];
-      setImagePosition({
-        x: touch.clientX - dragStart.x,
-        y: touch.clientY - dragStart.y,
-      });
-    } else if (e.touches.length === 2) {
-      // Pinch to zoom
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const distance = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) +
-        Math.pow(touch2.clientY - touch1.clientY, 2)
-      );
-      
-      // حفظ المسافة الأولية إذا لم تكن محفوظة
-      if (!dragStart.initialDistance) {
-        setDragStart(prev => ({ ...prev, initialDistance: distance }));
-      } else {
-        const scaleChange = distance / dragStart.initialDistance;
-        const newScale = Math.max(0.5, Math.min(3, imageScale * scaleChange));
-        setImageScale(newScale);
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-    setDragStart({ x: 0, y: 0 });
-  };
-
-  // معالجة الماوس للكمبيوتر
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (imageScale > 1) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.clientX - imagePosition.x,
-        y: e.clientY - imagePosition.y,
-      });
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging && imageScale > 1) {
-      setImagePosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // أزرار التكبير والتصغير
-  const handleZoomIn = () => {
-    setImageScale(prev => Math.min(prev + 0.25, 3));
-  };
-
-  const handleZoomOut = () => {
-    setImageScale(prev => Math.max(prev - 0.25, 0.5));
-  };
-
-  // إعادة تعيين الصورة
-  const handleResetImage = () => {
-    setImageScale(1);
-    setImagePosition({ x: 0, y: 0 });
-  };
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
       const { width, height } = e.currentTarget;
@@ -198,7 +92,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         return;
       }
 
-      const cropSize = isMobile ? 85 : 80; // حجم أكبر للهواتف
+      const cropSize = 80; // حجم أكبر للاقتصاص المرن
       let targetAspectRatio;
 
       // تحديد نسبة العرض إلى الارتفاع حسب نمط الاقتصاص
@@ -228,8 +122,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   const handleCropModeChange = (mode: CropMode) => {
     setCropMode(mode);
-    setShowInstructions(true);
-    
     if (imgRef.current) {
       const { width, height } = imgRef.current;
 
@@ -256,11 +148,10 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         targetAspectRatio = aspectRatio; // حسب ما يحدده المطور
       }
 
-      const cropSize = isMobile ? 85 : 70;
       const newCrop = centerCrop(
         makeAspectCrop(
-          { unit: "%", width: cropSize },
-          targetAspectRatio || width / height,
+          { unit: "%", width: 70 },
+          targetAspectRatio || width / height, // إذا لم تكن هناك نسبة محددة، استخدم نسبة الصورة
           width,
           height
         ),
@@ -373,10 +264,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   const handleReset = () => {
     setRotate(0);
-    setImageScale(1);
-    setImagePosition({ x: 0, y: 0 });
     setCropMode("flexible");
-    setShowInstructions(true);
     if (imgRef.current) {
       onImageLoad({ currentTarget: imgRef.current } as React.SyntheticEvent<
         HTMLImageElement,
@@ -396,8 +284,8 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     }
 
     const containerRect = containerRef.current.getBoundingClientRect();
-    const containerWidth = containerRect.width - (isMobile ? 20 : 40);
-    const containerHeight = containerRect.height - (isMobile ? 20 : 40);
+    const containerWidth = containerRect.width - 40;
+    const containerHeight = containerRect.height - 40;
 
     return {
       maxWidth: `${containerWidth}px`,
@@ -416,14 +304,10 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className={`w-full h-full bg-white flex flex-col overflow-hidden shadow-2xl ${
-          isMobile ? "rounded-none" : "max-w-6xl max-h-[95vh] rounded-2xl"
-        }`}
+        className="w-full h-full max-w-6xl max-h-[95vh] bg-white flex flex-col overflow-hidden rounded-none md:rounded-2xl shadow-2xl"
       >
         {/* Header */}
-        <div className={`flex items-center justify-between border-b border-gray-200 bg-white flex-shrink-0 ${
-          isMobile ? "p-4 pb-3" : "p-4"
-        }`}>
+        <div className="flex items-center justify-between p-3 md:p-4 border-b border-gray-200 bg-white flex-shrink-0">
           <h3 className="text-sm md:text-base font-semibold text-gray-900">
             {title}
           </h3>
@@ -435,27 +319,8 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           </button>
         </div>
 
-        {/* تعليمات للهواتف */}
-        {isMobile && showInstructions && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-blue-50 border-b border-blue-200 p-3"
-          >
-            <div className="flex items-center gap-2 text-blue-800">
-              <Move className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                اسحب لتحريك • اقرص للتكبير • اسحب الزوايا للقص
-              </span>
-            </div>
-          </motion.div>
-        )}
-
         {/* Controls */}
-        <div className={`bg-gray-50 border-b border-gray-200 flex-shrink-0 ${
-          isMobile ? "p-3" : "p-4"
-        }`}>
+        <div className="p-3 md:p-4 bg-gray-50 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between gap-2 md:gap-4 flex-wrap">
             {/* نمط الاقتطاع */}
             <div className="flex gap-1 bg-white rounded-lg p-1 border shadow-sm">
@@ -496,30 +361,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
             {/* أدوات إضافية */}
             <div className="flex gap-1 md:gap-2">
-              {/* أزرار التكبير للهواتف */}
-              {isMobile && (
-                <>
-                  <button
-                    onClick={handleZoomOut}
-                    disabled={imageScale <= 0.5}
-                    className="p-1.5 bg-white border text-gray-600 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    <ZoomOut className="w-3 h-3" />
-                  </button>
-                  <div className="flex items-center px-2 bg-white border rounded-lg">
-                    <span className="text-xs font-medium text-gray-700">
-                      {Math.round(imageScale * 100)}%
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleZoomIn}
-                    disabled={imageScale >= 3}
-                    className="p-1.5 bg-white border text-gray-600 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    <ZoomIn className="w-3 h-3" />
-                  </button>
-                </>
-              )}
               <button
                 onClick={() => setRotate((rotate + 90) % 360)}
                 className="p-1.5 md:p-2 bg-white border text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
@@ -537,35 +378,13 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         </div>
 
         {/* منطقة الصورة الرئيسية */}
-        <div 
-          className="flex-1 flex items-center justify-center bg-gray-100 relative overflow-hidden"
-          style={{
-            touchAction: "none", // منع التمرير الافتراضي
-          }}
-        >
+        <div className="flex-1 flex items-center justify-center bg-gray-100 relative overflow-hidden">
           {imageSrc && (
             <div
               ref={containerRef}
-              className={`relative w-full h-full flex items-center justify-center ${
-                isMobile ? "p-2" : "p-4"
-              }`}
+              className="relative w-full h-full flex items-center justify-center p-2 md:p-4"
             >
-              <div 
-                ref={imageContainerRef}
-                className={`relative bg-white shadow-lg overflow-hidden border-2 border-gray-300 max-w-full max-h-full flex items-center justify-center ${
-                  isMobile ? "rounded-lg" : "rounded-lg"
-                }`}
-                style={{
-                  cursor: imageScale > 1 ? (isDragging ? "grabbing" : "grab") : "default",
-                }}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-              >
+              <div className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-300 max-w-full max-h-full flex items-center justify-center">
                 {cropMode === "full" ? (
                   <img
                     ref={imgRef}
@@ -573,12 +392,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                     src={imageSrc}
                     style={{
                       ...getImageDisplayStyle(),
-                      transform: `rotate(${rotate}deg) scale(${imageScale}) translate(${imagePosition.x / imageScale}px, ${imagePosition.y / imageScale}px)`,
+                      transform: `rotate(${rotate}deg)`,
                       userSelect: "none",
                       WebkitUserSelect: "none",
                       display: "block",
                       margin: "auto",
-                      transition: isDragging ? "none" : "transform 0.2s ease",
                     }}
                     onLoad={onImageLoad}
                     onContextMenu={(e) => e.preventDefault()}
@@ -601,26 +419,18 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                       }}
                       ruleOfThirds={true}
                       keepSelection={true}
-                      minWidth={isMobile ? 80 : 50} // حد أدنى أكبر للهواتف
-                      minHeight={isMobile ? 80 : 50}
+                      minWidth={50} // حد أدنى أكبر للهواتف
+                      minHeight={50}
                       // إعدادات محسنة للهواتف
                       disabled={false}
                       locked={false}
                       renderSelectionAddon={() => (
                         <div className="absolute inset-0 pointer-events-none">
                           {/* مقابض الزوايا - دائماً موجودة */}
-                          <div className={`absolute -top-2 -left-2 bg-[#563660] border-2 border-white rounded-full shadow-lg ${
-                            isMobile ? "w-8 h-8" : "w-6 h-6"
-                          }`}></div>
-                          <div className={`absolute -top-2 -right-2 bg-[#563660] border-2 border-white rounded-full shadow-lg ${
-                            isMobile ? "w-8 h-8" : "w-6 h-6"
-                          }`}></div>
-                          <div className={`absolute -bottom-2 -left-2 bg-[#563660] border-2 border-white rounded-full shadow-lg ${
-                            isMobile ? "w-8 h-8" : "w-6 h-6"
-                          }`}></div>
-                          <div className={`absolute -bottom-2 -right-2 bg-[#563660] border-2 border-white rounded-full shadow-lg ${
-                            isMobile ? "w-8 h-8" : "w-6 h-6"
-                          }`}></div>
+                          <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
+                          <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
                           {/* مقابض جانبية - تظهر فقط في أجهزة الكمبيوتر وليس في الاقتصاص الدائري */}
                           {!isMobile && cropMode !== "circle" && (
                             <>
@@ -639,12 +449,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                         src={imageSrc}
                         style={{
                           ...getImageDisplayStyle(),
-                          transform: `rotate(${rotate}deg) scale(${imageScale}) translate(${imagePosition.x / imageScale}px, ${imagePosition.y / imageScale}px)`,
+                          transform: `rotate(${rotate}deg)`,
                           userSelect: "none",
                           WebkitUserSelect: "none",
                           display: "block",
                           margin: "auto",
-                          transition: isDragging ? "none" : "transform 0.2s ease",
                         }}
                         onLoad={onImageLoad}
                         onContextMenu={(e) => e.preventDefault()}
@@ -658,32 +467,15 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
           )}
         </div>
 
-        {/* أدوات التحكم الإضافية للهواتف */}
-        {isMobile && imageScale > 1 && (
-          <div className="bg-white border-t border-gray-200 p-3 flex items-center justify-center gap-4">
-            <button
-              onClick={handleResetImage}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-            >
-              <RefreshCw className="w-4 h-4" />
-              إعادة تعيين العرض
-            </button>
-          </div>
-        )}
-
         {/* أزرار الإجراءات */}
-        <div className={`bg-white border-t border-gray-200 flex-shrink-0 ${
-          isMobile ? "p-4" : "p-4"
-        }`}>
+        <div className="p-3 md:p-4 bg-white border-t border-gray-200 flex-shrink-0">
           <div className="flex gap-2 md:gap-3">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleApplyCrop}
               disabled={(!completedCrop && cropMode !== "full") || isProcessing}
-              className={`flex-1 flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-200 ${
-                isMobile ? "py-3 text-base" : "py-2.5 md:py-3 text-sm md:text-base"
-              } ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 md:py-3 font-medium rounded-xl transition-all duration-200 text-sm md:text-base ${
                 (completedCrop || cropMode === "full") && !isProcessing
                   ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-lg hover:shadow-xl"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -704,9 +496,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
             <button
               onClick={onClose}
-              className={`flex-1 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors duration-200 ${
-                isMobile ? "py-3 text-base" : "py-2.5 md:py-3 text-sm md:text-base"
-              }`}
+              className="flex-1 py-2.5 md:py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors duration-200 text-sm md:text-base"
             >
               إلغاء
             </button>
