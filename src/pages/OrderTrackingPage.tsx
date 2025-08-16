@@ -120,7 +120,7 @@ const OrderTrackingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 mobile-content-padding">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white">
         <div className="absolute inset-0 bg-black opacity-10"></div>

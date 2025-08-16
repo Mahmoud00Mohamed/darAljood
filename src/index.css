@@ -736,6 +736,27 @@ button.text-xs {
   bottom: 0;
 }
 
+/* Mobile Bottom Navigation Styles */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* Ensure content doesn't get hidden behind mobile navigation */
+@media (max-width: 768px) {
+  .mobile-content-padding {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+  
+  /* Adjust specific pages that might need extra spacing */
+  .page-content {
+    min-height: calc(100vh - 4rem);
+  }
+}
+
 /* تحسين عرض الخطوط في التقاط الصور */
 .jacket-image-capture,
 .jacket-image-capture * {

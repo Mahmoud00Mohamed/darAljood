@@ -24,6 +24,7 @@ import { useModal } from "../hooks/useModal";
 import PricingManagement from "../components/admin/PricingManagement";
 import PredefinedImagesManagement from "../components/admin/PredefinedImagesManagement";
 import OrdersManagement from "../components/admin/OrdersManagement";
+import CategoryManagement from "../components/admin/CategoryManagement";
 
 const AdminPanelPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,9 +37,10 @@ const AdminPanelPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<"orders" | "pricing" | "images">(
-    "orders"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "orders" | "pricing" | "images" | "categories"
+  >("orders");
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const logoutConfirmModal = useModal();
@@ -105,11 +107,17 @@ const AdminPanelPage: React.FC = () => {
       icon: ImageIcon,
       description: "إدارة مكتبة الشعارات الجاهزة",
     },
+    {
+      id: "categories",
+      name: "إدارة التصنيفات",
+      icon: Settings,
+      description: "إنشاء وتنظيم تصنيفات مكتبة الصور",
+    },
   ];
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 mobile-content-padding">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -130,7 +138,7 @@ const AdminPanelPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 mobile-content-padding">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -487,6 +495,17 @@ const AdminPanelPage: React.FC = () => {
                           transition={{ duration: 0.3 }}
                         >
                           <PredefinedImagesManagement />
+                        </motion.div>
+                      )}
+                      {activeTab === "categories" && (
+                        <motion.div
+                          key="categories"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <CategoryManagement />
                         </motion.div>
                       )}
                     </AnimatePresence>

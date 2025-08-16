@@ -1,11 +1,16 @@
 import express from "express";
 import dotenv from "dotenv";
+import { connectDatabase } from "./config/database.js";
 import { initializeCloudinary } from "./config/cloudinary.js";
+import CategoryModel from "./models/Category.js";
+import PricingModel from "./models/Pricing.js";
+import { initializeDefaultImages } from "./controllers/predefinedImagesController.js";
 import uploadRoutes from "./routes/upload.js";
 import authRoutes from "./routes/auth.js";
 import pricingRoutes from "./routes/pricing.js";
 import predefinedImagesRoutes from "./routes/predefinedImages.js";
 import ordersRoutes from "./routes/orders.js";
+import categoriesRoutes from "./routes/categories.js";
 import corsMiddleware from "./middleware/cors.js";
 import {
   uploadRateLimit,
@@ -48,7 +53,8 @@ app.get("/api/info", (req, res) => {
   res.status(200).json({
     success: true,
     message: "خادم دار الجود لرفع الصور",
-    version: "1.0.0",
+    version: "2.0.0",
+    database: "MongoDB",
     endpoints: {
       uploadSingle: "POST /api/upload/single",
       uploadMultiple: "POST /api/upload/multiple",
@@ -72,6 +78,11 @@ app.get("/api/info", (req, res) => {
       addOrderNote: "POST /api/orders/:orderId/notes (requires auth)",
       getOrderStats: "GET /api/orders/stats (requires auth)",
       getOrderStatuses: "GET /api/orders/statuses",
+      getCategories: "GET /api/categories",
+      createCategory: "POST /api/categories (requires auth)",
+      updateCategory: "PUT /api/categories/:categoryId (requires auth)",
+      deleteCategory: "DELETE /api/categories/:categoryId (requires auth)",
+      reorderCategories: "POST /api/categories/reorder (requires auth)",
     },
   });
 });
@@ -91,6 +102,9 @@ app.use("/api/predefined-images", predefinedImagesRoutes);
 // مسارات الطلبات
 app.use("/api/orders", ordersRoutes);
 
+// مسارات التصنيفات
+app.use("/api/categories", categoriesRoutes);
+
 // معالج المسارات غير الموجودة
 app.use(notFoundHandler);
 
@@ -100,6 +114,16 @@ app.use(errorHandler);
 // بدء الخادم
 const startServer = async () => {
   try {
+    // الاتصال بقاعدة البيانات
+    console.log("🔧 جاري الاتصال بقاعدة البيانات...");
+    await connectDatabase();
+
+    // تهيئة البيانات الافتراضية
+    console.log("🔧 جاري تهيئة البيانات الافتراضية...");
+    await CategoryModel.initializeDefaultCategories();
+    await PricingModel.initializeDefaultPricing();
+    await initializeDefaultImages();
+
     // تهيئة Cloudinary
     console.log("🔧 جاري تهيئة Cloudinary...");
     await initializeCloudinary();
@@ -110,6 +134,7 @@ const startServer = async () => {
       console.log(`📡 API متاح على: http://localhost:${PORT}/api`);
       console.log(`🏥 فحص الصحة: http://localhost:${PORT}/health`);
       console.log(`📋 معلومات API: http://localhost:${PORT}/api/info`);
+      console.log(`🗄️ قاعدة البيانات: MongoDB Atlas`);
 
       if (process.env.NODE_ENV === "development") {
         console.log("🔧 وضع التطوير مفعل");
@@ -122,13 +147,25 @@ const startServer = async () => {
 };
 
 // معالجة إغلاق الخادم بشكل صحيح
-process.on("SIGTERM", () => {
+process.on("SIGTERM", async () => {
   console.log("🛑 تم استلام إشارة SIGTERM، جاري إغلاق الخادم...");
+  try {
+    const { disconnectDatabase } = await import("./config/database.js");
+    await disconnectDatabase();
+  } catch (error) {
+    console.error("خطأ في قطع الاتصال مع قاعدة البيانات:", error);
+  }
   process.exit(0);
 });
 
-process.on("SIGINT", () => {
+process.on("SIGINT", async () => {
   console.log("🛑 تم استلام إشارة SIGINT، جاري إغلاق الخادم...");
+  try {
+    const { disconnectDatabase } = await import("./config/database.js");
+    await disconnectDatabase();
+  } catch (error) {
+    console.error("خطأ في قطع الاتصال مع قاعدة البيانات:", error);
+  }
   process.exit(0);
 });
 

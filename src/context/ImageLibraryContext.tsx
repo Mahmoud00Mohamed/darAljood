@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CloudinaryImageData } from "../services/imageUploadService";
 import predefinedImagesService from "../services/predefinedImagesService";
+import categoryService, { CategoryData } from "../services/categoryService";
+import authService from "../services/authService";
 
 export interface PredefinedImage {
   id: string;
   url: string;
   name: string;
-  category: string;
+  categoryId: string;
   description?: string;
   publicId: string;
   createdAt: string;
@@ -15,6 +17,12 @@ export interface PredefinedImage {
   height?: number;
   format?: string;
   size?: number;
+  category?: {
+    id: string;
+    name: string;
+    color: string;
+    icon: string;
+  };
 }
 
 export interface SelectedImage {
@@ -28,18 +36,38 @@ export interface SelectedImage {
 interface ImageLibraryContextType {
   // الصور الجاهزة
   predefinedImages: PredefinedImage[];
+  categories: CategoryData[];
   loadPredefinedImages: () => Promise<void>;
   addPredefinedImage: (
     file: File,
     name: string,
-    category: string,
+    categoryId: string,
     description?: string
   ) => Promise<void>;
   deletePredefinedImage: (imageId: string) => Promise<void>;
   updatePredefinedImage: (
     imageId: string,
-    updates: { name?: string; category?: string; description?: string }
+    updates: { name?: string; categoryId?: string; description?: string }
   ) => Promise<void>;
+
+  // التصنيفات
+  loadCategories: () => Promise<void>;
+  createCategory: (categoryData: {
+    name: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+  }) => Promise<void>;
+  updateCategory: (
+    categoryId: string,
+    updates: {
+      name?: string;
+      description?: string;
+      color?: string;
+      icon?: string;
+    }
+  ) => Promise<void>;
+  deleteCategory: (categoryId: string) => Promise<void>;
 
   // صور المستخدم
   userImages: CloudinaryImageData[];
@@ -80,6 +108,7 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
   const [predefinedImages, setPredefinedImages] = useState<PredefinedImage[]>(
     []
   );
+  const [categories, setCategories] = useState<CategoryData[]>([]);
   const [userImages, setUserImages] = useState<CloudinaryImageData[]>(() => {
     try {
       const saved = localStorage.getItem("userImages");
@@ -137,12 +166,14 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
 
     try {
-      const images = await predefinedImagesService.loadPredefinedImages();
-      setPredefinedImages(images);
+      const data =
+        await predefinedImagesService.loadPredefinedImagesWithCategories();
+      setPredefinedImages(data.images);
+      setCategories(data.categories);
     } catch (error) {
       console.error("Error loading predefined images:", error);
       setError(
-        error instanceof Error ? error.message : "فشل في تحميل الشعارات الجاهزة"
+        error instanceof Error ? error.message : "فشل في تحميل البيانات"
       );
     } finally {
       setIsLoading(false);
@@ -153,7 +184,7 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
   const addPredefinedImage = async (
     file: File,
     name: string,
-    category: string,
+    categoryId: string,
     description?: string
   ) => {
     setIsLoading(true);
@@ -163,7 +194,7 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
       const newImage = await predefinedImagesService.addPredefinedImage(
         file,
         name,
-        category,
+        categoryId,
         description
       );
       setPredefinedImages((prev) => [...prev, newImage]);
@@ -202,7 +233,7 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
   // تحديث معلومات شعار جاهز
   const updatePredefinedImage = async (
     imageId: string,
-    updates: { name?: string; category?: string; description?: string }
+    updates: { name?: string; categoryId?: string; description?: string }
   ) => {
     setIsLoading(true);
     setError(null);
@@ -226,6 +257,117 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
       setError(
         error instanceof Error ? error.message : "فشل في تحديث الشعار الجاهز"
       );
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // تحميل التصنيفات
+  const loadCategories = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await categoryService.getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      setError(
+        error instanceof Error ? error.message : "فشل في تحميل التصنيفات"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // إنشاء تصنيف جديد
+  const createCategory = async (categoryData: {
+    name: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+  }) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      const newCategory = await categoryService.createCategory(
+        categoryData,
+        token
+      );
+      setCategories((prev) =>
+        [...prev, newCategory].sort((a, b) => a.order - b.order)
+      );
+    } catch (error) {
+      console.error("Error creating category:", error);
+      setError(error instanceof Error ? error.message : "فشل في إنشاء التصنيف");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // تحديث تصنيف
+  const updateCategory = async (
+    categoryId: string,
+    updates: {
+      name?: string;
+      description?: string;
+      color?: string;
+      icon?: string;
+    }
+  ) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      const updatedCategory = await categoryService.updateCategory(
+        categoryId,
+        updates,
+        token
+      );
+      setCategories((prev) =>
+        prev.map((cat) => (cat.id === categoryId ? updatedCategory : cat))
+      );
+    } catch (error) {
+      console.error("Error updating category:", error);
+      setError(error instanceof Error ? error.message : "فشل في تحديث التصنيف");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // حذف تصنيف
+  const deleteCategory = async (categoryId: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      await categoryService.deleteCategory(categoryId, token);
+      setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
+      // حذف الصور المرتبطة بهذا التصنيف من الصور المحددة
+      setSelectedImages((prev) =>
+        prev.filter((img) => {
+          const predefinedImg = predefinedImages.find(
+            (pImg) => pImg.id === img.id
+          );
+          return !predefinedImg || predefinedImg.categoryId !== categoryId;
+        })
+      );
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      setError(error instanceof Error ? error.message : "فشل في حذف التصنيف");
       throw error;
     } finally {
       setIsLoading(false);
@@ -308,10 +450,15 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     <ImageLibraryContext.Provider
       value={{
         predefinedImages,
+        categories,
         loadPredefinedImages,
         addPredefinedImage,
         deletePredefinedImage,
         updatePredefinedImage,
+        loadCategories,
+        createCategory,
+        updateCategory,
+        deleteCategory,
         userImages,
         addUserImage,
         removeUserImage,

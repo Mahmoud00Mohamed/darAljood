@@ -2,7 +2,11 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZoomIn } from "lucide-react";
 import { PhotoGridProps } from "../types";
-import { optimizeImageUrl, preloadImage } from "../utils";
+import {
+  optimizeImageUrlForSpeed,
+  preloadImage,
+  preloadImagesImmediate,
+} from "../utils";
 
 export const PhotoGrid: React.FC<PhotoGridProps> = ({
   photos,
@@ -10,24 +14,38 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   columnsConfig = { mobile: 1, tablet: 2, desktop: 4 },
   className = "",
 }) => {
-  // تحميل مسبق للصور عند تحميل المكون
+  // تحميل فوري للصور المرئية عند تحميل المكون
   React.useEffect(() => {
     const preloadImages = async () => {
-      // تحميل أول 8 صور فوراً
-      const priorityImages = photos.slice(0, 8);
-      const preloadPromises = priorityImages.map((photo) =>
-        preloadImage(optimizeImageUrl(photo.src, 400))
+      // تحميل فوري للصور المرئية أولاً (أول 6 صور)
+      const priorityImages = photos.slice(0, 6);
+      const priorityUrls = priorityImages.map((photo) =>
+        optimizeImageUrlForSpeed(photo.src, 300, 60)
       );
 
-      // تحميل الصور ذات الأولوية العالية
-      await Promise.allSettled(preloadPromises);
+      // تحميل فوري للصور ذات الأولوية
+      await preloadImagesImmediate(priorityUrls);
 
-      // تحميل باقي الصور في الخلفية
-      if (photos.length > 8) {
-        const remainingImages = photos.slice(8);
-        remainingImages.forEach((photo) => {
-          preloadImage(optimizeImageUrl(photo.src, 400));
-        });
+      // تحميل باقي الصور في الخلفية بشكل تدريجي
+      if (photos.length > 6) {
+        setTimeout(() => {
+          const remainingImages = photos.slice(6, 12);
+          remainingImages.forEach((photo, index) => {
+            setTimeout(() => {
+              preloadImage(optimizeImageUrlForSpeed(photo.src, 300, 65), false);
+            }, index * 100);
+          });
+        }, 500);
+
+        // تحميل باقي الصور بعد ذلك
+        setTimeout(() => {
+          const laterImages = photos.slice(12);
+          laterImages.forEach((photo, index) => {
+            setTimeout(() => {
+              preloadImage(optimizeImageUrlForSpeed(photo.src, 300, 65), false);
+            }, index * 200);
+          });
+        }, 2000);
       }
     };
 
@@ -41,28 +59,32 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   return (
     <motion.div layout className={`${getGridClass()} ${className}`}>
       <AnimatePresence>
-        {photos.map((photo) => (
+        {photos.map((photo, index) => (
           <motion.div
             key={photo.id}
             layout
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3, delay: index < 6 ? 0 : index * 0.05 }}
             className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
             onClick={() => onPhotoClick(photo)}
           >
             <div className="aspect-square">
               <img
-                src={optimizeImageUrl(photo.src, 400)}
+                src={
+                  index < 8
+                    ? optimizeImageUrlForSpeed(photo.src, 300, 60)
+                    : optimizeImageUrlForSpeed(photo.src, 300, 65)
+                }
                 alt={photo.alt || photo.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                loading="eager"
+                loading={index < 6 ? "eager" : "lazy"}
                 decoding="async"
-                fetchPriority="high"
+                fetchPriority={index < 6 ? "high" : "auto"}
                 style={{
                   contentVisibility: "auto",
-                  containIntrinsicSize: "400px 400px",
+                  containIntrinsicSize: "300px 300px",
                 }}
               />
             </div>

@@ -17,6 +17,7 @@ import {
 import predefinedImagesService, {
   PredefinedImageData,
 } from "../../services/predefinedImagesService";
+import { CategoryData } from "../../services/categoryService";
 import CloudinaryImageUpload from "../../components/forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../services/imageUploadService";
 import ConfirmationModal from "../../components/ui/ConfirmationModal";
@@ -27,12 +28,15 @@ const PredefinedImagesManagement: React.FC = () => {
   const [predefinedImages, setPredefinedImages] = useState<
     PredefinedImageData[]
   >([]);
+  const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] =
+    useState<string>("all");
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [imagesError, setImagesError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
   const [newImageData, setNewImageData] = useState({
     name: "",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
   });
   const [selectedImageForEdit, setSelectedImageForEdit] =
@@ -51,18 +55,20 @@ const PredefinedImagesManagement: React.FC = () => {
   const confirmUploadModal = useModal();
 
   useEffect(() => {
-    loadPredefinedImages();
+    loadPredefinedImagesAndCategories();
   }, []);
 
-  const loadPredefinedImages = async () => {
+  const loadPredefinedImagesAndCategories = async () => {
     setIsLoadingImages(true);
     setImagesError("");
     try {
-      const images = await predefinedImagesService.loadPredefinedImages();
-      setPredefinedImages(images);
+      const data =
+        await predefinedImagesService.loadPredefinedImagesWithCategories();
+      setPredefinedImages(data.images);
+      setCategories(data.categories);
     } catch (error) {
       setImagesError(
-        error instanceof Error ? error.message : "فشل في تحميل الشعارات الجاهزة"
+        error instanceof Error ? error.message : "فشل في تحميل البيانات"
       );
     } finally {
       setIsLoadingImages(false);
@@ -101,7 +107,7 @@ const PredefinedImagesManagement: React.FC = () => {
       const newImage = await predefinedImagesService.addPredefinedImage(
         pendingImageFile,
         newImageData.name,
-        newImageData.category,
+        newImageData.categoryId,
         newImageData.description
       );
 
@@ -109,7 +115,7 @@ const PredefinedImagesManagement: React.FC = () => {
       setSaveMessage("تم إضافة الشعار الجاهز بنجاح");
       setNewImageData({
         name: "",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
       });
       setUploadedImageData(null);
@@ -155,7 +161,7 @@ const PredefinedImagesManagement: React.FC = () => {
         selectedImageForEdit.id,
         {
           name: selectedImageForEdit.name,
-          category: selectedImageForEdit.category,
+          categoryId: selectedImageForEdit.categoryId,
           description: selectedImageForEdit.description,
         }
       );
@@ -186,6 +192,27 @@ const PredefinedImagesManagement: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  // فلترة الصور حسب التصنيف المحدد
+  const filteredImages =
+    selectedCategoryFilter === "all"
+      ? predefinedImages
+      : predefinedImages.filter(
+          (img) => img.categoryId === selectedCategoryFilter
+        );
+
+  const getIconComponent = (iconId: string) => {
+    const iconMap: {
+      [key: string]: React.ComponentType<{ className?: string }>;
+    } = {
+      folder: Grid,
+      star: Upload,
+      shapes: Grid,
+      type: Upload,
+      image: Grid,
+    };
+    return iconMap[iconId] || Grid;
+  };
+
   return (
     <div className="space-y-4">
       {/* Page Header */}
@@ -210,7 +237,7 @@ const PredefinedImagesManagement: React.FC = () => {
             إضافة شعار
           </button>
           <button
-            onClick={loadPredefinedImages}
+            onClick={loadPredefinedImagesAndCategories}
             disabled={isLoadingImages}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 text-sm"
           >
@@ -254,6 +281,55 @@ const PredefinedImagesManagement: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Category Filter */}
+      {categories.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">
+            فلترة حسب التصنيف
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategoryFilter("all")}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedCategoryFilter === "all"
+                  ? "bg-[#563660] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <Grid className="w-4 h-4" />
+              الكل ({predefinedImages.length})
+            </button>
+            {categories.map((category) => {
+              const IconComponent = getIconComponent(category.icon);
+              const categoryCount = predefinedImages.filter(
+                (img) => img.categoryId === category.id
+              ).length;
+
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategoryFilter(category.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    selectedCategoryFilter === category.id
+                      ? "text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                  style={{
+                    backgroundColor:
+                      selectedCategoryFilter === category.id
+                        ? category.color
+                        : undefined,
+                  }}
+                >
+                  <IconComponent className="w-4 h-4" />
+                  {category.name} ({categoryCount})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {isLoadingImages ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
@@ -263,19 +339,22 @@ const PredefinedImagesManagement: React.FC = () => {
             </p>
           </div>
         </div>
-      ) : predefinedImages.length > 0 ? (
+      ) : filteredImages.length > 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">
-              الشعارات المتاحة
+              {selectedCategoryFilter === "all"
+                ? "جميع الشعارات"
+                : categories.find((cat) => cat.id === selectedCategoryFilter)
+                    ?.name || "الشعارات المتاحة"}
             </h3>
             <span className="bg-[#563660] text-white px-3 py-1.5 rounded-lg font-medium text-sm">
-              {predefinedImages.length} شعار
+              {filteredImages.length} شعار
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {predefinedImages.map((image, index) => (
+            {filteredImages.map((image, index) => (
               <motion.div
                 key={image.id}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -296,9 +375,19 @@ const PredefinedImagesManagement: React.FC = () => {
                   <h4 className="text-sm font-medium text-gray-900 truncate mb-1">
                     {image.name}
                   </h4>
-                  <p className="text-xs text-gray-500 truncate">
-                    {image.category}
-                  </p>
+                  <div className="flex items-center gap-1 mb-1">
+                    {image.category && (
+                      <>
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: image.category.color }}
+                        />
+                        <p className="text-xs text-gray-500 truncate">
+                          {image.category.name}
+                        </p>
+                      </>
+                    )}
+                  </div>
                   {image.size && (
                     <p className="text-xs text-gray-400 mt-1">
                       {formatFileSize(image.size)}
@@ -497,19 +586,24 @@ const PredefinedImagesManagement: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الفئة
+                  التصنيف
                 </label>
-                <input
-                  type="text"
-                  value={newImageData.category}
+                <select
+                  value={newImageData.categoryId}
                   onChange={(e) =>
                     setNewImageData((prev) => ({
                       ...prev,
-                      category: e.target.value,
+                      categoryId: e.target.value,
                     }))
                   }
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                />
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -621,18 +715,23 @@ const PredefinedImagesManagement: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الفئة
+                  التصنيف
                 </label>
-                <input
-                  type="text"
-                  value={selectedImageForEdit.category}
+                <select
+                  value={selectedImageForEdit.categoryId}
                   onChange={(e) =>
                     setSelectedImageForEdit((prev) =>
-                      prev ? { ...prev, category: e.target.value } : null
+                      prev ? { ...prev, categoryId: e.target.value } : null
                     )
                   }
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                />
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

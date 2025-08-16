@@ -1,10 +1,11 @@
 import authService from "./authService";
+import categoryService, { CategoryData } from "./categoryService";
 
 export interface PredefinedImageData {
   id: string;
   url: string;
   name: string;
-  category: string;
+  categoryId: string;
   description?: string;
   publicId: string;
   createdAt: string;
@@ -13,6 +14,17 @@ export interface PredefinedImageData {
   height?: number;
   format?: string;
   size?: number;
+  category?: {
+    id: string;
+    name: string;
+    color: string;
+    icon: string;
+  };
+}
+
+export interface PredefinedImagesWithCategories {
+  images: PredefinedImageData[];
+  categories: CategoryData[];
 }
 
 export interface ApiResponse<T> {
@@ -54,7 +66,7 @@ class PredefinedImagesService {
   async addPredefinedImage(
     file: File,
     name: string,
-    category: string,
+    categoryId: string,
     description?: string
   ): Promise<PredefinedImageData> {
     try {
@@ -66,7 +78,7 @@ class PredefinedImagesService {
       const formData = new FormData();
       formData.append("image", file);
       formData.append("name", name);
-      formData.append("category", category);
+      formData.append("categoryId", categoryId);
       if (description) {
         formData.append("description", description);
       }
@@ -144,7 +156,7 @@ class PredefinedImagesService {
    */
   async updatePredefinedImage(
     imageId: string,
-    updates: { name?: string; category?: string; description?: string }
+    updates: { name?: string; categoryId?: string; description?: string }
   ): Promise<PredefinedImageData> {
     try {
       const token = authService.getToken();
@@ -227,6 +239,101 @@ class PredefinedImagesService {
       );
     }
   }
+
+  /**
+   * الحصول على الشعارات مع معلومات التصنيفات
+   */
+  async loadPredefinedImagesWithCategories(): Promise<PredefinedImagesWithCategories> {
+    try {
+      const response = await fetch(`${this.baseUrl}/with-categories`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: ApiResponse<PredefinedImagesWithCategories> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "فشل في تحميل الشعارات مع التصنيفات");
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error("Error loading images with categories:", error);
+      // في حالة فشل الباك إند، استخدم البيانات المحلية
+      const fallbackImages = this.getFallbackImages();
+      const fallbackCategories = await this.getFallbackCategories();
+      
+      return {
+        images: fallbackImages.map(img => ({
+          ...img,
+          category: fallbackCategories.find(cat => cat.id === img.categoryId),
+        })),
+        categories: fallbackCategories,
+      };
+    }
+  }
+
+  /**
+   * الحصول على الشعارات حسب التصنيف
+   */
+  async getPredefinedImagesByCategory(categoryId: string): Promise<PredefinedImageData[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/category/${categoryId}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: ApiResponse<PredefinedImageData[]> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "فشل في تحميل الشعارات");
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error("Error loading images by category:", error);
+      // في حالة فشل الباك إند، فلترة البيانات المحلية
+      const fallbackImages = this.getFallbackImages();
+      return fallbackImages.filter(img => img.categoryId === categoryId);
+    }
+  }
+
+  /**
+   * التصنيفات الاحتياطية
+   */
+  private async getFallbackCategories(): Promise<CategoryData[]> {
+    try {
+      return await categoryService.getCategories();
+    } catch {
+      return [
+        {
+          id: "general",
+          name: "عام",
+          description: "صور عامة ومتنوعة",
+          color: "#6B7280",
+          icon: "folder",
+          isDefault: true,
+          order: 1,
+          createdAt: "2025-01-15T10:00:00.000Z",
+          updatedBy: "system",
+        },
+        {
+          id: "logos",
+          name: "شعارات",
+          description: "شعارات الشركات والمؤسسات",
+          color: "#3B82F6",
+          icon: "star",
+          isDefault: true,
+          order: 2,
+          createdAt: "2025-01-15T10:00:00.000Z",
+          updatedBy: "system",
+        },
+      ];
+    }
+  }
+
   /**
    * البيانات الاحتياطية في حالة فشل الباك إند (تحويل إلى النوع الجديد)
    */
@@ -237,7 +344,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078448/16_b1rjss.png",
         publicId: "16_b1rjss",
         name: "شعار 1",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -247,7 +354,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078378/15_v4cfc5.png",
         publicId: "15_v4cfc5",
         name: "شعار 2",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -257,7 +364,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078365/14_qqqwh1.png",
         publicId: "14_qqqwh1",
         name: "شعار 3",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -267,7 +374,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078446/21_hq9kn2.png",
         publicId: "21_hq9kn2",
         name: "شعار 4",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -277,7 +384,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078445/22_zdgy01.png",
         publicId: "22_zdgy01",
         name: "شعار 5",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -287,7 +394,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078445/24_ryr2b7.png",
         publicId: "24_ryr2b7",
         name: "شعار 6",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -297,7 +404,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078440/20_z76g1a.png",
         publicId: "20_z76g1a",
         name: "شعار 7",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -307,7 +414,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078416/23_c30gr9.png",
         publicId: "23_c30gr9",
         name: "شعار 8",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -317,7 +424,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078450/18_djpzcl.png",
         publicId: "18_djpzcl",
         name: "شعار 9",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -327,7 +434,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078392/19_bsd1ci.png",
         publicId: "19_bsd1ci",
         name: "شعار 10",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -337,7 +444,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078376/17_xeldqp.png",
         publicId: "17_xeldqp",
         name: "شعار 11",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -347,7 +454,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078313/12_tg79xl.png",
         publicId: "12_tg79xl",
         name: "شعار 12",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -357,7 +464,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078327/13_hwchwt.png",
         publicId: "13_hwchwt",
         name: "شعار 13",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -367,7 +474,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078292/11_e4rp9f.png",
         publicId: "11_e4rp9f",
         name: "شعار 14",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -377,7 +484,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078273/9_ckkfuc.png",
         publicId: "9_ckkfuc",
         name: "شعار 15",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -387,7 +494,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078280/7_sdntzs.png",
         publicId: "7_sdntzs",
         name: "شعار 16",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -397,7 +504,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078261/10_nt80mg.png",
         publicId: "10_nt80mg",
         name: "شعار 17",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -407,7 +514,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078315/2_ecj1mj.png",
         publicId: "2_ecj1mj",
         name: "شعار 18",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -417,7 +524,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078222/1_ucnpj9.png",
         publicId: "1_ucnpj9",
         name: "شعار 19",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -427,7 +534,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078266/8_khcifj.png",
         publicId: "8_khcifj",
         name: "شعار 20",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -437,7 +544,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078306/6_isqyzt.png",
         publicId: "6_isqyzt",
         name: "شعار 21",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -447,7 +554,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078234/5_ivza7n.png",
         publicId: "5_ivza7n",
         name: "شعار 22",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -457,7 +564,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078224/3_ohzsak.png",
         publicId: "3_ohzsak",
         name: "شعار 23",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",
@@ -467,7 +574,7 @@ class PredefinedImagesService {
         url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078229/4_emla2u.png",
         publicId: "4_emla2u",
         name: "شعار 24",
-        category: "شعارات جاهزة",
+        categoryId: "logos",
         description: "شعار جاهز للاستخدام",
         createdAt: "2025-01-25T10:00:00.000Z",
         updatedBy: "system",

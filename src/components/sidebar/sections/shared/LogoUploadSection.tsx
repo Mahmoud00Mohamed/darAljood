@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useJacket, LogoPosition } from "../../../../context/JacketContext";
-import { Upload, Trash2, AlertCircle, Crop } from "lucide-react";
+import { Upload, Trash2, AlertCircle, Crop, Images } from "lucide-react";
+import { Link } from "react-router-dom";
 import CloudinaryImageUpload from "../../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../../services/imageUploadService";
 import { Gallery } from "../../../../gallery-system/src";
@@ -186,13 +187,41 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
     id: logo.id,
     src: logo.url,
     title: logo.name,
-    category: "شعارات جاهزة",
+    category: "شعارات",
     description: `شعار جاهز للاستخدام - ${logo.name}`,
     alt: logo.name,
   }));
 
-  const galleryCategories = ["الكل", "شعارات جاهزة"];
+  const galleryCategories = ["الكل", "شعارات"];
 
+  // تحميل مسبق للشعارات المتاحة عند تحميل المكون
+  useEffect(() => {
+    if (showPredefinedLogos && logoSource === "predefined") {
+      // تحميل أول 12 شعار فوراً
+      const priorityLogos = availableLogos.slice(0, 12);
+      priorityLogos.forEach((logo, index) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.loading = "eager";
+        img.decoding = index < 6 ? "sync" : "async";
+        img.fetchPriority = index < 6 ? "high" : "auto";
+        img.src = logo.url;
+      });
+
+      // تحميل باقي الشعارات في الخلفية
+      setTimeout(() => {
+        const remainingLogos = availableLogos.slice(12);
+        remainingLogos.forEach((logo, index) => {
+          setTimeout(() => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.loading = "lazy";
+            img.src = logo.url;
+          }, index * 100);
+        });
+      }, 1000);
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPredefinedLogos, logoSource]);
   const isPositionOccupied = (pos: LogoPosition) => {
     return (
       jacketState.logos.some((logo) => logo.position === pos) ||
@@ -526,53 +555,80 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
             الشعارات الحالية
           </span>
           {view === "front" ? (
-            <button
-              onClick={uploadModal.openModal}
-              disabled={isPositionOccupied(uploadPosition)}
-              className={`flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors ${
-                isPositionOccupied(uploadPosition)
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-            >
-              <Crop size={14} />
-              <span>إضافة شعار</span>
-            </button>
-          ) : view === "back" ? (
-            (!showPredefinedLogos || logoSource === "upload") && (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/image-library"
+                className="flex items-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors"
+              >
+                <Images size={14} />
+                <span>المكتبة</span>
+              </Link>
               <button
                 onClick={uploadModal.openModal}
-                disabled={isPositionOccupied(positions[0].id)}
+                disabled={isPositionOccupied(uploadPosition)}
                 className={`flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors ${
-                  isPositionOccupied(positions[0].id)
+                  isPositionOccupied(uploadPosition)
                     ? "opacity-50 cursor-not-allowed"
                     : ""
                 }`}
               >
                 <Crop size={14} />
-                <span>رفع شعار</span>
+                <span>إضافة شعار</span>
               </button>
-            )
+            </div>
+          ) : view === "back" ? (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/image-library"
+                className="flex items-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors"
+              >
+                <Images size={14} />
+                <span>المكتبة</span>
+              </Link>
+              {(!showPredefinedLogos || logoSource === "upload") && (
+                <button
+                  onClick={uploadModal.openModal}
+                  disabled={isPositionOccupied(positions[0].id)}
+                  className={`flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors ${
+                    isPositionOccupied(positions[0].id)
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  <Crop size={14} />
+                  <span>رفع شعار</span>
+                </button>
+              )}
+            </div>
           ) : (
-            <div className="flex gap-2">
-              {positions.map((pos) => (
-                <div key={pos.id} className="relative flex-1">
-                  <button
-                    onClick={() => {
-                      setUploadPosition(pos.id);
-                      uploadModal.openModal();
-                    }}
-                    disabled={isPositionOccupied(pos.id)}
-                    className={`block py-2 px-4 text-sm rounded-xl transition-all text-center ${
-                      isPositionOccupied(pos.id)
-                        ? "bg-gray-100 text-gray-600 cursor-not-allowed"
-                        : "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm hover:from-[#7e4a8c] hover:to-[#563660]"
-                    }`}
-                  >
-                    {pos.name.split(" - ")[1]}
-                  </button>
-                </div>
-              ))}
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to="/image-library"
+                className="flex items-center justify-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors w-full"
+              >
+                <Images size={14} />
+                <span>المكتبة</span>
+              </Link>
+              <div className="flex gap-2">
+                {positions.map((pos) => (
+                  <div key={pos.id} className="relative flex-1">
+                    <button
+                      onClick={() => {
+                        setUploadPosition(pos.id);
+                        uploadModal.openModal();
+                      }}
+                      disabled={isPositionOccupied(pos.id)}
+                      className={`block py-2 px-4 text-sm rounded-xl transition-all text-center w-full ${
+                        isPositionOccupied(pos.id)
+                          ? "bg-gray-100 text-gray-600 cursor-not-allowed"
+                          : "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-sm hover:from-[#7e4a8c] hover:to-[#563660]"
+                      }`}
+                    >
+                      {pos.name.split(" - ")[1]}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

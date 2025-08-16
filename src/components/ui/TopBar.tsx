@@ -1,5 +1,6 @@
 import React from "react";
 import { MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import logo from "/Photo/logo.png";
 
 const TopBar: React.FC = () => {
@@ -10,7 +11,10 @@ const TopBar: React.FC = () => {
   return (
     <div className="h-[30px] bg-gradient-to-r from-[#563660] to-[#7e4a8c] flex items-center justify-between px-4 text-white text-xs relative z-[100]">
       {/* الشعار واسم الموقع */}
-      <div className="flex items-center gap-2">
+      <Link
+        to="/"
+        className="flex items-center gap-2 hover:opacity-80 transition"
+      >
         <img src={logo} alt="دار الجود" className="h-5 w-auto" />
         <span
           className="font-bold text-white"
@@ -18,7 +22,7 @@ const TopBar: React.FC = () => {
         >
           دار الجود
         </span>
-      </div>
+      </Link>
 
       {/* النص في المنتصف */}
       <span

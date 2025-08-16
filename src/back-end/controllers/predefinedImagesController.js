@@ -1,16 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// مسار ملف بيانات الشعارات الجاهزة
-const PREDEFINED_IMAGES_FILE = path.join(
-  __dirname,
-  "../data/predefinedImages.json"
-);
+import PredefinedImageSchema from "../models/schemas/PredefinedImageSchema.js";
+import CategoryModel from "../models/Category.js";
 
 // البيانات الافتراضية للشعارات الجاهزة
 const DEFAULT_PREDEFINED_IMAGES = [
@@ -19,9 +9,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078450/18_djpzcl.png",
     publicId: "18_djpzcl",
     name: "شعار 1",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -29,9 +18,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078448/16_b1rjss.png",
     publicId: "16_b1rjss",
     name: "شعار 2",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -39,9 +27,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078446/21_hq9kn2.png",
     publicId: "21_hq9kn2",
     name: "شعار 3",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -49,9 +36,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078445/24_ryr2b7.png",
     publicId: "24_ryr2b7",
     name: "شعار 4",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -59,9 +45,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078445/22_zdgy01.png",
     publicId: "22_zdgy01",
     name: "شعار 5",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -69,9 +54,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078440/20_z76g1a.png",
     publicId: "20_z76g1a",
     name: "شعار 6",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -79,9 +63,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078416/23_c30gr9.png",
     publicId: "23_c30gr9",
     name: "شعار 7",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -89,9 +72,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078392/19_bsd1ci.png",
     publicId: "19_bsd1ci",
     name: "شعار 8",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -99,9 +81,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078378/15_v4cfc5.png",
     publicId: "15_v4cfc5",
     name: "شعار 9",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -109,9 +90,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078376/17_xeldqp.png",
     publicId: "17_xeldqp",
     name: "شعار 10",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -119,9 +99,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078365/14_qqqwh1.png",
     publicId: "14_qqqwh1",
     name: "شعار 11",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -129,9 +108,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078327/13_hwchwt.png",
     publicId: "13_hwchwt",
     name: "شعار 12",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -139,9 +117,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078315/2_ecj1mj.png",
     publicId: "2_ecj1mj",
     name: "شعار 13",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -149,9 +126,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078313/12_tg79xl.png",
     publicId: "12_tg79xl",
     name: "شعار 14",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -159,9 +135,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078306/6_isqyzt.png",
     publicId: "6_isqyzt",
     name: "شعار 15",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -169,9 +144,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078292/11_e4rp9f.png",
     publicId: "11_e4rp9f",
     name: "شعار 16",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -179,9 +153,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078280/7_sdntzs.png",
     publicId: "7_sdntzs",
     name: "شعار 17",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -189,9 +162,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078273/9_ckkfuc.png",
     publicId: "9_ckkfuc",
     name: "شعار 18",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -199,9 +171,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078266/8_khcifj.png",
     publicId: "8_khcifj",
     name: "شعار 19",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -209,9 +180,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078261/10_nt80mg.png",
     publicId: "10_nt80mg",
     name: "شعار 20",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -219,9 +189,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078234/5_ivza7n.png",
     publicId: "5_ivza7n",
     name: "شعار 21",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -229,9 +198,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078229/4_emla2u.png",
     publicId: "4_emla2u",
     name: "شعار 22",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -239,9 +207,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078224/3_ohzsak.png",
     publicId: "3_ohzsak",
     name: "شعار 23",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
   {
@@ -249,71 +216,44 @@ const DEFAULT_PREDEFINED_IMAGES = [
     url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078222/1_ucnpj9.png",
     publicId: "1_ucnpj9",
     name: "شعار 24",
-    category: "شعارات جاهزة",
+    categoryId: "logos",
     description: "شعار جاهز للاستخدام",
-    createdAt: new Date().toISOString(),
     updatedBy: "system",
   },
 ];
 
-// التأكد من وجود مجلد البيانات
-const ensureDataDirectory = async () => {
-  const dataDir = path.dirname(PREDEFINED_IMAGES_FILE);
+/**
+ * تهيئة الشعارات الافتراضية
+ */
+export const initializeDefaultImages = async () => {
   try {
-    await fs.access(dataDir);
-  } catch {
-    await fs.mkdir(dataDir, { recursive: true });
-  }
-};
-
-// التأكد من وجود ملف البيانات
-const ensureDataFile = async () => {
-  try {
-    await fs.access(PREDEFINED_IMAGES_FILE);
-  } catch {
-    await savePredefinedImages(DEFAULT_PREDEFINED_IMAGES);
-  }
-};
-
-// قراءة بيانات الشعارات الجاهزة
-const loadPredefinedImages = async () => {
-  try {
-    await ensureDataDirectory();
-    await ensureDataFile();
-
-    const data = await fs.readFile(PREDEFINED_IMAGES_FILE, "utf8");
-    return JSON.parse(data);
+    const existingCount = await PredefinedImageSchema.countDocuments();
+    
+    if (existingCount === 0) {
+      console.log("🔧 إنشاء الشعارات الجاهزة الافتراضية...");
+      await PredefinedImageSchema.insertMany(DEFAULT_PREDEFINED_IMAGES);
+      console.log("✅ تم إنشاء الشعارات الجاهزة الافتراضية بنجاح");
+    }
   } catch (error) {
-    console.error("Error reading predefined images data:", error);
-    return DEFAULT_PREDEFINED_IMAGES;
-  }
-};
-
-// حفظ بيانات الشعارات الجاهزة
-const savePredefinedImages = async (images) => {
-  try {
-    await ensureDataDirectory();
-    await fs.writeFile(
-      PREDEFINED_IMAGES_FILE,
-      JSON.stringify(images, null, 2),
-      "utf8"
-    );
-    return images;
-  } catch (error) {
-    console.error("Error saving predefined images data:", error);
-    throw new Error("فشل في حفظ بيانات الشعارات الجاهزة");
+    console.error("❌ خطأ في تهيئة الشعارات الجاهزة:", error);
+    throw new Error("فشل في تهيئة الشعارات الجاهزة");
   }
 };
 
 // الحصول على جميع الشعارات الجاهزة (عام - بدون مصادقة)
 export const getPredefinedImages = async (req, res) => {
   try {
-    const images = await loadPredefinedImages();
+    const images = await PredefinedImageSchema.find().sort({ createdAt: -1 }).lean();
+    
+    const cleanImages = images.map(img => ({
+      ...img,
+      _id: undefined,
+    }));
 
     res.status(200).json({
       success: true,
       message: "تم الحصول على الشعارات الجاهزة بنجاح",
-      data: images,
+      data: cleanImages,
     });
   } catch (error) {
     console.error("Error getting predefined images:", error);
@@ -346,13 +286,23 @@ export const addPredefinedImage = async (req, res) => {
       });
     }
 
-    const { name, category, description } = req.body;
+    const { name, categoryId, description } = req.body;
 
-    if (!name || !category) {
+    if (!name || !categoryId) {
       return res.status(400).json({
         success: false,
-        message: "اسم الشعار والفئة مطلوبان",
+        message: "اسم الشعار ومعرف التصنيف مطلوبان",
         error: "MISSING_REQUIRED_FIELDS",
+      });
+    }
+
+    // التحقق من وجود التصنيف
+    const category = await CategoryModel.getCategoryById(categoryId);
+    if (!category) {
+      return res.status(400).json({
+        success: false,
+        message: "التصنيف المحدد غير موجود",
+        error: "CATEGORY_NOT_FOUND",
       });
     }
 
@@ -381,33 +331,30 @@ export const addPredefinedImage = async (req, res) => {
     // رفع الصورة إلى Cloudinary
     const result = await cloudinary.uploader.upload(fileStr, uploadOptions);
 
-    // تحميل البيانات الحالية
-    const currentImages = await loadPredefinedImages();
-
-    // إنشاء شعار جديد
-    const newImage = {
+    // إنشاء شعار جديد في قاعدة البيانات
+    const newImage = new PredefinedImageSchema({
       id: `logo-${Date.now()}`,
       url: result.secure_url,
       publicId: result.public_id,
       name: name.trim(),
-      category: category.trim(),
+      categoryId: categoryId.trim(),
       description: description?.trim() || "شعار جاهز للاستخدام",
-      createdAt: new Date().toISOString(),
       updatedBy: req.admin?.username || "admin",
       width: result.width,
       height: result.height,
       format: result.format,
       size: result.bytes,
-    };
+    });
 
-    // إضافة الشعار الجديد
-    const updatedImages = [...currentImages, newImage];
-    await savePredefinedImages(updatedImages);
+    const savedImage = await newImage.save();
 
     res.status(201).json({
       success: true,
       message: "تم إضافة الشعار الجاهز بنجاح",
-      data: newImage,
+      data: {
+        ...savedImage.toObject(),
+        _id: undefined,
+      },
     });
   } catch (error) {
     console.error("Error adding predefined image:", error);
@@ -451,11 +398,8 @@ export const deletePredefinedImage = async (req, res) => {
       });
     }
 
-    // تحميل البيانات الحالية
-    const currentImages = await loadPredefinedImages();
-
     // البحث عن الشعار
-    const imageToDelete = currentImages.find((img) => img.id === imageId);
+    const imageToDelete = await PredefinedImageSchema.findOne({ id: imageId });
 
     if (!imageToDelete) {
       return res.status(404).json({
@@ -473,14 +417,19 @@ export const deletePredefinedImage = async (req, res) => {
       // نتابع العملية حتى لو فشل حذف الصورة من Cloudinary
     }
 
-    // حذف الشعار من البيانات المحلية
-    const updatedImages = currentImages.filter((img) => img.id !== imageId);
-    await savePredefinedImages(updatedImages);
+    // حذف الشعار من قاعدة البيانات
+    await PredefinedImageSchema.deleteOne({ id: imageId });
 
     res.status(200).json({
       success: true,
       message: "تم حذف الشعار الجاهز بنجاح",
-      data: { imageId, deletedImage: imageToDelete },
+      data: { 
+        imageId, 
+        deletedImage: {
+          ...imageToDelete.toObject(),
+          _id: undefined,
+        }
+      },
     });
   } catch (error) {
     console.error("Error deleting predefined image:", error);
@@ -506,7 +455,7 @@ export const updatePredefinedImage = async (req, res) => {
     }
 
     const { imageId } = req.params;
-    const { name, category, description } = req.body;
+    const { name, categoryId, description } = req.body;
 
     if (!imageId) {
       return res.status(400).json({
@@ -516,13 +465,10 @@ export const updatePredefinedImage = async (req, res) => {
       });
     }
 
-    // تحميل البيانات الحالية
-    const currentImages = await loadPredefinedImages();
-
     // البحث عن الشعار
-    const imageIndex = currentImages.findIndex((img) => img.id === imageId);
+    const existingImage = await PredefinedImageSchema.findOne({ id: imageId });
 
-    if (imageIndex === -1) {
+    if (!existingImage) {
       return res.status(404).json({
         success: false,
         message: "لم يتم العثور على الشعار",
@@ -531,22 +477,25 @@ export const updatePredefinedImage = async (req, res) => {
     }
 
     // تحديث بيانات الشعار
-    const updatedImage = {
-      ...currentImages[imageIndex],
-      ...(name && { name: name.trim() }),
-      ...(category && { category: category.trim() }),
-      ...(description && { description: description.trim() }),
-      updatedAt: new Date().toISOString(),
-      updatedBy: req.admin?.username || "admin",
-    };
-
-    currentImages[imageIndex] = updatedImage;
-    await savePredefinedImages(currentImages);
+    const updatedImage = await PredefinedImageSchema.findOneAndUpdate(
+      { id: imageId },
+      {
+        ...(name && { name: name.trim() }),
+        ...(categoryId && { categoryId: categoryId.trim() }),
+        ...(description && { description: description.trim() }),
+        updatedAt: new Date(),
+        updatedBy: req.admin?.username || "admin",
+      },
+      { new: true, lean: true }
+    );
 
     res.status(200).json({
       success: true,
       message: "تم تحديث الشعار الجاهز بنجاح",
-      data: updatedImage,
+      data: {
+        ...updatedImage,
+        _id: undefined,
+      },
     });
   } catch (error) {
     console.error("Error updating predefined image:", error);
@@ -572,18 +521,28 @@ export const resetPredefinedImages = async (req, res) => {
     }
 
     const updatedBy = req.admin?.username || "admin";
+    
+    // حذف جميع الشعارات الموجودة
+    await PredefinedImageSchema.deleteMany({});
+    
+    // إنشاء الشعارات الافتراضية مع تحديث updatedBy
     const defaultImages = DEFAULT_PREDEFINED_IMAGES.map((img) => ({
       ...img,
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date(),
       updatedBy,
     }));
 
-    await savePredefinedImages(defaultImages);
+    const insertedImages = await PredefinedImageSchema.insertMany(defaultImages);
+
+    const cleanImages = insertedImages.map(img => ({
+      ...img.toObject(),
+      _id: undefined,
+    }));
 
     res.status(200).json({
       success: true,
       message: "تم إعادة تعيين الشعارات الجاهزة إلى القيم الافتراضية بنجاح",
-      data: defaultImages,
+      data: cleanImages,
     });
   } catch (error) {
     console.error("Error resetting predefined images:", error);
@@ -592,6 +551,84 @@ export const resetPredefinedImages = async (req, res) => {
       success: false,
       message: "حدث خطأ أثناء إعادة تعيين الشعارات الجاهزة",
       error: "RESET_PREDEFINED_IMAGES_FAILED",
+    });
+  }
+};
+
+// الحصول على الشعارات حسب التصنيف (عام - بدون مصادقة)
+export const getPredefinedImagesByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    if (!categoryId) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف التصنيف مطلوب",
+        error: "CATEGORY_ID_REQUIRED",
+      });
+    }
+
+    const images = await PredefinedImageSchema.find({ categoryId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const cleanImages = images.map(img => ({
+      ...img,
+      _id: undefined,
+    }));
+
+    res.status(200).json({
+      success: true,
+      message: "تم الحصول على الشعارات بنجاح",
+      data: cleanImages,
+    });
+  } catch (error) {
+    console.error("Error getting images by category:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "حدث خطأ أثناء الحصول على الشعارات",
+      error: "GET_IMAGES_BY_CATEGORY_FAILED",
+    });
+  }
+};
+
+// الحصول على الشعارات مع معلومات التصنيفات (عام - بدون مصادقة)
+export const getPredefinedImagesWithCategories = async (req, res) => {
+  try {
+    const images = await PredefinedImageSchema.find().sort({ createdAt: -1 }).lean();
+    const categories = await CategoryModel.getCategories();
+
+    // إضافة معلومات التصنيف لكل صورة
+    const imagesWithCategories = images.map(image => {
+      const category = categories.find(cat => cat.id === image.categoryId);
+      return {
+        ...image,
+        _id: undefined,
+        category: category ? {
+          id: category.id,
+          name: category.name,
+          color: category.color,
+          icon: category.icon,
+        } : null,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "تم الحصول على الشعارات مع التصنيفات بنجاح",
+      data: {
+        images: imagesWithCategories,
+        categories,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting images with categories:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "حدث خطأ أثناء الحصول على الشعارات",
+      error: "GET_IMAGES_WITH_CATEGORIES_FAILED",
     });
   }
 };

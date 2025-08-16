@@ -1,0 +1,46 @@
+[
+  {
+    "id": "general",
+    "name": "عام",
+    "description": "صور عامة ومتنوعة",
+    "color": "#6B7280",
+    "icon": "folder",
+    "isDefault": true,
+    "order": 1,
+    "createdAt": "2025-01-15T10:00:00.000Z",
+    "updatedBy": "system"
+  },
+  {
+    "id": "logos",
+    "name": "شعارات",
+    "description": "شعارات الشركات والمؤسسات",
+    "color": "#3B82F6",
+    "icon": "star",
+    "isDefault": true,
+    "order": 2,
+    "createdAt": "2025-01-15T10:00:00.000Z",
+    "updatedBy": "system"
+  },
+  {
+    "id": "symbols",
+    "name": "رموز ورسوم",
+    "description": "رموز وأشكال هندسية",
+    "color": "#10B981",
+    "icon": "shapes",
+    "isDefault": true,
+    "order": 3,
+    "createdAt": "2025-01-15T10:00:00.000Z",
+    "updatedBy": "system"
+  },
+  {
+    "id": "text-designs",
+    "name": "تصاميم نصية",
+    "description": "تصاميم وخطوط نصية",
+    "color": "#F59E0B",
+    "icon": "type",
+    "isDefault": true,
+    "order": 4,
+    "createdAt": "2025-01-15T10:00:00.000Z",
+    "updatedBy": "system"
+  }
+]

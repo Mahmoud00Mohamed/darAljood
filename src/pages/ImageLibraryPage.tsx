@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Images,
   Upload,
@@ -30,6 +30,7 @@ import ConfirmationModal from "../components/ui/ConfirmationModal";
 const ImageLibraryPage: React.FC = () => {
   const {
     predefinedImages,
+    categories,
     userImages,
     selectedImages,
     selectImage,
@@ -45,6 +46,8 @@ const ImageLibraryPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"predefined" | "user">(
     "predefined"
   );
+  const [selectedCategoryFilter, setSelectedCategoryFilter] =
+    useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedImageForView, setSelectedImageForView] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -55,6 +58,36 @@ const ImageLibraryPage: React.FC = () => {
   const [imageToDelete, setImageToDelete] =
     useState<CloudinaryImageData | null>(null);
 
+  // تحميل مسبق للصور المرئية عند تحميل الصفحة
+  useEffect(() => {
+    const preloadVisibleImages = async () => {
+      // تحميل أول 12 صورة من الشعارات الجاهزة فوراً
+      const visiblePredefined = predefinedImages.slice(0, 12);
+      const preloadPromises = visiblePredefined.map((image, index) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.loading = "eager";
+        img.decoding = index < 6 ? "sync" : "async";
+        img.fetchPriority = index < 6 ? "high" : "auto";
+        img.src = image.url;
+        return img;
+      });
+
+      // تحميل الصور بالتوازي
+      await Promise.allSettled(
+        preloadPromises.map((img) => {
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })
+      );
+    };
+
+    if (predefinedImages.length > 0) {
+      preloadVisibleImages();
+    }
+  }, [predefinedImages]);
   const handleImageUpload = (imageData: CloudinaryImageData) => {
     addUserImage(imageData);
   };
@@ -107,12 +140,18 @@ const ImageLibraryPage: React.FC = () => {
     imageModal.openModal();
   };
 
-  const filteredPredefinedImages = predefinedImages.filter(
-    (image) =>
+  const filteredPredefinedImages = predefinedImages.filter((image) => {
+    const matchesSearch =
       image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (image.description &&
-        image.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+        image.description.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesCategory =
+      selectedCategoryFilter === "all" ||
+      image.categoryId === selectedCategoryFilter;
+
+    return matchesSearch && matchesCategory;
+  });
 
   const filteredUserImages = userImages.filter((image) =>
     image.publicId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -126,8 +165,21 @@ const ImageLibraryPage: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const getIconComponent = (iconId: string) => {
+    const iconMap: {
+      [key: string]: React.ComponentType<{ className?: string }>;
+    } = {
+      folder: Images,
+      star: Star,
+      shapes: Images,
+      type: User,
+      image: Images,
+    };
+    return iconMap[iconId] || Images;
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-4 sm:py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-4 sm:py-8 mobile-content-padding">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -150,11 +202,8 @@ const ImageLibraryPage: React.FC = () => {
         </motion.div>
 
         {selectedImages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6"
-          >
+          // MODIFIED: Replaced motion.div with a regular div
+          <div className="bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
@@ -179,15 +228,11 @@ const ImageLibraryPage: React.FC = () => {
                 </Link>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-8"
-        >
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-8">
+          {/* Search and Tabs */}
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             <div className="relative w-full lg:flex-1 lg:max-w-md">
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
@@ -231,19 +276,62 @@ const ImageLibraryPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </motion.div>
+
+          {/* Category Filter for Predefined Images */}
+          {activeTab === "predefined" && categories.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <h4 className="text-sm font-medium text-gray-700 mb-3">
+                فلترة حسب التصنيف
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedCategoryFilter("all")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    selectedCategoryFilter === "all"
+                      ? "bg-[#563660] text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <Images className="w-4 h-4" />
+                  الكل ({predefinedImages.length})
+                </button>
+                {categories.map((category) => {
+                  const IconComponent = getIconComponent(category.icon);
+                  const categoryCount = predefinedImages.filter(
+                    (img) => img.categoryId === category.id
+                  ).length;
+
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategoryFilter(category.id)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        selectedCategoryFilter === category.id
+                          ? "text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                      style={{
+                        backgroundColor:
+                          selectedCategoryFilter === category.id
+                            ? category.color
+                            : undefined,
+                      }}
+                    >
+                      <IconComponent className="w-4 h-4" />
+                      {category.name} ({categoryCount})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
           <div className="lg:col-span-3">
             <AnimatePresence mode="wait">
               {activeTab === "predefined" && (
-                <motion.div
-                  key="predefined"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3 }}
-                >
+                <div key="predefined">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-12 sm:py-20">
                       <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-[#563660]" />
@@ -279,12 +367,10 @@ const ImageLibraryPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-6">
-                      {filteredPredefinedImages.map((image, index) => (
-                        <motion.div
+                      {filteredPredefinedImages.map((image) => (
+                        // MODIFIED: Replaced motion.div with a regular div
+                        <div
                           key={image.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
                           className="relative group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all"
                         >
                           <div className="aspect-square p-2 sm:p-4">
@@ -300,8 +386,23 @@ const ImageLibraryPage: React.FC = () => {
                             <h3 className="font-medium text-gray-900 text-xs sm:text-sm truncate mb-1">
                               {image.name}
                             </h3>
+                            <div className="flex items-center gap-1 mb-1">
+                              {image.category && (
+                                <>
+                                  <div
+                                    className="w-2 h-2 rounded-full"
+                                    style={{
+                                      backgroundColor: image.category.color,
+                                    }}
+                                  />
+                                  <p className="text-xs text-gray-500 truncate">
+                                    {image.category.name}
+                                  </p>
+                                </>
+                              )}
+                            </div>
                             {image.description && (
-                              <p className="text-xs text-gray-500 truncate">
+                              <p className="text-xs text-gray-400 truncate">
                                 {image.description}
                               </p>
                             )}
@@ -333,22 +434,15 @@ const ImageLibraryPage: React.FC = () => {
                               <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                             </button>
                           </div>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   )}
-                </motion.div>
+                </div>
               )}
 
               {activeTab === "user" && (
-                <motion.div
-                  key="user"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                >
+                <div key="user" className="space-y-6">
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
                     <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                       <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-[#563660]" />
@@ -383,12 +477,10 @@ const ImageLibraryPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-6">
-                      {filteredUserImages.map((image, index) => (
-                        <motion.div
+                      {filteredUserImages.map((image) => (
+                        // MODIFIED: Replaced motion.div with a regular div
+                        <div
                           key={image.publicId}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
                           className="relative group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all"
                         >
                           <div className="aspect-square p-2 sm:p-4">
@@ -446,22 +538,17 @@ const ImageLibraryPage: React.FC = () => {
                               )}
                             </button>
                           </div>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   )}
-                </motion.div>
+                </div>
               )}
             </AnimatePresence>
           </div>
 
           <div className="hidden lg:block lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6"
-            >
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 الصور المحددة
               </h3>
@@ -552,19 +639,13 @@ const ImageLibraryPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
 
         <AnimatePresence>
           {showSelectedSidebar && (
-            <motion.div
-              initial={{ opacity: 0, x: "100%" }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: "100%" }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-y-0 right-0 w-4/5 sm:w-80 bg-white z-50 overflow-y-auto shadow-lg"
-            >
+            <div className="fixed inset-y-0 right-0 w-4/5 sm:w-80 bg-white z-50 overflow-y-auto shadow-lg">
               <div className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-medium text-gray-900">
@@ -669,10 +750,16 @@ const ImageLibraryPage: React.FC = () => {
                       </div>
                       <div className="text-xs text-gray-600">محددة</div>
                     </div>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <div className="text-sm font-bold text-[#563660]">
+                        {categories.length}
+                      </div>
+                      <div className="text-xs text-gray-600">تصنيف</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
 

@@ -31,25 +31,28 @@
   will-change: transform;
   backface-visibility: hidden;
   transform: translateZ(0);
+  image-rendering: optimizeSpeed;
   image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
 }
 
 /* تحسين الانيميشن */
 .gallery-photo img {
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* تحسين عرض الصور على الشاشات عالية الدقة */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+/* تحسين السرعة على جميع الشاشات */
+@media screen {
   .gallery-photo img {
+    image-rendering: optimizeSpeed;
     image-rendering: -webkit-optimize-contrast;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 }
 
 /* Modal animations */
 .gallery-modal-backdrop {
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(2px);
   will-change: backdrop-filter;
 }
 
@@ -73,7 +76,7 @@
     rgba(255, 255, 255, 0.2),
     transparent
   );
-  transition: left 0.5s;
+  transition: left 0.3s;
 }
 
 .gallery-filter-button:hover::before {
@@ -88,12 +91,14 @@
 /* تحسين عرض الشبكة */
 .gallery-grid {
   contain: layout style paint;
+  content-visibility: auto;
 }
 
 /* تحسين الذاكرة للصور */
 .gallery-photo img {
   content-visibility: auto;
-  contain-intrinsic-size: 400px 400px;
+  contain-intrinsic-size: 300px 300px;
+  image-rendering: optimizeSpeed;
 }
 
 /* Responsive grid utilities */
@@ -105,9 +110,11 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  /* تحسين للهواتف */
+  /* تحسين السرعة للهواتف */
   .gallery-photo img {
+    image-rendering: optimizeSpeed;
     image-rendering: -webkit-optimize-contrast;
+    will-change: auto;
   }
 }
 
@@ -131,8 +138,9 @@
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
-  /* تحسين للشاشات الكبيرة */
+  /* تحسين السرعة للشاشات الكبيرة */
   .gallery-photo {
     contain: layout style paint;
+    content-visibility: auto;
   }
 }

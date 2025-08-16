@@ -2,7 +2,11 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { PhotoModalProps } from "../types";
-import { optimizeImageUrl, preloadImage } from "../utils";
+import {
+  optimizeImageUrl,
+  optimizeImageUrlForSpeed,
+  preloadImage,
+} from "../utils";
 
 export const PhotoModal: React.FC<
   PhotoModalProps & {
@@ -21,11 +25,16 @@ export const PhotoModal: React.FC<
   hasPrev = false,
   rtl = true,
 }) => {
-  // تحميل مسبق للصورة الحالية والصور المجاورة
+  // تحميل فوري للصورة الحالية
   useEffect(() => {
     if (photo && isOpen) {
-      // تحميل الصورة الحالية بدقة عالية
-      preloadImage(optimizeImageUrl(photo.src, 1200));
+      // تحميل فوري للصورة الحالية بدقة متوسطة أولاً
+      preloadImage(optimizeImageUrlForSpeed(photo.src, 800, 75), true);
+
+      // تحميل الصورة بدقة عالية في الخلفية
+      setTimeout(() => {
+        preloadImage(optimizeImageUrl(photo.src, 1200), false);
+      }, 500);
     }
   }, [photo, isOpen]);
 
@@ -127,7 +136,7 @@ export const PhotoModal: React.FC<
             )}
 
             <img
-              src={optimizeImageUrl(photo.src, 1200)}
+              src={optimizeImageUrlForSpeed(photo.src, 800, 75)}
               alt={photo.alt || photo.title}
               className="w-full h-96 object-cover"
               loading="eager"

@@ -22,6 +22,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Check,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import orderService, {
@@ -56,12 +57,14 @@ const OrdersManagement: React.FC = () => {
   const [pendingTotalPages, setPendingTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalPendingOrders, setTotalPendingOrders] = useState(0);
-  const [ordersPerPage] = useState(10); // عدد الطلبات في كل صفحة
+  const [ordersPerPage] = useState(10);
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<OrderData | null>(null);
+  const [orderToConfirm, setOrderToConfirm] = useState<OrderData | null>(null);
   const [newStatus, setNewStatus] = useState("");
   const [statusNote, setStatusNote] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isConfirmingOrder, setIsConfirmingOrder] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfLoadingStage, setPdfLoadingStage] = useState<
     "capturing" | "generating" | "completed"
@@ -75,6 +78,7 @@ const OrdersManagement: React.FC = () => {
   const orderDetailsModal = useModal();
   const deleteOrderModal = useModal();
   const updateStatusModal = useModal();
+  const confirmOrderModal = useModal();
 
   const orderStatuses = [
     { value: "pending", name: "قيد المراجعة", color: "text-amber-600" },
@@ -100,7 +104,7 @@ const OrdersManagement: React.FC = () => {
         limit: ordersPerPage,
         search: searchTerm,
         status: statusFilter,
-        includePending: false, // استبعاد الطلبات قيد المراجعة
+        includePending: false,
       });
       setOrders(result.orders);
       setTotalPages(result.pagination.totalPages);
@@ -122,7 +126,8 @@ const OrdersManagement: React.FC = () => {
       const result = await orderService.getAllOrders(token, {
         page: pendingCurrentPage,
         limit: ordersPerPage,
-        status: "pending", // فقط الطلبات قيد المراجعة
+        search: searchTerm,
+        status: "pending",
         includePending: true,
       });
       setPendingOrders(result.orders);
@@ -160,9 +165,10 @@ const OrdersManagement: React.FC = () => {
     loadStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pendingCurrentPage, activeTab]);
+
   const handleSearch = () => {
     if (activeTab === "confirmed") {
-      setCurrentPage(1); // إعادة تعيين الصفحة للأولى عند البحث
+      setCurrentPage(1);
       loadOrders();
     } else {
       setPendingCurrentPage(1);
@@ -185,11 +191,14 @@ const OrdersManagement: React.FC = () => {
   const handleStatusFilterChange = (status: string) => {
     setStatusFilter(status);
     if (activeTab === "confirmed") {
-      setCurrentPage(1); // إعادة تعيين الصفحة للأولى عند تغيير الفلتر
+      setCurrentPage(1);
+      loadOrders();
     } else {
       setPendingCurrentPage(1);
+      loadPendingOrders();
     }
   };
+
   const handleViewOrder = (order: OrderData) => {
     setSelectedOrder(order);
     orderDetailsModal.openModal();
@@ -204,7 +213,6 @@ const OrdersManagement: React.FC = () => {
 
       await orderService.deleteOrder(orderToDelete.id, token);
 
-      // حذف من القائمة المناسبة
       if (orderToDelete.status === "pending") {
         setPendingOrders((prev) =>
           prev.filter((order) => order.id !== orderToDelete.id)
@@ -217,7 +225,6 @@ const OrdersManagement: React.FC = () => {
 
       await loadStats();
 
-      // إذا كانت الصفحة الحالية فارغة بعد الحذف، انتقل للصفحة السابقة
       if (activeTab === "confirmed" && orders.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       } else if (
@@ -227,7 +234,6 @@ const OrdersManagement: React.FC = () => {
       ) {
         setPendingCurrentPage(pendingCurrentPage - 1);
       } else {
-        // إعادة تحميل الطلبات لتحديث العدد
         if (activeTab === "confirmed") {
           loadOrders();
         } else {
@@ -239,6 +245,41 @@ const OrdersManagement: React.FC = () => {
       setOrderToDelete(null);
     } catch (error) {
       setError(error instanceof Error ? error.message : "فشل في حذف الطلب");
+    }
+  };
+
+  const handleConfirmOrder = async () => {
+    if (!orderToConfirm) return;
+
+    setIsConfirmingOrder(true);
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      await orderService.updateOrderStatus(
+        orderToConfirm.id,
+        "confirmed",
+        "تم تأكيد الطلب",
+        token
+      );
+
+      // Remove from pending orders
+      setPendingOrders((prev) =>
+        prev.filter((order) => order.id !== orderToConfirm.id)
+      );
+
+      // Reload orders if on confirmed tab
+      if (activeTab === "confirmed") {
+        loadOrders();
+      }
+
+      await loadStats();
+      confirmOrderModal.closeModal();
+      setOrderToConfirm(null);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "فشل في تأكيد الطلب");
+    } finally {
+      setIsConfirmingOrder(false);
     }
   };
 
@@ -257,18 +298,14 @@ const OrdersManagement: React.FC = () => {
         token
       );
 
-      // إذا تم تأكيد طلب كان قيد المراجعة، انقله من قائمة المراجعة إلى الطلبات المؤكدة
       if (selectedOrder.status === "pending" && newStatus === "confirmed") {
-        // إزالة من قائمة المراجعة
         setPendingOrders((prev) =>
           prev.filter((order) => order.id !== selectedOrder.id)
         );
-        // إضافة إلى الطلبات المؤكدة (سيتم تحديثها في التحميل التالي)
         if (activeTab === "confirmed") {
           loadOrders();
         }
       } else {
-        // تحديث في القائمة المناسبة
         if (selectedOrder.status === "pending") {
           setPendingOrders((prev) =>
             prev.map((order) =>
@@ -316,7 +353,6 @@ const OrdersManagement: React.FC = () => {
     }).format(price);
   };
 
-  // Convert JacketConfig to JacketState for PDF generation
   const convertToJacketState = (
     jacketConfig: OrderData["items"][0]["jacketConfig"]
   ): JacketState => {
@@ -325,7 +361,7 @@ const OrdersManagement: React.FC = () => {
       materials: {
         body: jacketConfig.materials.body as JacketMaterial,
         sleeves: jacketConfig.materials.sleeves as JacketMaterial,
-        trim: jacketConfig.materials.body as JacketMaterial, // Use body material as fallback for trim
+        trim: jacketConfig.materials.body as JacketMaterial,
       },
       size: jacketConfig.size as
         | "XS"
@@ -363,18 +399,17 @@ const OrdersManagement: React.FC = () => {
       uploadedImages: jacketConfig.uploadedImages || [],
     };
   };
+
   const handleDownloadPDF = async (order: OrderData) => {
     setIsGeneratingPDF(true);
     setShowPdfLoadingOverlay(true);
     setPdfLoadingStage("capturing");
 
     try {
-      // التأكد من تحميل الخطوط قبل بدء العملية
       await fontPreloader.preloadAllFonts();
 
       let jacketImages: string[] = [];
 
-      // التقاط صور الجاكيت من التكوين المحفوظ
       if (jacketImageCaptureRef.current && order.items.length > 0) {
         try {
           const convertedConfig = convertToJacketState(
@@ -389,11 +424,9 @@ const OrdersManagement: React.FC = () => {
         }
       }
 
-      // الانتقال لمرحلة إنشاء PDF
       setPdfLoadingStage("generating");
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // إنشاء PDF
       const pdfBlob = await generateOrderPDFWithImages(
         {
           cartItems: order.items.map((item) => ({
@@ -410,11 +443,9 @@ const OrdersManagement: React.FC = () => {
         jacketImages
       );
 
-      // مرحلة الإكمال
       setPdfLoadingStage("completed");
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // تحميل الملف
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement("a");
       link.href = url;
@@ -434,6 +465,7 @@ const OrdersManagement: React.FC = () => {
   const handlePdfLoadingComplete = () => {
     setShowPdfLoadingOverlay(false);
   };
+
   const getStatusColor = (status: string) => {
     const statusObj = orderStatuses.find((s) => s.value === status);
     return statusObj?.color || "text-gray-600";
@@ -454,7 +486,6 @@ const OrdersManagement: React.FC = () => {
     return icons[status] || <Package className="w-4 h-4" />;
   };
 
-  // مكون Pagination
   const PaginationComponent = ({
     currentPageProp,
     totalPagesProp,
@@ -514,7 +545,6 @@ const OrdersManagement: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1">
-          {/* الذهاب للصفحة الأولى */}
           <button
             onClick={() => onPageChange(1)}
             disabled={currentPageProp === 1}
@@ -524,7 +554,6 @@ const OrdersManagement: React.FC = () => {
             <ChevronsRight className="w-4 h-4" />
           </button>
 
-          {/* الصفحة السابقة */}
           <button
             onClick={() => onPageChange(currentPageProp - 1)}
             disabled={currentPageProp === 1}
@@ -534,7 +563,6 @@ const OrdersManagement: React.FC = () => {
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          {/* أرقام الصفحات */}
           <div className="flex items-center gap-1">
             {getPageNumbers().map((page, index) => (
               <React.Fragment key={index}>
@@ -556,7 +584,6 @@ const OrdersManagement: React.FC = () => {
             ))}
           </div>
 
-          {/* الصفحة التالية */}
           <button
             onClick={() => onPageChange(currentPageProp + 1)}
             disabled={currentPageProp === totalPagesProp}
@@ -566,7 +593,6 @@ const OrdersManagement: React.FC = () => {
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          {/* الذهاب للصفحة الأخيرة */}
           <button
             onClick={() => onPageChange(totalPagesProp)}
             disabled={currentPageProp === totalPagesProp}
@@ -579,6 +605,7 @@ const OrdersManagement: React.FC = () => {
       </div>
     );
   };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -609,7 +636,7 @@ const OrdersManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* إحصائيات سريعة */}
+      {/* Statistics */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
@@ -658,8 +685,7 @@ const OrdersManagement: React.FC = () => {
         </div>
       )}
 
-      {/* تبويبات الطلبات */}
-      {/* تبويبات الطلبات */}
+      {/* Order Tabs */}
       <div className="bg-white rounded-lg border border-gray-200 p-1">
         <div className="flex flex-wrap gap-1">
           <button
@@ -687,7 +713,7 @@ const OrdersManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* أدوات البحث والفلترة */}
+      {/* Search and Filter Tools */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -699,6 +725,11 @@ const OrdersManagement: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pr-10 pl-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
               />
             </div>
           </div>
@@ -733,7 +764,7 @@ const OrdersManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* عرض الأخطاء */}
+      {/* Error Display */}
       <AnimatePresence>
         {error && (
           <motion.div
@@ -760,7 +791,7 @@ const OrdersManagement: React.FC = () => {
         onComplete={handlePdfLoadingComplete}
       />
 
-      {/* قائمة الطلبات */}
+      {/* Orders List */}
       {isLoading || isLoadingPending ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
@@ -794,6 +825,11 @@ const OrdersManagement: React.FC = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  {activeTab === "pending" && (
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      تأكيد
+                    </th>
+                  )}
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     رقم الطلب
                   </th>
@@ -824,6 +860,20 @@ const OrdersManagement: React.FC = () => {
                       transition={{ duration: 0.3, delay: index * 0.05 }}
                       className="hover:bg-gray-50 transition-colors"
                     >
+                      {activeTab === "pending" && (
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => {
+                              setOrderToConfirm(order);
+                              confirmOrderModal.openModal();
+                            }}
+                            className="flex items-center justify-center w-8 h-8 bg-green-100 hover:bg-green-200 text-green-600 rounded-full transition-colors"
+                            title="تأكيد الطلب"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                        </td>
+                      )}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <Package className="w-4 h-4 text-[#563660] mr-2" />
@@ -971,7 +1021,7 @@ const OrdersManagement: React.FC = () => {
         </div>
       )}
 
-      {/* نافذة تفاصيل الطلب */}
+      {/* Order Details Modal */}
       {selectedOrder && (
         <Modal
           isOpen={orderDetailsModal.isOpen}
@@ -982,9 +1032,7 @@ const OrdersManagement: React.FC = () => {
           options={orderDetailsModal.options}
         >
           <div className="space-y-3 max-h-[70vh] sm:max-h-[80vh] overflow-y-auto">
-            {/* معلومات مضغوطة للجوال */}
             <div className="grid grid-cols-1 gap-3">
-              {/* بطاقة معلومات الطلب */}
               <div className="bg-gradient-to-r from-[#563660] to-[#4b2e55] rounded-lg p-3 sm:p-4 text-white">
                 <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
                   <div>
@@ -1022,7 +1070,6 @@ const OrdersManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* معلومات العميل والتاريخ */}
               <div className="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-100">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
                   <div className="flex items-center gap-2 text-blue-800">
@@ -1061,7 +1108,6 @@ const OrdersManagement: React.FC = () => {
               </div>
             </div>
 
-            {/* عناصر الطلب مضغوطة */}
             <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
               <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
                 <Package className="w-4 h-4 text-[#563660]" />
@@ -1105,7 +1151,6 @@ const OrdersManagement: React.FC = () => {
               </div>
             </div>
 
-            {/* تاريخ الحالات مضغوط جداً للجوال */}
             <div className="bg-amber-50 rounded-lg p-3 sm:p-4 border border-amber-100">
               <h3 className="text-sm sm:text-base font-semibold text-amber-900 mb-2 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
@@ -1115,7 +1160,7 @@ const OrdersManagement: React.FC = () => {
                 {selectedOrder.statusHistory
                   .slice()
                   .reverse()
-                  .slice(0, 3) // عرض آخر 3 حالات فقط في الجوال
+                  .slice(0, 3)
                   .map((history, index) => (
                     <div
                       key={index}
@@ -1167,7 +1212,6 @@ const OrdersManagement: React.FC = () => {
               </div>
             </div>
 
-            {/* أزرار مضغوطة للجوال */}
             <div className="grid grid-cols-3 gap-2 pt-2">
               <button
                 onClick={() => {
@@ -1208,7 +1252,23 @@ const OrdersManagement: React.FC = () => {
         </Modal>
       )}
 
-      {/* نافذة تحديث الحالة */}
+      {/* Confirm Order Modal */}
+      <ConfirmationModal
+        isOpen={confirmOrderModal.isOpen}
+        onClose={() => {
+          confirmOrderModal.closeModal();
+          setOrderToConfirm(null);
+        }}
+        onConfirm={handleConfirmOrder}
+        title="تأكيد الطلب"
+        message={`هل تريد تأكيد الطلب رقم "${orderToConfirm?.orderNumber}"؟ سيتم نقله إلى الطلبات المؤكدة وإدراجه في الحسابات والإيرادات.`}
+        confirmText="نعم، أكد الطلب"
+        cancelText="إلغاء"
+        type="success"
+        isLoading={isConfirmingOrder}
+      />
+
+      {/* Update Status Modal */}
       {selectedOrder && (
         <Modal
           isOpen={updateStatusModal.isOpen}
@@ -1219,7 +1279,6 @@ const OrdersManagement: React.FC = () => {
           options={updateStatusModal.options}
         >
           <div className="space-y-4">
-            {/* تنبيه خاص للطلبات قيد المراجعة */}
             {selectedOrder.status === "pending" && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                 <div className="flex items-start gap-2">
@@ -1302,7 +1361,7 @@ const OrdersManagement: React.FC = () => {
         </Modal>
       )}
 
-      {/* نافذة تأكيد الحذف */}
+      {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={deleteOrderModal.isOpen}
         onClose={() => {

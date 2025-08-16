@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
+import MobileBottomNavigation from "./MobileBottomNavigation";
 import fontPreloader from "../../utils/fontPreloader";
 
 interface LayoutProps {
@@ -27,10 +28,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 pb-16 md:pb-0">
       <Header />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 mb-safe">{children}</main>
       <Footer />
+      <MobileBottomNavigation />
     </div>
   );
 };

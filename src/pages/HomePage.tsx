@@ -65,7 +65,7 @@ const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen mobile-content-padding">
       {/* Hero Section */}
       <section className="bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-20">

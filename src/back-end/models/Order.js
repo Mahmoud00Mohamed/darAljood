@@ -1,12 +1,4 @@
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// مسار ملف البيانات
-const DATA_FILE = path.join(__dirname, "../data/orders.json");
+import OrderSchema from "./schemas/OrderSchema.js";
 
 // حالات الطلب المتاحة
 export const ORDER_STATUSES = {
@@ -48,54 +40,9 @@ export const STATUS_COLORS = {
 };
 
 class OrderModel {
-  constructor() {
-    this.ensureDataDirectory();
-    this.ensureDataFile();
-  }
-
-  // التأكد من وجود مجلد البيانات
-  async ensureDataDirectory() {
-    const dataDir = path.dirname(DATA_FILE);
-    try {
-      await fs.access(dataDir);
-    } catch {
-      await fs.mkdir(dataDir, { recursive: true });
-    }
-  }
-
-  // التأكد من وجود ملف البيانات
-  async ensureDataFile() {
-    try {
-      await fs.access(DATA_FILE);
-    } catch {
-      await this.saveOrders([]);
-    }
-  }
-
-  // قراءة جميع الطلبات
-  async getOrders() {
-    try {
-      const data = await fs.readFile(DATA_FILE, "utf8");
-      const orders = JSON.parse(data);
-      return Array.isArray(orders) ? orders : [];
-    } catch (error) {
-      console.error("Error reading orders data:", error);
-      return [];
-    }
-  }
-
-  // حفظ الطلبات
-  async saveOrders(orders) {
-    try {
-      await fs.writeFile(DATA_FILE, JSON.stringify(orders, null, 2), "utf8");
-      return orders;
-    } catch (error) {
-      console.error("Error saving orders data:", error);
-      throw new Error("فشل في حفظ بيانات الطلبات");
-    }
-  }
-
-  // توليد رقم طلب فريد وبسيط
+  /**
+   * توليد رقم طلب فريد وبسيط
+   */
   generateOrderNumber() {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 1000);
@@ -106,7 +53,9 @@ class OrderModel {
     return orderNumber;
   }
 
-  // توليد رمز تتبع فريد
+  /**
+   * توليد رمز تتبع فريد
+   */
   generateTrackingCode() {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "";
@@ -116,14 +65,15 @@ class OrderModel {
     return result;
   }
 
-  // إنشاء طلب جديد
+  /**
+   * إنشاء طلب جديد
+   */
   async createOrder(orderData) {
     try {
-      const orders = await this.getOrders();
       const orderNumber = this.generateOrderNumber();
       const trackingCode = this.generateTrackingCode();
 
-      const newOrder = {
+      const newOrder = new OrderSchema({
         id: `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         orderNumber,
         trackingCode,
@@ -142,62 +92,95 @@ class OrderModel {
         statusHistory: [
           {
             status: ORDER_STATUSES.PENDING,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date(),
             note: "تم إنشاء الطلب",
             updatedBy: "system",
           },
         ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
         estimatedDelivery: this.calculateEstimatedDelivery(),
         notes: [],
+      });
+
+      const savedOrder = await newOrder.save();
+      
+      return {
+        ...savedOrder.toObject(),
+        _id: undefined,
       };
-
-      orders.push(newOrder);
-      await this.saveOrders(orders);
-
-      return newOrder;
     } catch (error) {
       console.error("Error creating order:", error);
       throw new Error("فشل في إنشاء الطلب");
     }
   }
 
-  // الحصول على طلب بواسطة رقم الطلب
+  /**
+   * الحصول على طلب بواسطة رقم الطلب
+   */
   async getOrderByNumber(orderNumber) {
     try {
-      const orders = await this.getOrders();
-      return orders.find((order) => order.orderNumber === orderNumber) || null;
+      const order = await OrderSchema.findOne({ orderNumber }).lean();
+      
+      if (!order) {
+        return null;
+      }
+
+      return {
+        ...order,
+        _id: undefined,
+      };
     } catch (error) {
       console.error("Error getting order by number:", error);
       return null;
     }
   }
 
-  // الحصول على طلب بواسطة رمز التتبع
+  /**
+   * الحصول على طلب بواسطة رمز التتبع
+   */
   async getOrderByTrackingCode(trackingCode) {
     try {
-      const orders = await this.getOrders();
-      return (
-        orders.find((order) => order.trackingCode === trackingCode) || null
-      );
+      const order = await OrderSchema.findOne({ trackingCode }).lean();
+      
+      if (!order) {
+        return null;
+      }
+
+      return {
+        ...order,
+        _id: undefined,
+      };
     } catch (error) {
       console.error("Error getting order by tracking code:", error);
       return null;
     }
   }
 
-  // تحديث حالة الطلب
+  /**
+   * الحصول على جميع الطلبات
+   */
+  async getOrders() {
+    try {
+      const orders = await OrderSchema.find().sort({ createdAt: -1 }).lean();
+      return orders.map(order => ({
+        ...order,
+        _id: undefined,
+      }));
+    } catch (error) {
+      console.error("Error getting orders:", error);
+      throw new Error("فشل في الحصول على الطلبات");
+    }
+  }
+
+  /**
+   * تحديث حالة الطلب
+   */
   async updateOrderStatus(orderId, newStatus, note = "", updatedBy = "admin") {
     try {
-      const orders = await this.getOrders();
-      const orderIndex = orders.findIndex((order) => order.id === orderId);
+      const order = await OrderSchema.findOne({ id: orderId });
 
-      if (orderIndex === -1) {
+      if (!order) {
         throw new Error("الطلب غير موجود");
       }
-
-      const order = orders[orderIndex];
 
       // التحقق من صحة الحالة الجديدة
       if (!Object.values(ORDER_STATUSES).includes(newStatus)) {
@@ -206,48 +189,49 @@ class OrderModel {
 
       // تحديث الحالة
       order.status = newStatus;
-      order.updatedAt = new Date().toISOString();
+      order.updatedAt = new Date();
 
       // إضافة إلى تاريخ الحالات
       order.statusHistory.push({
         status: newStatus,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(),
         note: note || STATUS_NAMES[newStatus],
         updatedBy,
       });
 
       // تحديث التاريخ المتوقع للتسليم إذا تم الشحن
       if (newStatus === ORDER_STATUSES.SHIPPED) {
-        order.shippedAt = new Date().toISOString();
+        order.shippedAt = new Date();
         order.estimatedDelivery = this.calculateDeliveryDate();
       }
 
       // تحديث تاريخ التسليم إذا تم التسليم
       if (newStatus === ORDER_STATUSES.DELIVERED) {
-        order.deliveredAt = new Date().toISOString();
+        order.deliveredAt = new Date();
       }
 
-      orders[orderIndex] = order;
-      await this.saveOrders(orders);
-
-      return order;
+      const updatedOrder = await order.save();
+      
+      return {
+        ...updatedOrder.toObject(),
+        _id: undefined,
+      };
     } catch (error) {
       console.error("Error updating order status:", error);
       throw new Error(error.message || "فشل في تحديث حالة الطلب");
     }
   }
 
-  // تحديث بيانات الطلب
+  /**
+   * تحديث بيانات الطلب
+   */
   async updateOrder(orderId, updateData, updatedBy = "admin") {
     try {
-      const orders = await this.getOrders();
-      const orderIndex = orders.findIndex((order) => order.id === orderId);
+      const order = await OrderSchema.findOne({ id: orderId });
 
-      if (orderIndex === -1) {
+      if (!order) {
         throw new Error("الطلب غير موجود");
       }
-
-      const order = orders[orderIndex];
 
       // تحديث معلومات العميل
       if (updateData.customerInfo) {
@@ -276,189 +260,204 @@ class OrderModel {
       }
 
       // تحديث تاريخ التعديل
-      order.updatedAt = new Date().toISOString();
+      order.updatedAt = new Date();
 
       // إضافة ملاحظة في تاريخ الحالات
       order.statusHistory.push({
         status: order.status,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(),
         note: "تم تعديل بيانات الطلب",
         updatedBy,
       });
 
-      orders[orderIndex] = order;
-      await this.saveOrders(orders);
-
-      return order;
+      const updatedOrder = await order.save();
+      
+      return {
+        ...updatedOrder.toObject(),
+        _id: undefined,
+      };
     } catch (error) {
       console.error("Error updating order:", error);
       throw new Error(error.message || "فشل في تحديث الطلب");
     }
   }
-  // إضافة ملاحظة للطلب
+
+  /**
+   * إضافة ملاحظة للطلب
+   */
   async addOrderNote(orderId, note, addedBy = "admin") {
     try {
-      const orders = await this.getOrders();
-      const orderIndex = orders.findIndex((order) => order.id === orderId);
+      const order = await OrderSchema.findOne({ id: orderId });
 
-      if (orderIndex === -1) {
+      if (!order) {
         throw new Error("الطلب غير موجود");
       }
 
-      const order = orders[orderIndex];
       order.notes = order.notes || [];
       order.notes.push({
         id: `note-${Date.now()}`,
         content: note,
         addedBy,
-        addedAt: new Date().toISOString(),
+        addedAt: new Date(),
       });
 
-      order.updatedAt = new Date().toISOString();
+      order.updatedAt = new Date();
 
-      orders[orderIndex] = order;
-      await this.saveOrders(orders);
-
-      return order;
+      const updatedOrder = await order.save();
+      
+      return {
+        ...updatedOrder.toObject(),
+        _id: undefined,
+      };
     } catch (error) {
       console.error("Error adding order note:", error);
       throw new Error("فشل في إضافة الملاحظة");
     }
   }
 
-  // حساب التاريخ المتوقع للتسليم (30-45 يوم من تاريخ الإنشاء)
+  /**
+   * حساب التاريخ المتوقع للتسليم (30-45 يوم من تاريخ الإنشاء)
+   */
   calculateEstimatedDelivery() {
     const now = new Date();
     const estimatedDays = 35; // متوسط 35 يوم
     const estimatedDate = new Date(
       now.getTime() + estimatedDays * 24 * 60 * 60 * 1000
     );
-    return estimatedDate.toISOString();
+    return estimatedDate;
   }
 
-  // حساب تاريخ التسليم المتوقع بعد الشحن (2-3 أيام)
+  /**
+   * حساب تاريخ التسليم المتوقع بعد الشحن (2-3 أيام)
+   */
   calculateDeliveryDate() {
     const now = new Date();
     const deliveryDays = 3; // 3 أيام للتسليم
     const deliveryDate = new Date(
       now.getTime() + deliveryDays * 24 * 60 * 60 * 1000
     );
-    return deliveryDate.toISOString();
+    return deliveryDate;
   }
 
-  // البحث في الطلبات
+  /**
+   * البحث في الطلبات
+   */
   async searchOrders(query, filters = {}) {
     try {
-      const orders = await this.getOrders();
-      let filteredOrders = orders;
+      let searchQuery = {};
 
       // فلترة حسب الحالة
       if (filters.status) {
-        filteredOrders = filteredOrders.filter(
-          (order) => order.status === filters.status
-        );
+        searchQuery.status = filters.status;
       }
 
       // فلترة حسب التاريخ
-      if (filters.dateFrom) {
-        filteredOrders = filteredOrders.filter(
-          (order) => new Date(order.createdAt) >= new Date(filters.dateFrom)
-        );
-      }
-
-      if (filters.dateTo) {
-        filteredOrders = filteredOrders.filter(
-          (order) => new Date(order.createdAt) <= new Date(filters.dateTo)
-        );
+      if (filters.dateFrom || filters.dateTo) {
+        searchQuery.createdAt = {};
+        if (filters.dateFrom) {
+          searchQuery.createdAt.$gte = new Date(filters.dateFrom);
+        }
+        if (filters.dateTo) {
+          searchQuery.createdAt.$lte = new Date(filters.dateTo);
+        }
       }
 
       // البحث النصي
       if (query) {
-        const searchQuery = query.toLowerCase();
-        filteredOrders = filteredOrders.filter(
-          (order) =>
-            order.orderNumber.toLowerCase().includes(searchQuery) ||
-            order.trackingCode.toLowerCase().includes(searchQuery) ||
-            order.customerInfo.name.toLowerCase().includes(searchQuery) ||
-            order.customerInfo.phone.includes(searchQuery)
-        );
+        const searchRegex = new RegExp(query, 'i');
+        searchQuery.$or = [
+          { orderNumber: searchRegex },
+          { trackingCode: searchRegex },
+          { "customerInfo.name": searchRegex },
+          { "customerInfo.phone": searchRegex },
+        ];
       }
 
-      return filteredOrders.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      const orders = await OrderSchema.find(searchQuery)
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return orders.map(order => ({
+        ...order,
+        _id: undefined,
+      }));
     } catch (error) {
       console.error("Error searching orders:", error);
       throw new Error("فشل في البحث عن الطلبات");
     }
   }
 
-  // الحصول على إحصائيات الطلبات
+  /**
+   * الحصول على إحصائيات الطلبات
+   */
   async getOrderStats() {
     try {
-      const orders = await this.getOrders();
+      const totalOrders = await OrderSchema.countDocuments();
+      
+      // إحصائيات حسب الحالة
+      const statusStats = await OrderSchema.aggregate([
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+            totalValue: { $sum: "$totalPrice" }
+          }
+        }
+      ]);
 
-      // فصل الطلبات قيد المراجعة عن باقي الطلبات
-      const pendingOrders = orders.filter(
-        (o) => o.status === ORDER_STATUSES.PENDING
-      );
-      const confirmedOrders = orders.filter(
-        (o) => o.status !== ORDER_STATUSES.PENDING
-      );
-
+      // تحويل النتائج إلى كائن
       const stats = {
-        total: confirmedOrders.length, // استبعاد الطلبات قيد المراجعة من العدد الإجمالي
-        pending: orders.filter((o) => o.status === ORDER_STATUSES.PENDING)
-          .length,
-        confirmed: confirmedOrders.filter(
-          (o) => o.status === ORDER_STATUSES.CONFIRMED
-        ).length,
-        inProduction: confirmedOrders.filter(
-          (o) => o.status === ORDER_STATUSES.IN_PRODUCTION
-        ).length,
-        shipped: confirmedOrders.filter(
-          (o) => o.status === ORDER_STATUSES.SHIPPED
-        ).length,
-        delivered: confirmedOrders.filter(
-          (o) => o.status === ORDER_STATUSES.DELIVERED
-        ).length,
-        cancelled: confirmedOrders.filter(
-          (o) => o.status === ORDER_STATUSES.CANCELLED
-        ).length,
-        totalRevenue: confirmedOrders
-          .filter(
-            (o) =>
-              o.status !== ORDER_STATUSES.CANCELLED &&
-              o.status !== ORDER_STATUSES.PENDING
-          )
-          .reduce((sum, order) => sum + order.totalPrice, 0),
+        total: totalOrders,
+        pending: 0,
+        confirmed: 0,
+        inProduction: 0,
+        shipped: 0,
+        delivered: 0,
+        cancelled: 0,
+        totalRevenue: 0,
         averageOrderValue: 0,
         thisMonth: 0,
         lastMonth: 0,
-        // إضافة إحصائيات منفصلة للطلبات قيد المراجعة
         pendingReview: {
-          total: pendingOrders.length,
-          totalValue: pendingOrders.reduce(
-            (sum, order) => sum + order.totalPrice,
-            0
-          ),
-          thisMonth: pendingOrders.filter(
-            (o) =>
-              new Date(o.createdAt) >=
-              new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-          ).length,
+          total: 0,
+          totalValue: 0,
+          thisMonth: 0,
         },
       };
 
+      // ملء الإحصائيات
+      statusStats.forEach(stat => {
+        switch (stat._id) {
+          case ORDER_STATUSES.PENDING:
+            stats.pending = stat.count;
+            stats.pendingReview.total = stat.count;
+            stats.pendingReview.totalValue = stat.totalValue;
+            break;
+          case ORDER_STATUSES.CONFIRMED:
+            stats.confirmed = stat.count;
+            stats.totalRevenue += stat.totalValue;
+            break;
+          case ORDER_STATUSES.IN_PRODUCTION:
+            stats.inProduction = stat.count;
+            stats.totalRevenue += stat.totalValue;
+            break;
+          case ORDER_STATUSES.SHIPPED:
+            stats.shipped = stat.count;
+            stats.totalRevenue += stat.totalValue;
+            break;
+          case ORDER_STATUSES.DELIVERED:
+            stats.delivered = stat.count;
+            stats.totalRevenue += stat.totalValue;
+            break;
+          case ORDER_STATUSES.CANCELLED:
+            stats.cancelled = stat.count;
+            break;
+        }
+      });
+
       // حساب متوسط قيمة الطلب
-      const validOrders = confirmedOrders.filter(
-        (o) =>
-          o.status !== ORDER_STATUSES.CANCELLED &&
-          o.status !== ORDER_STATUSES.PENDING
-      );
-      stats.averageOrderValue =
-        validOrders.length > 0 ? stats.totalRevenue / validOrders.length : 0;
+      const validOrdersCount = totalOrders - stats.pending - stats.cancelled;
+      stats.averageOrderValue = validOrdersCount > 0 ? stats.totalRevenue / validOrdersCount : 0;
 
       // حساب طلبات هذا الشهر والشهر الماضي
       const now = new Date();
@@ -466,15 +465,24 @@ class OrderModel {
       const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-      stats.thisMonth = confirmedOrders.filter(
-        (o) => new Date(o.createdAt) >= thisMonthStart
-      ).length;
+      const thisMonthCount = await OrderSchema.countDocuments({
+        createdAt: { $gte: thisMonthStart },
+        status: { $ne: ORDER_STATUSES.PENDING }
+      });
 
-      stats.lastMonth = confirmedOrders.filter(
-        (o) =>
-          new Date(o.createdAt) >= lastMonthStart &&
-          new Date(o.createdAt) <= lastMonthEnd
-      ).length;
+      const lastMonthCount = await OrderSchema.countDocuments({
+        createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
+        status: { $ne: ORDER_STATUSES.PENDING }
+      });
+
+      const pendingThisMonth = await OrderSchema.countDocuments({
+        createdAt: { $gte: thisMonthStart },
+        status: ORDER_STATUSES.PENDING
+      });
+
+      stats.thisMonth = thisMonthCount;
+      stats.lastMonth = lastMonthCount;
+      stats.pendingReview.thisMonth = pendingThisMonth;
 
       return stats;
     } catch (error) {
@@ -483,17 +491,17 @@ class OrderModel {
     }
   }
 
-  // حذف طلب
+  /**
+   * حذف طلب
+   */
   async deleteOrder(orderId) {
     try {
-      const orders = await this.getOrders();
-      const filteredOrders = orders.filter((order) => order.id !== orderId);
+      const result = await OrderSchema.deleteOne({ id: orderId });
 
-      if (filteredOrders.length === orders.length) {
+      if (result.deletedCount === 0) {
         throw new Error("الطلب غير موجود");
       }
 
-      await this.saveOrders(filteredOrders);
       return true;
     } catch (error) {
       console.error("Error deleting order:", error);

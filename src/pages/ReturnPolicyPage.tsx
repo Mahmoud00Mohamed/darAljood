@@ -149,7 +149,7 @@ const ReturnPolicyPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white mobile-content-padding">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-gray-50 to-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/4386321/pexels-photo-4386321.jpeg')] bg-cover bg-center opacity-5"></div>

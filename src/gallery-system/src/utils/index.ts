@@ -3,11 +3,16 @@ import { Photo } from "../types";
 // Cache للصور المحملة مسبقاً
 const imageCache = new Map<string, HTMLImageElement>();
 const preloadQueue = new Set<string>();
+const priorityQueue = new Set<string>();
+const loadingPromises = new Map<string, Promise<HTMLImageElement>>();
 
 /**
  * تحميل مسبق للصورة مع تخزين مؤقت
  */
-export const preloadImage = (src: string): Promise<HTMLImageElement> => {
+export const preloadImage = (
+  src: string,
+  priority: boolean = false
+): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     // إذا كانت الصورة محملة مسبقاً، أرجعها فوراً
     if (imageCache.has(src)) {
@@ -15,48 +20,85 @@ export const preloadImage = (src: string): Promise<HTMLImageElement> => {
       return;
     }
 
-    // إذا كانت الصورة قيد التحميل، انتظر
-    if (preloadQueue.has(src)) {
-      const checkCache = () => {
-        if (imageCache.has(src)) {
-          resolve(imageCache.get(src)!);
-        } else {
-          setTimeout(checkCache, 10);
-        }
-      };
-      checkCache();
+    // إذا كانت الصورة قيد التحميل، أرجع نفس الـ Promise
+    if (loadingPromises.has(src)) {
+      loadingPromises.get(src)!.then(resolve).catch(reject);
       return;
     }
 
-    preloadQueue.add(src);
+    const loadingPromise = new Promise<HTMLImageElement>(
+      (resolveInner, rejectInner) => {
+        preloadQueue.add(src);
+        if (priority) {
+          priorityQueue.add(src);
+        }
 
-    const img = new Image();
+        const img = new Image();
 
-    // تحسين إعدادات التحميل
-    img.crossOrigin = "anonymous";
-    img.decoding = "async";
-    img.fetchPriority = "high";
+        // تحسين إعدادات التحميل للسرعة القصوى
+        img.crossOrigin = "anonymous";
+        img.decoding = priority ? "sync" : "async";
+        img.fetchPriority = priority ? "high" : "auto";
+        img.loading = "eager";
 
-    img.onload = () => {
-      imageCache.set(src, img);
-      preloadQueue.delete(src);
-      resolve(img);
-    };
+        img.onload = () => {
+          imageCache.set(src, img);
+          preloadQueue.delete(src);
+          priorityQueue.delete(src);
+          loadingPromises.delete(src);
+          resolveInner(img);
+        };
 
-    img.onerror = () => {
-      preloadQueue.delete(src);
-      reject(new Error(`Failed to load image: ${src}`));
-    };
+        img.onerror = () => {
+          preloadQueue.delete(src);
+          priorityQueue.delete(src);
+          loadingPromises.delete(src);
+          rejectInner(new Error(`Failed to load image: ${src}`));
+        };
 
-    img.src = src;
+        img.src = src;
+      }
+    );
+
+    loadingPromises.set(src, loadingPromise);
+    loadingPromise.then(resolve).catch(reject);
   });
 };
 
 /**
- * تحميل مسبق لمجموعة من الصور بالتوازي
+ * تحميل مسبق لمجموعة من الصور بالتوازي مع إدارة الأولوية
  */
-export const preloadImages = async (urls: string[]): Promise<void> => {
-  const promises = urls.map((url) => preloadImage(url).catch(() => null));
+export const preloadImages = async (
+  urls: string[],
+  priority: boolean = false
+): Promise<void> => {
+  // تقسيم التحميل إلى مجموعات صغيرة لتجنب إرهاق الشبكة
+  const batchSize = priority ? 6 : 3;
+  const batches: string[][] = [];
+
+  for (let i = 0; i < urls.length; i += batchSize) {
+    batches.push(urls.slice(i, i + batchSize));
+  }
+
+  // تحميل المجموعات بالتتابع مع تأخير قصير بينها
+  for (const batch of batches) {
+    const promises = batch.map((url) =>
+      preloadImage(url, priority).catch(() => null)
+    );
+    await Promise.allSettled(promises);
+
+    // تأخير قصير بين المجموعات لتجنب إرهاق الشبكة
+    if (!priority && batches.indexOf(batch) < batches.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  }
+};
+
+/**
+ * تحميل فوري للصور ذات الأولوية العالية
+ */
+export const preloadImagesImmediate = async (urls: string[]): Promise<void> => {
+  const promises = urls.map((url) => preloadImage(url, true));
   await Promise.allSettled(promises);
 };
 
@@ -66,6 +108,8 @@ export const preloadImages = async (urls: string[]): Promise<void> => {
 export const clearImageCache = (): void => {
   imageCache.clear();
   preloadQueue.clear();
+  priorityQueue.clear();
+  loadingPromises.clear();
 };
 
 /**
@@ -73,6 +117,48 @@ export const clearImageCache = (): void => {
  */
 export const getCacheSize = (): number => {
   return imageCache.size;
+};
+
+/**
+ * تحسين URL الصورة للتحميل السريع
+ */
+export const optimizeImageUrlForSpeed = (
+  url: string,
+  width?: number,
+  quality: number = 75
+) => {
+  // تحسين URLs للصور مع إعدادات محسنة للسرعة القصوى
+  if (url.includes("unsplash.com")) {
+    const params = new URLSearchParams();
+    if (width) params.set("w", width.toString());
+    params.set("q", Math.min(quality, 75).toString()); // جودة أقل للسرعة
+    params.set("auto", "format,compress");
+    params.set("fit", "crop");
+    params.set("fm", "webp"); // تنسيق WebP للأداء الأفضل
+    params.set("dpr", "1"); // تقليل DPR للسرعة
+    params.set("cs", "tinysrgb"); // ضغط الألوان
+
+    return `${url}?${params.toString()}`;
+  }
+
+  // تحسين URLs لـ Cloudinary للسرعة القصوى
+  if (url.includes("cloudinary.com")) {
+    const parts = url.split("/upload/");
+    if (parts.length === 2) {
+      const transformations = [
+        "f_auto", // تنسيق تلقائي
+        "q_auto:low", // جودة منخفضة للسرعة
+        "c_fill", // ملء الإطار
+        width ? `w_${width}` : "w_300", // حجم أصغر للسرعة
+        "fl_progressive", // تحميل تدريجي
+        "fl_immutable_cache", // تخزين مؤقت دائم
+      ].join(",");
+
+      return `${parts[0]}/upload/${transformations}/${parts[1]}`;
+    }
+  }
+
+  return url;
 };
 
 export const getGridColumns = (columnsConfig?: {

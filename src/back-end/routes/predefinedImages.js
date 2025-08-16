@@ -6,6 +6,8 @@ import {
   deletePredefinedImage,
   updatePredefinedImage,
   resetPredefinedImages,
+  getPredefinedImagesByCategory,
+  getPredefinedImagesWithCategories,
 } from "../controllers/predefinedImagesController.js";
 import { authenticateAdmin } from "../middleware/auth.js";
 import { uploadRateLimit } from "../middleware/security.js";
@@ -14,6 +16,8 @@ const router = express.Router();
 
 // المسارات العامة (بدون مصادقة)
 router.get("/", getPredefinedImages);
+router.get("/with-categories", getPredefinedImagesWithCategories);
+router.get("/category/:categoryId", getPredefinedImagesByCategory);
 
 // المسارات الإدارية (تتطلب مصادقة)
 router.post(
