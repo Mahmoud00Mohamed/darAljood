@@ -755,6 +755,36 @@ button.text-xs {
   .page-content {
     min-height: calc(100vh - 4rem);
   }
+
+  /* Image Crop Modal Mobile Fixes */
+  .crop-modal-mobile {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    z-index: 9999 !important;
+  }
+
+  /* Ensure crop modal is above mobile navigation */
+  .crop-modal-backdrop {
+    z-index: 9999 !important;
+  }
+
+  /* Mobile crop container adjustments */
+  .crop-container-mobile {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.5rem !important;
+  }
 }
 
 /* تحسين عرض الخطوط في التقاط الصور */
