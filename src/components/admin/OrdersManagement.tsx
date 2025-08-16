@@ -156,15 +156,77 @@ const OrdersManagement: React.FC = () => {
     }
   };
 
+  // دالة لتحديث الأعداد في الوقت الفعلي
+  const updateOrderCounts = async () => {
+    try {
+      const token = authService.getToken();
+      if (!token) return;
+
+      // تحديث عدد الطلبات المؤكدة
+      const confirmedResult = await orderService.getAllOrders(token, {
+        page: 1,
+        limit: 1,
+        status: "",
+        includePending: false,
+      });
+      setTotalOrders(confirmedResult.pagination.totalOrders);
+
+      // تحديث عدد الطلبات قيد المراجعة
+      const pendingResult = await orderService.getAllOrders(token, {
+        page: 1,
+        limit: 1,
+        status: "pending",
+        includePending: true,
+      });
+      setTotalPendingOrders(pendingResult.pagination.totalOrders);
+    } catch (error) {
+      console.error("Error updating order counts:", error);
+    }
+  };
+
+  // دالة لتحديث كل البيانات بعد أي تغيير
+  const refreshAllData = async () => {
+    await Promise.all([
+      loadOrders(), // تحديث الطلبات المؤكدة
+      loadPendingOrders(), // تحديث الطلبات قيد المراجعة
+      loadStats(), // تحديث الإحصائيات
+      updateOrderCounts(), // تحديث الأعداد
+    ]);
+  };
+
+  // Initial load - load both confirmed and pending orders
+  useEffect(() => {
+    const initializeData = async () => {
+      await Promise.all([
+        loadOrders(), // Load confirmed orders
+        loadPendingOrders(), // Load pending orders
+        loadStats(), // Load statistics
+      ]);
+    };
+
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Load once on component mount
+
+  // Reload data when page changes
   useEffect(() => {
     if (activeTab === "confirmed") {
       loadOrders();
-    } else {
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, searchTerm, statusFilter]);
+
+  useEffect(() => {
+    if (activeTab === "pending") {
       loadPendingOrders();
     }
-    loadStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pendingCurrentPage, activeTab]);
+  }, [pendingCurrentPage, searchTerm]);
+
+  const handleTabSwitch = (tab: "confirmed" | "pending") => {
+    setActiveTab(tab);
+    // No need to manually load data as useEffect will handle it
+  };
 
   const handleSearch = () => {
     if (activeTab === "confirmed") {
@@ -213,33 +275,15 @@ const OrdersManagement: React.FC = () => {
 
       await orderService.deleteOrder(orderToDelete.id, token);
 
+      // تحديث فوري للأعداد
       if (orderToDelete.status === "pending") {
-        setPendingOrders((prev) =>
-          prev.filter((order) => order.id !== orderToDelete.id)
-        );
+        setTotalPendingOrders((prev) => prev - 1);
       } else {
-        setOrders((prev) =>
-          prev.filter((order) => order.id !== orderToDelete.id)
-        );
+        setTotalOrders((prev) => prev - 1);
       }
 
-      await loadStats();
-
-      if (activeTab === "confirmed" && orders.length === 1 && currentPage > 1) {
-        setCurrentPage(currentPage - 1);
-      } else if (
-        activeTab === "pending" &&
-        pendingOrders.length === 1 &&
-        pendingCurrentPage > 1
-      ) {
-        setPendingCurrentPage(pendingCurrentPage - 1);
-      } else {
-        if (activeTab === "confirmed") {
-          loadOrders();
-        } else {
-          loadPendingOrders();
-        }
-      }
+      // تحديث كل البيانات
+      await refreshAllData();
 
       deleteOrderModal.closeModal();
       setOrderToDelete(null);
@@ -263,17 +307,13 @@ const OrdersManagement: React.FC = () => {
         token
       );
 
-      // Remove from pending orders
-      setPendingOrders((prev) =>
-        prev.filter((order) => order.id !== orderToConfirm.id)
-      );
+      // تحديث فوري للأعداد
+      setTotalPendingOrders((prev) => prev - 1); // تقليل عدد الطلبات قيد المراجعة
+      setTotalOrders((prev) => prev + 1); // زيادة عدد الطلبات المؤكدة
 
-      // Reload orders if on confirmed tab
-      if (activeTab === "confirmed") {
-        loadOrders();
-      }
+      // تحديث كل البيانات
+      await refreshAllData();
 
-      await loadStats();
       confirmOrderModal.closeModal();
       setOrderToConfirm(null);
     } catch (error) {
@@ -298,31 +338,16 @@ const OrdersManagement: React.FC = () => {
         token
       );
 
+      // تحديث فوري للأعداد إذا تم النقل من pending إلى confirmed
       if (selectedOrder.status === "pending" && newStatus === "confirmed") {
-        setPendingOrders((prev) =>
-          prev.filter((order) => order.id !== selectedOrder.id)
-        );
-        if (activeTab === "confirmed") {
-          loadOrders();
-        }
-      } else {
-        if (selectedOrder.status === "pending") {
-          setPendingOrders((prev) =>
-            prev.map((order) =>
-              order.id === selectedOrder.id ? updatedOrder : order
-            )
-          );
-        } else {
-          setOrders((prev) =>
-            prev.map((order) =>
-              order.id === selectedOrder.id ? updatedOrder : order
-            )
-          );
-        }
+        setTotalPendingOrders((prev) => prev - 1); // تقليل عدد الطلبات قيد المراجعة
+        setTotalOrders((prev) => prev + 1); // زيادة عدد الطلبات المؤكدة
       }
 
       setSelectedOrder(updatedOrder);
-      await loadStats();
+
+      // تحديث كل البيانات
+      await refreshAllData();
 
       updateStatusModal.closeModal();
       setNewStatus("");
@@ -622,7 +647,7 @@ const OrdersManagement: React.FC = () => {
 
         <div className="flex gap-2">
           <button
-            onClick={activeTab === "confirmed" ? loadOrders : loadPendingOrders}
+            onClick={refreshAllData}
             disabled={isLoading || isLoadingPending}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 text-sm"
           >
@@ -631,7 +656,7 @@ const OrdersManagement: React.FC = () => {
             ) : (
               <RefreshCw className="w-4 h-4" />
             )}
-            تحديث
+            تحديث شامل
           </button>
         </div>
       </div>
@@ -689,7 +714,7 @@ const OrdersManagement: React.FC = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-1">
         <div className="flex flex-wrap gap-1">
           <button
-            onClick={() => setActiveTab("confirmed")}
+            onClick={() => handleTabSwitch("confirmed")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
               activeTab === "confirmed"
                 ? "bg-[#563660] text-white"
@@ -700,7 +725,7 @@ const OrdersManagement: React.FC = () => {
             الطلبات المؤكدة ({totalOrders})
           </button>
           <button
-            onClick={() => setActiveTab("pending")}
+            onClick={() => handleTabSwitch("pending")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
               activeTab === "pending"
                 ? "bg-amber-500 text-white"

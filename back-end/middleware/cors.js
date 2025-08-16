@@ -8,11 +8,11 @@ const corsOptions = {
 
     // قائمة النطاقات المسموحة
     const allowedOrigins = [
-      process.env.FRONTEND_URL || "http://localhost:5173",
+      process.env.FRONTEND_URL || "https://dar-algood.netlify.app",
       "http://localhost:3000",
       "http://localhost:5174",
       "https://daraljoud.com",
-      "https://daraljood.netlify.app",
+      "https://dar-algood.netlify.app",
       "https://daraljoood.netlify.app",
     ];
 

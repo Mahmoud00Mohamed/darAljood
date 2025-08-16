@@ -23,39 +23,12 @@ export interface UploadError {
 }
 
 class ImageUploadService {
-  private baseUrl = "http://localhost:3001/api/upload";
-  private uploadQueue: Map<string, Promise<CloudinaryImageData>> = new Map();
+  private baseUrl = "https://server-algood-cw2j.onrender.com/api/upload";
 
   /**
    * رفع صورة واحدة إلى Cloudinary
    */
   async uploadSingleImage(file: File): Promise<CloudinaryImageData> {
-    // إنشاء مفتاح فريد للملف لتجنب الرفع المكرر
-    const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
-
-    // إذا كان الملف قيد الرفع، انتظر النتيجة
-    if (this.uploadQueue.has(fileKey)) {
-      return this.uploadQueue.get(fileKey)!;
-    }
-
-    const uploadPromise = this.performUpload(file);
-    this.uploadQueue.set(fileKey, uploadPromise);
-
-    try {
-      const result = await uploadPromise;
-      return result;
-    } finally {
-      // إزالة من قائمة الانتظار بعد انتهاء الرفع
-      setTimeout(() => {
-        this.uploadQueue.delete(fileKey);
-      }, 1000);
-    }
-  }
-
-  /**
-   * تنفيذ عملية الرفع الفعلية
-   */
-  private async performUpload(file: File): Promise<CloudinaryImageData> {
     try {
       const formData = new FormData();
       formData.append("image", file);
@@ -63,8 +36,6 @@ class ImageUploadService {
       const response = await fetch(`${this.baseUrl}/single`, {
         method: "POST",
         body: formData,
-        // تحسين إعدادات الطلب للسرعة
-        keepalive: true,
       });
 
       if (!response.ok) {
@@ -104,7 +75,6 @@ class ImageUploadService {
       const response = await fetch(`${this.baseUrl}/multiple`, {
         method: "POST",
         body: formData,
-        keepalive: true,
       });
 
       if (!response.ok) {
@@ -131,30 +101,6 @@ class ImageUploadService {
     }
   }
 
-  /**
-   * رفع صورة في الخلفية مع إعادة المحاولة
-   */
-  async uploadInBackground(
-    file: File,
-    retries: number = 3
-  ): Promise<CloudinaryImageData> {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        return await this.uploadSingleImage(file);
-      } catch (error) {
-        console.warn(`Upload attempt ${attempt} failed:`, error);
-
-        if (attempt === retries) {
-          throw error;
-        }
-
-        // انتظار متزايد بين المحاولات
-        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
-      }
-    }
-
-    throw new Error("فشل في رفع الصورة بعد عدة محاولات");
-  }
   /**
    * حذف صورة من Cloudinary
    */
@@ -232,20 +178,6 @@ class ImageUploadService {
       console.error("Backend connection failed:", error);
       return false;
     }
-  }
-
-  /**
-   * مسح قائمة انتظار الرفع
-   */
-  clearUploadQueue(): void {
-    this.uploadQueue.clear();
-  }
-
-  /**
-   * الحصول على عدد العمليات قيد الرفع
-   */
-  getPendingUploadsCount(): number {
-    return this.uploadQueue.size;
   }
 }
 

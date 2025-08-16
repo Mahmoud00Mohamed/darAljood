@@ -4,7 +4,7 @@ import helmet from "helmet";
 // تحديد معدل الطلبات لرفع الصور
 export const uploadRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 50, // حد أقصى 50 طلب رفع لكل IP في 15 دقيقة
+  max: 10000, // حد أقصى 50 طلب رفع لكل IP في 15 دقيقة
   message: {
     success: false,
     message: "تم تجاوز الحد المسموح لرفع الصور. يرجى المحاولة لاحقاً",
@@ -17,7 +17,7 @@ export const uploadRateLimit = rateLimit({
 // تحديد معدل الطلبات العام
 export const generalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 200, // حد أقصى 200 طلب لكل IP في 15 دقيقة
+  max: 20000, // حد أقصى 200 طلب لكل IP في 15 دقيقة
   message: {
     success: false,
     message: "تم تجاوز الحد المسموح للطلبات. يرجى المحاولة لاحقاً",

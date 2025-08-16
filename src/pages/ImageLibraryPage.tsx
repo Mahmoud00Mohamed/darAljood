@@ -462,7 +462,6 @@ const ImageLibraryPage: React.FC = () => {
                       aspectRatio={1}
                       cropTitle="اقتطاع الصورة"
                       autoAddToLibrary={false}
-                      enableFastUpload={true}
                     />
                   </div>
 

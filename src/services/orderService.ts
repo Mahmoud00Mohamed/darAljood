@@ -145,7 +145,7 @@ export interface ApiResponse<T> {
 }
 
 class OrderService {
-  private baseUrl = "http://localhost:3001/api/orders";
+  private baseUrl = "https://server-algood-cw2j.onrender.com/api/orders";
 
   /**
    * إنشاء طلب جديد

@@ -8,8 +8,6 @@ import {
   Loader2,
   Cloud,
   Trash2,
-  Zap,
-  CheckCircle,
 } from "lucide-react";
 import imageUploadService, {
   CloudinaryImageData,
@@ -30,7 +28,6 @@ interface CloudinaryImageUploadProps {
   cropTitle?: string;
   onUploadStateChange?: (isUploading: boolean) => void;
   autoAddToLibrary?: boolean; // خيار لإضافة الصور تلقائياً للمكتبة
-  enableFastUpload?: boolean; // خيار للرفع السريع
 }
 
 const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
@@ -45,14 +42,11 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   cropTitle = "اقتطاع الصورة",
   onUploadStateChange,
   autoAddToLibrary = true,
-  enableFastUpload = true,
 }) => {
   const { addUserImage, selectImage } = useImageLibrary();
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
-  const [isProcessingInBackground, setIsProcessingInBackground] =
-    useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>("");
   const [uploadedImages, setUploadedImages] = useState<CloudinaryImageData[]>(
     []
@@ -60,9 +54,6 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   const [showCropModal, setShowCropModal] = useState(false);
   const [selectedFileForCrop, setSelectedFileForCrop] = useState<File | null>(
     null
-  );
-  const [pendingUploads, setPendingUploads] = useState<Map<string, File>>(
-    new Map()
   );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -99,100 +90,14 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
     return new File([u8arr], filename, { type: mime });
   };
 
-  // رفع الصورة في الخلفية
-  const uploadInBackground = async (file: File, tempId: string) => {
-    try {
-      const uploadedData = await imageUploadService.uploadSingleImage(file);
-
-      // تحديث الصورة المؤقتة بالبيانات الحقيقية
-      setUploadedImages((prev) =>
-        prev.map((img) =>
-          img.publicId === tempId
-            ? { ...uploadedData, originalName: file.name }
-            : img
-        )
-      );
-
-      // إضافة للمكتبة إذا كان مفعل
-      if (autoAddToLibrary) {
-        addUserImage({ ...uploadedData, originalName: file.name });
-        selectImage({ ...uploadedData, originalName: file.name }, "user");
-      }
-
-      // إزالة من قائمة الانتظار
-      setPendingUploads((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(tempId);
-        return newMap;
-      });
-
-      // تحديث رسالة النجاح
-      setUploadProgress("تم رفع الصورة بنجاح!");
-      setTimeout(() => setUploadProgress(""), 2000);
-    } catch (error) {
-      console.error("Background upload failed:", error);
-
-      // إزالة الصورة المؤقتة في حالة الفشل
-      setUploadedImages((prev) =>
-        prev.filter((img) => img.publicId !== tempId)
-      );
-      setPendingUploads((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(tempId);
-        return newMap;
-      });
-
-      setError("فشل في رفع الصورة. يرجى المحاولة مرة أخرى.");
-    } finally {
-      // التحقق من انتهاء جميع عمليات الرفع
-      setPendingUploads((prev) => {
-        if (prev.size <= 1) {
-          // العنصر الحالي سيتم حذفه
-          setIsProcessingInBackground(false);
-        }
-        return prev;
-      });
-    }
-  };
   // معالجة اكتمال القص
   const handleCropComplete = async (
     croppedImageUrl: string,
     originalFile: File
   ) => {
     try {
-      if (enableFastUpload) {
-        // الرفع السريع: إنشاء معاينة فورية ثم رفع في الخلفية
-        const croppedFile = dataURLtoFile(croppedImageUrl, originalFile.name);
-        const tempId = `temp-${Date.now()}-${Math.random()
-          .toString(36)
-          .substr(2, 9)}`;
-
-        // إنشاء بيانات مؤقتة للمعاينة الفورية
-        const tempImageData: CloudinaryImageData = {
-          url: croppedImageUrl,
-          publicId: tempId,
-          width: 400,
-          height: 400,
-          format: "png",
-          size: croppedFile.size,
-          createdAt: new Date().toISOString(),
-          originalName: originalFile.name,
-        };
-
-        // عرض المعاينة فوراً
-        setUploadedImages((prev) => [tempImageData, ...prev]);
-        onImageSelect(tempImageData, croppedFile);
-        setUploadProgress("تم تحضير الصورة! جاري الرفع في الخلفية...");
-
-        // بدء الرفع في الخلفية
-        setIsProcessingInBackground(true);
-        setPendingUploads((prev) => new Map(prev).set(tempId, croppedFile));
-
-        // رفع في الخلفية بدون انتظار
-        setTimeout(() => {
-          uploadInBackground(croppedFile, tempId);
-        }, 100);
-      } else if (autoAddToLibrary) {
+      // إذا كان autoAddToLibrary مفعل، ارفع للسيرفر
+      if (autoAddToLibrary) {
         // تحويل الصورة المقتصة إلى File
         const croppedFile = dataURLtoFile(croppedImageUrl, originalFile.name);
 
@@ -379,13 +284,6 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
     // إذا كانت الصورة مؤقتة (لم ترفع للسيرفر بعد)، احذفها محلياً فقط
     if (imageData.publicId.startsWith("temp-")) {
       setUploadedImages((prev) => prev.filter((_, i) => i !== index));
-
-      // إلغاء الرفع في الخلفية إذا كان قيد التنفيذ
-      setPendingUploads((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(imageData.publicId);
-        return newMap;
-      });
     } else {
       // إذا كانت مرفوعة للسيرفر، احذفها من Cloudinary
       try {
@@ -403,35 +301,6 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
     }
   };
 
-  // مؤشر حالة الرفع في الخلفية
-  const getUploadStatusIndicator = (imageData: CloudinaryImageData) => {
-    if (imageData.publicId.startsWith("temp-")) {
-      const isPending = pendingUploads.has(imageData.publicId);
-      return (
-        <div className="absolute top-1 left-1 flex items-center gap-1">
-          {isPending ? (
-            <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              <span>جاري الرفع</span>
-            </div>
-          ) : (
-            <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>تم الرفع</span>
-            </div>
-          )}
-        </div>
-      );
-    }
-    return (
-      <div className="absolute top-1 left-1">
-        <div className="bg-green-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-          <CheckCircle className="w-3 h-3" />
-          <span>مرفوع</span>
-        </div>
-      </div>
-    );
-  };
   return (
     <div className={`relative ${className}`}>
       {/* منطقة السحب والإفلات */}
@@ -469,15 +338,11 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
                 ? "bg-red-100 text-red-600"
                 : isUploading
                 ? "bg-blue-100 text-blue-600"
-                : isProcessingInBackground
-                ? "bg-green-100 text-green-600"
                 : "bg-gray-200 text-gray-600"
             }`}
           >
             {isUploading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
-            ) : isProcessingInBackground ? (
-              <Zap className="w-6 h-6" />
             ) : error ? (
               <AlertCircle className="w-6 h-6" />
             ) : isDragOver ? (
@@ -493,15 +358,11 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
                 ? "text-red-800"
                 : isUploading
                 ? "text-blue-800"
-                : isProcessingInBackground
-                ? "text-green-800"
                 : "text-gray-900"
             }`}
           >
             {isUploading
               ? "جاري الرفع..."
-              : isProcessingInBackground
-              ? "تم! جاري المعالجة في الخلفية..."
               : isDragOver
               ? "أفلت الصورة هنا"
               : placeholder}
@@ -513,48 +374,29 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
                 ? "text-red-600"
                 : isUploading
                 ? "text-blue-600"
-                : isProcessingInBackground
-                ? "text-green-600"
                 : "text-gray-600"
             }`}
           >
             {error ||
               uploadProgress ||
-              (isProcessingInBackground
-                ? "الصورة جاهزة للاستخدام، جاري الرفع النهائي..."
-                : "") ||
               `الأنواع المدعومة: ${acceptedFormats
                 .map((format) => format.split("/")[1].toUpperCase())
                 .join(", ")} | الحد الأقصى: ${maxFileSize}MB`}
           </p>
 
           {/* زر الاختيار */}
-          {!isUploading && !isProcessingInBackground && (
+          {!isUploading && (
             <button
               type="button"
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 error
                   ? "bg-red-600 text-white hover:bg-red-700"
-                  : enableFastUpload
-                  ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white hover:from-[#4b2e55] hover:to-[#6d3f7a]"
                   : "bg-[#563660] text-white hover:bg-[#4b2e55]"
               }`}
             >
-              {enableFastUpload ? (
-                <Zap className="w-4 h-4" />
-              ) : (
-                <FileImage className="w-4 h-4" />
-              )}
+              <FileImage className="w-4 h-4" />
               {multiple ? "اختر صور" : "اختر صورة"}
             </button>
-          )}
-
-          {/* مؤشر الرفع السريع */}
-          {enableFastUpload && !isUploading && !isProcessingInBackground && (
-            <div className="mt-2 flex items-center gap-1 text-xs text-[#563660]">
-              <Zap className="w-3 h-3" />
-              <span>رفع سريع مفعل</span>
-            </div>
           )}
         </div>
 
@@ -569,14 +411,6 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
                   : "جاري تحضير الصورة للمعاينة..."}
               </p>
             </div>
-          </div>
-        )}
-
-        {/* مؤشر المعالجة في الخلفية */}
-        {isProcessingInBackground && !isUploading && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white p-2 rounded-lg flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-xs">معالجة في الخلفية</span>
           </div>
         )}
       </div>
@@ -608,11 +442,16 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
                     {imageData.format.toUpperCase()} •{" "}
                     {Math.round(imageData.size / 1024)}KB
                   </p>
+                  {imageData.publicId.startsWith("temp-") ? (
+                    <p className="text-xs text-blue-600 mt-1">
+                      جاهز للتأكيد ⏳
+                    </p>
+                  ) : (
+                    <p className="text-xs text-green-600 mt-1">
+                      تم الرفع بنجاح ✓
+                    </p>
+                  )}
                 </div>
-
-                {/* مؤشر حالة الرفع */}
-                {getUploadStatusIndicator(imageData)}
-
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -635,22 +474,10 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
             <Crop className="w-3 h-3" />
             قص متقدم
           </span>
-          {enableFastUpload && (
-            <span className="flex items-center gap-1 text-green-600">
-              <Zap className="w-3 h-3" />
-              رفع سريع
-            </span>
-          )}
           {!autoAddToLibrary && (
             <span className="flex items-center gap-1 text-blue-600">
               <AlertCircle className="w-3 h-3" />
               معاينة فقط
-            </span>
-          )}
-          {isProcessingInBackground && (
-            <span className="flex items-center gap-1 text-green-600">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              معالجة ({pendingUploads.size})
             </span>
           )}
         </div>

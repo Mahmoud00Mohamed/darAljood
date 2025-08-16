@@ -33,7 +33,8 @@ export interface ApiResponse<T> {
   data: T;
 }
 class PredefinedImagesService {
-  private baseUrl = "http://localhost:3001/api/predefined-images";
+  private baseUrl =
+    "https://server-algood-cw2j.onrender.com/api/predefined-images";
 
   /**
    * تحميل الشعارات الجاهزة من الباك إند
@@ -251,7 +252,8 @@ class PredefinedImagesService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result: ApiResponse<PredefinedImagesWithCategories> = await response.json();
+      const result: ApiResponse<PredefinedImagesWithCategories> =
+        await response.json();
 
       if (!result.success) {
         throw new Error(result.message || "فشل في تحميل الشعارات مع التصنيفات");
@@ -263,11 +265,11 @@ class PredefinedImagesService {
       // في حالة فشل الباك إند، استخدم البيانات المحلية
       const fallbackImages = this.getFallbackImages();
       const fallbackCategories = await this.getFallbackCategories();
-      
+
       return {
-        images: fallbackImages.map(img => ({
+        images: fallbackImages.map((img) => ({
           ...img,
-          category: fallbackCategories.find(cat => cat.id === img.categoryId),
+          category: fallbackCategories.find((cat) => cat.id === img.categoryId),
         })),
         categories: fallbackCategories,
       };
@@ -277,7 +279,9 @@ class PredefinedImagesService {
   /**
    * الحصول على الشعارات حسب التصنيف
    */
-  async getPredefinedImagesByCategory(categoryId: string): Promise<PredefinedImageData[]> {
+  async getPredefinedImagesByCategory(
+    categoryId: string
+  ): Promise<PredefinedImageData[]> {
     try {
       const response = await fetch(`${this.baseUrl}/category/${categoryId}`);
 
@@ -296,7 +300,7 @@ class PredefinedImagesService {
       console.error("Error loading images by category:", error);
       // في حالة فشل الباك إند، فلترة البيانات المحلية
       const fallbackImages = this.getFallbackImages();
-      return fallbackImages.filter(img => img.categoryId === categoryId);
+      return fallbackImages.filter((img) => img.categoryId === categoryId);
     }
   }
 

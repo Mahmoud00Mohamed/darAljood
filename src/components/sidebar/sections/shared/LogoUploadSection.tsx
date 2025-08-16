@@ -825,7 +825,6 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
           }`}
           onUploadStateChange={setIsUploading}
           autoAddToLibrary={true}
-          enableFastUpload={true}
         />
 
         <div className="text-xs text-gray-500 text-center">
