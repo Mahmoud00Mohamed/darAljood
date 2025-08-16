@@ -119,6 +119,34 @@ class TemporaryLinkModel {
   }
 
   /**
+   * زيادة عدد مرات الوصول للرابط بدون تعيينه كمستخدم
+   */
+  async incrementAccessCount(token) {
+    try {
+      const updatedLink = await TemporaryLinkSchema.findOneAndUpdate(
+        { token, isUsed: false, expiresAt: { $gt: new Date() } },
+        {
+          $inc: { accessCount: 1 },
+          $set: { lastAccessAt: new Date() },
+        },
+        { new: true, lean: true }
+      );
+
+      if (!updatedLink) {
+        throw new Error("الرابط غير موجود أو منتهي الصلاحية");
+      }
+
+      return {
+        ...updatedLink,
+        _id: undefined,
+      };
+    } catch (error) {
+      console.error("Error incrementing access count:", error);
+      throw new Error("فشل في تحديث عدد مرات الوصول");
+    }
+  }
+
+  /**
    * إلغاء جميع الروابط المؤقتة لطلب معين
    */
   async invalidateOrderLinks(orderId) {

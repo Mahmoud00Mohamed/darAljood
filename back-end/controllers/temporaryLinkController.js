@@ -281,8 +281,9 @@ export const updateOrderByTemporaryLink = async (req, res) => {
       "customer_via_temp_link"
     );
 
-    // تعيين الرابط كمستخدم
-    await TemporaryLinkModel.markLinkAsUsed(token);
+    // لا نقوم بتعيين الرابط كمستخدم - نتركه صالح حتى انتهاء المدة المحددة
+    // فقط نحديث عدد مرات الوصول
+    await TemporaryLinkModel.incrementAccessCount(token);
 
     res.status(200).json({
       success: true,
@@ -295,7 +296,11 @@ export const updateOrderByTemporaryLink = async (req, res) => {
             statusName: STATUS_NAMES[history.status],
           })),
         },
-        linkUsed: true,
+        linkUsed: false, // الرابط لا يزال صالحاً
+        remainingTime: Math.max(
+          0,
+          Math.floor((new Date(validation.link.expiresAt).getTime() - Date.now()) / (1000 * 60))
+        ), // الوقت المتبقي بالدقائق
       },
     });
   } catch (error) {

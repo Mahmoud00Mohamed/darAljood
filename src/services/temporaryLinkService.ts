@@ -105,6 +105,7 @@ export interface TemporaryOrderData {
     remainingTime: number;
     accessCount: number;
   };
+  remainingTime?: number; // إضافة الوقت المتبقي في الاستجابة
 }
 
 export interface ApiResponse<T> {
@@ -311,6 +312,19 @@ class TemporaryLinkService {
       throw new Error(
         error instanceof Error ? error.message : "حدث خطأ أثناء تحديث الطلب"
       );
+    }
+  }
+
+  /**
+   * الحصول على الوقت المتبقي للرابط
+   */
+  async getRemainingTime(token: string): Promise<number> {
+    try {
+      const validation = await this.validateTemporaryLink(token);
+      return validation.remainingTime;
+    } catch (error) {
+      console.error("Error getting remaining time:", error);
+      return 0;
     }
   }
 

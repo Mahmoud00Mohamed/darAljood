@@ -265,11 +265,21 @@ const TemporaryOrderEditContent: React.FC = () => {
       // تحديث بيانات الطلب المحلية
       setOrderData(updatedOrder);
 
+      // تحديث الوقت المتبقي إذا كان متوفراً في الاستجابة
+      if (updatedOrder.linkInfo && updatedOrder.linkInfo.remainingTime) {
+        setRemainingTime(updatedOrder.linkInfo.remainingTime);
+      }
+
       setSaveMessage("تم حفظ التغييرات بنجاح! سيتم التواصل معك قريباً لتأكيد التفاصيل.");
       setShowMobileDetails(false);
       setTimeout(() => setSaveMessage(""), 5000);
     } catch (error) {
       setError(error instanceof Error ? error.message : "فشل في حفظ التغييرات");
+      
+      // إذا كان الخطأ متعلق بانتهاء الصلاحية، حدث الحالة
+      if (error instanceof Error && error.message.includes("منتهي الصلاحية")) {
+        setLinkExpired(true);
+      }
     } finally {
       setIsSaving(false);
       saveConfirmModal.closeModal();
