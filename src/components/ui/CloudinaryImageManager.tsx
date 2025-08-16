@@ -116,6 +116,7 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
             className="mb-4"
             cropTitle="اقتطاع الصورة"
             autoAddToLibrary={autoAddToLibrary}
+            enableFastUpload={true}
           />
         </div>
       )}
