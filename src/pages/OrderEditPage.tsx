@@ -245,26 +245,10 @@ const OrderEditContent: React.FC = () => {
 
   const handleSaveChanges = async () => {
     setIsSaving(true);
-    setIsCapturingImages(true);
     setSaveMessage("");
     setError("");
 
     try {
-      // التأكد من تحميل الخطوط قبل بدء التقاط الصور
-      await fontPreloader.preloadAllFonts();
-
-      // التقاط صور الجاكيت المحدث
-      let jacketImages: string[] = [];
-
-      try {
-        if (jacketImageCaptureRef.current) {
-          jacketImages = await jacketImageCaptureRef.current.captureAllViews();
-        }
-      } catch (captureError) {
-        console.warn("فشل في التقاط الصور:", captureError);
-        jacketImages = [];
-      }
-
       // حفظ التعديلات في الباك إند
       const token = authService.getToken();
       if (!token) {
@@ -287,10 +271,6 @@ const OrderEditContent: React.FC = () => {
       // تحديث بيانات الطلب المحلية
       setOrderData(updatedOrder);
 
-      // تحديث السلة بالتكوين الجديد
-      clearCart();
-      addToCart(jacketState, orderData?.items[0]?.quantity || 1, jacketImages);
-
       setSaveMessage("تم حفظ التغييرات في النظام بنجاح");
       setShowMobileDetails(false);
       setTimeout(() => setSaveMessage(""), 3000);
@@ -298,7 +278,6 @@ const OrderEditContent: React.FC = () => {
       setError(error instanceof Error ? error.message : "فشل في حفظ التغييرات");
     } finally {
       setIsSaving(false);
-      setIsCapturingImages(false);
       saveConfirmModal.closeModal();
     }
   };
