@@ -55,7 +55,6 @@ const OrderEditContent: React.FC = () => {
     removeText,
     setCurrentView,
   } = useJacket();
-  const { } = useCart();
 
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
