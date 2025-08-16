@@ -75,27 +75,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // منع التمرير في الخلفية عند فتح النافذة
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.width = "100%";
-      document.body.style.height = "100%";
-    } else {
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.height = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.height = "";
-    };
-  }, [isOpen]);
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
       const { width, height } = e.currentTarget;
@@ -320,19 +299,12 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black bg-opacity-70 flex items-center justify-center p-0">
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className={`w-full h-full bg-white flex flex-col overflow-hidden shadow-2xl ${
-          isMobile ? "rounded-none" : "max-w-6xl max-h-[95vh] rounded-2xl"
-        }`}
-        style={{
-          maxWidth: isMobile ? "100vw" : undefined,
-          maxHeight: isMobile ? "100vh" : "95vh",
-          margin: isMobile ? "0" : "auto",
-        }}
+        className="w-full h-full max-w-6xl max-h-[95vh] bg-white flex flex-col overflow-hidden rounded-none md:rounded-2xl shadow-2xl"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-3 md:p-4 border-b border-gray-200 bg-white flex-shrink-0">
@@ -406,22 +378,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         </div>
 
         {/* منطقة الصورة الرئيسية */}
-        <div 
-          className="flex-1 flex items-center justify-center bg-gray-100 relative overflow-hidden"
-          style={{
-            minHeight: isMobile ? "calc(100vh - 160px)" : "auto",
-            height: isMobile ? "calc(100vh - 160px)" : "auto",
-          }}
-        >
+        <div className="flex-1 flex items-center justify-center bg-gray-100 relative overflow-hidden">
           {imageSrc && (
             <div
               ref={containerRef}
-              className={`relative w-full h-full flex items-center justify-center ${
-                isMobile ? "p-2" : "p-4"
-              }`}
-              style={{
-                minHeight: isMobile ? "calc(100vh - 200px)" : "auto",
-              }}
+              className="relative w-full h-full flex items-center justify-center p-2 md:p-4"
             >
               <div className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-300 max-w-full max-h-full flex items-center justify-center">
                 {cropMode === "full" ? (
@@ -507,12 +468,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         </div>
 
         {/* أزرار الإجراءات */}
-        <div 
-          className="p-3 md:p-4 bg-white border-t border-gray-200 flex-shrink-0"
-          style={{
-            paddingBottom: isMobile ? "calc(1rem + env(safe-area-inset-bottom))" : undefined,
-          }}
-        >
+        <div className="p-3 md:p-4 bg-white border-t border-gray-200 flex-shrink-0">
           <div className="flex gap-2 md:gap-3">
             <motion.button
               whileHover={{ scale: 1.02 }}
