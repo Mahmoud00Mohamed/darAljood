@@ -19,7 +19,9 @@ import {
 import { JacketProvider, useJacket } from "../context/JacketContext";
 import { CartProvider } from "../context/CartContext";
 import { ImageLibraryProvider } from "../context/ImageLibraryContext";
-import temporaryLinkService, { TemporaryOrderData } from "../services/temporaryLinkService";
+import temporaryLinkService, {
+  TemporaryOrderData,
+} from "../services/temporaryLinkService";
 import JacketViewer from "../components/jacket/JacketViewer";
 import CustomizationSidebar from "../components/sidebar/CustomizationSidebar";
 import TopBar from "../components/ui/TopBar";
@@ -112,11 +114,15 @@ const TemporaryOrderEditContent: React.FC = () => {
 
     try {
       // التحقق من صحة الرابط أولاً
-      const validation = await temporaryLinkService.validateTemporaryLink(token);
+      const validation = await temporaryLinkService.validateTemporaryLink(
+        token
+      );
       setRemainingTime(validation.remainingTime);
 
       // الحصول على بيانات الطلب
-      const orderData = await temporaryLinkService.getOrderByTemporaryLink(token);
+      const orderData = await temporaryLinkService.getOrderByTemporaryLink(
+        token
+      );
       setOrderData(orderData);
       setCustomerInfo(orderData.order.customerInfo);
 
@@ -213,7 +219,7 @@ const TemporaryOrderEditContent: React.FC = () => {
       setError(
         error instanceof Error ? error.message : "فشل في تحميل بيانات الطلب"
       );
-      
+
       // إذا كان الرابط منتهي الصلاحية أو غير صحيح، اعرض رسالة خاصة
       if (error instanceof Error && error.message.includes("منتهي الصلاحية")) {
         setLinkExpired(true);
@@ -257,10 +263,11 @@ const TemporaryOrderEditContent: React.FC = () => {
         totalPrice: jacketState.totalPrice,
       };
 
-      const updatedOrder = await temporaryLinkService.updateOrderByTemporaryLink(
-        token,
-        updateData
-      );
+      const updatedOrder =
+        await temporaryLinkService.updateOrderByTemporaryLink(
+          token,
+          updateData
+        );
 
       // تحديث بيانات الطلب المحلية
       setOrderData(updatedOrder);
@@ -270,12 +277,14 @@ const TemporaryOrderEditContent: React.FC = () => {
         setRemainingTime(updatedOrder.linkInfo.remainingTime);
       }
 
-      setSaveMessage("تم حفظ التغييرات بنجاح! سيتم التواصل معك قريباً لتأكيد التفاصيل.");
+      setSaveMessage(
+        "تم حفظ التغييرات بنجاح! سيتم التواصل معك قريباً لتأكيد التفاصيل."
+      );
       setShowMobileDetails(false);
       setTimeout(() => setSaveMessage(""), 5000);
     } catch (error) {
       setError(error instanceof Error ? error.message : "فشل في حفظ التغييرات");
-      
+
       // إذا كان الخطأ متعلق بانتهاء الصلاحية، حدث الحالة
       if (error instanceof Error && error.message.includes("منتهي الصلاحية")) {
         setLinkExpired(true);
@@ -315,7 +324,8 @@ const TemporaryOrderEditContent: React.FC = () => {
             انتهت صلاحية الرابط
           </h2>
           <p className="text-gray-600 mb-6">
-            عذراً، انتهت صلاحية رابط التعديل. يرجى التواصل مع خدمة العملاء للحصول على رابط جديد.
+            عذراً، انتهت صلاحية رابط التعديل. يرجى التواصل مع خدمة العملاء
+            للحصول على رابط جديد.
           </p>
           <div className="space-y-3">
             <a
@@ -329,7 +339,7 @@ const TemporaryOrderEditContent: React.FC = () => {
             </a>
             <button
               onClick={() => navigate("/")}
-              className="w-full px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full px-6 py-2  border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               العودة للموقع الرئيسي
             </button>
@@ -372,7 +382,7 @@ const TemporaryOrderEditContent: React.FC = () => {
             </a>
             <button
               onClick={() => navigate("/")}
-              className="w-full px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full px-6 py-2  border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               العودة للموقع الرئيسي
             </button>
@@ -393,7 +403,7 @@ const TemporaryOrderEditContent: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={exitConfirmModal.openModal}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4  py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               العودة للموقع الرئيسي
@@ -418,7 +428,9 @@ const TemporaryOrderEditContent: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-lg">
               <Shield className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-700 font-medium">رابط آمن</span>
+              <span className="text-sm text-green-700 font-medium">
+                رابط آمن
+              </span>
             </div>
             <button
               onClick={saveConfirmModal.openModal}
@@ -632,7 +644,9 @@ const TemporaryOrderEditContent: React.FC = () => {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">رقم الطلب:</span>
-                  <span className="font-medium">{orderData?.order.orderNumber}</span>
+                  <span className="font-medium">
+                    {orderData?.order.orderNumber}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">رمز التتبع:</span>
@@ -688,7 +702,7 @@ const TemporaryOrderEditContent: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-3 mt-auto">
+            <div className="space-y-3 mt-auto pb-10">
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={saveConfirmModal.openModal}
@@ -700,7 +714,7 @@ const TemporaryOrderEditContent: React.FC = () => {
 
               <button
                 onClick={exitConfirmModal.openModal}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
+                className="w-full py-3 flex items-center justify-center gap-2 px-4 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
               >
                 <ArrowLeft className="w-4 h-4" />
                 العودة للموقع الرئيسي
