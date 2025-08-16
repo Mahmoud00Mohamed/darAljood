@@ -1,5 +1,6 @@
 import TemporaryLinkModel from "../models/TemporaryLink.js";
 import OrderModel from "../models/Order.js";
+import { STATUS_NAMES } from "../models/Order.js";
 
 // إنشاء رابط مؤقت لتعديل الطلب (يتطلب مصادقة المدير)
 export const createTemporaryLink = async (req, res) => {
@@ -291,7 +292,7 @@ export const updateOrderByTemporaryLink = async (req, res) => {
           ...updatedOrder,
           statusHistory: updatedOrder.statusHistory.map((history) => ({
             ...history,
-            statusName: require("../models/Order.js").STATUS_NAMES[history.status],
+            statusName: STATUS_NAMES[history.status],
           })),
         },
         linkUsed: true,
