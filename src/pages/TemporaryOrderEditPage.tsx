@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,7 +17,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { JacketProvider, useJacket } from "../context/JacketContext";
-import { CartProvider, useCart } from "../context/CartContext";
+import { CartProvider } from "../context/CartContext";
 import { ImageLibraryProvider } from "../context/ImageLibraryContext";
 import temporaryLinkService, { TemporaryOrderData } from "../services/temporaryLinkService";
 import JacketViewer from "../components/jacket/JacketViewer";
@@ -50,7 +50,6 @@ const TemporaryOrderEditContent: React.FC = () => {
     removeText,
     setCurrentView,
   } = useJacket();
-
   const [orderData, setOrderData] = useState<TemporaryOrderData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

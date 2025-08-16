@@ -41,7 +41,55 @@ export interface TemporaryOrderData {
     };
     items: Array<{
       id: string;
-      jacketConfig: any;
+      jacketConfig: {
+        colors: {
+          body: string;
+          sleeves: string;
+          trim: string;
+        };
+        materials: {
+          body: string;
+          sleeves: string;
+        };
+        size: string;
+        logos: Array<{
+          id: string;
+          image: string | null;
+          position: string;
+          x: number;
+          y: number;
+          scale: number;
+          rotation?: number;
+        }>;
+        texts: Array<{
+          id: string;
+          content: string;
+          position: string;
+          x: number;
+          y: number;
+          scale: number;
+          font: string;
+          color: string;
+          isConnected: boolean;
+          charStyles?: Array<{
+            x?: number;
+            y?: number;
+            scale?: number;
+            font?: string;
+            color?: string;
+          }>;
+        }>;
+        currentView: string;
+        totalPrice: number;
+        isCapturing: boolean;
+        uploadedImages: Array<{
+          id: string;
+          url: string;
+          name: string;
+          uploadedAt: Date;
+          publicId?: string;
+        }>;
+      };
       quantity: number;
       price: number;
     }>;
@@ -182,7 +230,55 @@ class TemporaryLinkService {
         name: string;
         phone: string;
       };
-      jacketConfig: any;
+      jacketConfig: {
+        colors: {
+          body: string;
+          sleeves: string;
+          trim: string;
+        };
+        materials: {
+          body: string;
+          sleeves: string;
+        };
+        size: string;
+        logos: Array<{
+          id: string;
+          image: string | null;
+          position: string;
+          x: number;
+          y: number;
+          scale: number;
+          rotation?: number;
+        }>;
+        texts: Array<{
+          id: string;
+          content: string;
+          position: string;
+          x: number;
+          y: number;
+          scale: number;
+          font: string;
+          color: string;
+          isConnected: boolean;
+          charStyles?: Array<{
+            x?: number;
+            y?: number;
+            scale?: number;
+            font?: string;
+            color?: string;
+          }>;
+        }>;
+        currentView: string;
+        totalPrice: number;
+        isCapturing: boolean;
+        uploadedImages: Array<{
+          id: string;
+          url: string;
+          name: string;
+          uploadedAt: Date;
+          publicId?: string;
+        }>;
+      };
       quantity?: number;
       totalPrice?: number;
     }
