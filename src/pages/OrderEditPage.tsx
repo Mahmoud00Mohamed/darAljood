@@ -55,7 +55,7 @@ const OrderEditContent: React.FC = () => {
     removeText,
     setCurrentView,
   } = useJacket();
-  const { addToCart, clearCart } = useCart();
+  const {} = useCart();
 
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +68,6 @@ const OrderEditContent: React.FC = () => {
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCapturingImages, setIsCapturingImages] = useState(false);
-  const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfLoadingStage, setPdfLoadingStage] = useState<
     "capturing" | "generating" | "completed"
@@ -968,7 +967,6 @@ const OrderEditContent: React.FC = () => {
             isMobile
             setIsSidebarOpen={setIsSidebarOpen}
             onAddToCart={() => {}} // تعطيل زر إضافة للسلة
-            isCapturingImages={isCapturingImages}
           />
         </div>
       </div>
