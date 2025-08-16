@@ -17,13 +17,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     fontPreloader.preloadAllFonts().catch(console.warn);
   }, []);
 
+  // Layout.tsx
   const isCustomizerPage = location.pathname === "/customizer";
   const isAdminPage =
     location.pathname === "/admin" ||
     (location.pathname.startsWith("/admin/orders/") &&
       location.pathname.endsWith("/edit"));
 
-  if (isCustomizerPage || isAdminPage) {
+  const isTemporaryOrderEditPage = location.pathname.startsWith("/edit-order/");
+
+  if (isCustomizerPage || isAdminPage || isTemporaryOrderEditPage) {
     return <>{children}</>;
   }
 
