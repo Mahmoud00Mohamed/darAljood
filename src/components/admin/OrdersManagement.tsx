@@ -1,385 +1,524 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft,
-  Save,
-  Loader2,
-  AlertCircle,
-  CheckCircle,
+  Package,
+  Search,
+  Filter,
+  Eye,
+  Edit3,
+  Trash2,
+  Calendar,
   User,
   Phone,
-  Package,
-  Edit3,
-  X,
+  Clock,
+  CheckCircle,
+  Truck,
+  AlertCircle,
+  Loader2,
+  RefreshCw,
+  DollarSign,
   Download,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Check,
+  LinkIcon,
 } from "lucide-react";
-import { JacketProvider, useJacket } from "../context/JacketContext";
-import { CartProvider } from "../context/CartContext";
-import { ImageLibraryProvider } from "../context/ImageLibraryContext";
-import orderService, { OrderData } from "../services/orderService";
-import authService from "../services/authService";
-import JacketViewer from "../components/jacket/JacketViewer";
-import CustomizationSidebar from "../components/sidebar/CustomizationSidebar";
-import TopBar from "../components/ui/TopBar";
+import { useNavigate } from "react-router-dom";
+import orderService, {
+  OrderData,
+  OrderStats,
+} from "../../services/orderService";
+import temporaryLinkService from "../../services/temporaryLinkService";
+import authService from "../../services/authService";
+import ConfirmationModal from "../ui/ConfirmationModal";
+import Modal from "../ui/Modal";
+import { useModal } from "../../hooks/useModal";
+import { generateOrderPDFWithImages } from "../../utils/pdfGenerator";
 import JacketImageCapture, {
   JacketImageCaptureRef,
-} from "../components/jacket/JacketImageCapture";
-import ConfirmationModal from "../components/ui/ConfirmationModal";
-import { useModal } from "../hooks/useModal";
-import fontPreloader from "../utils/fontPreloader";
-import { cleanupJacketData, validateDataIntegrity } from "../utils/dataCleanup";
-import { generateOrderPDFWithImages } from "../utils/pdfGenerator";
-import LoadingOverlay from "../components/ui/LoadingOverlay";
+} from "../jacket/JacketImageCapture";
+import LoadingOverlay from "../ui/LoadingOverlay";
+import fontPreloader from "../../utils/fontPreloader";
+import { JacketState, JacketMaterial } from "../../context/JacketContext";
 
-// دالة مساعدة لتحويل التاريخ إلى الصيغة المطلوبة YYYY/MM/DD
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}/${month}/${day}`;
-};
-
-const OrderEditContent: React.FC = () => {
-  const { orderId } = useParams<{ orderId: string }>();
+const OrdersManagement: React.FC = () => {
   const navigate = useNavigate();
-  const {
-    jacketState,
-    setColor,
-    setMaterial,
-    setSize,
-    addLogo,
-    addText,
-    removeLogo,
-    removeText,
-    setCurrentView,
-  } = useJacket();
-
-  const [orderData, setOrderData] = useState<OrderData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [orders, setOrders] = useState<OrderData[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<OrderData[]>([]);
+  const [stats, setStats] = useState<OrderStats | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [error, setError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
-  const [customerInfo, setCustomerInfo] = useState({
-    name: "",
-    phone: "",
-  });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pendingCurrentPage, setPendingCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pendingTotalPages, setPendingTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalPendingOrders, setTotalPendingOrders] = useState(0);
+  const [ordersPerPage] = useState(10);
+  const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<OrderData | null>(null);
+  const [orderToConfirm, setOrderToConfirm] = useState<OrderData | null>(null);
+  const [newStatus, setNewStatus] = useState("");
+  const [statusNote, setStatusNote] = useState("");
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isConfirmingOrder, setIsConfirmingOrder] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfLoadingStage, setPdfLoadingStage] = useState<
     "capturing" | "generating" | "completed"
   >("capturing");
   const [showPdfLoadingOverlay, setShowPdfLoadingOverlay] = useState(false);
+  const [activeTab, setActiveTab] = useState<"confirmed" | "pending">(
+    "confirmed"
+  );
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [isCreatingLink, setIsCreatingLink] = useState<string | null>(null);
 
-  const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const saveConfirmModal = useModal();
-  const exitConfirmModal = useModal();
-  const pdfConfirmModal = useModal();
+  const jacketImageCaptureRef = React.useRef<JacketImageCaptureRef>(null);
+  const orderDetailsModal = useModal();
+  const deleteOrderModal = useModal();
+  const updateStatusModal = useModal();
+  const confirmOrderModal = useModal();
 
-  // تنظيف البيانات عند دخول الصفحة
-  useEffect(() => {
-    // مسح بيانات الـ customizer من localStorage عند دخول صفحة التعديل
-    const customizerState = localStorage.getItem("jacketState");
-    if (customizerState) {
-      // حفظ نسخة احتياطية مؤقتة
-      sessionStorage.setItem("customizerBackup", customizerState);
-    }
+  const orderStatuses = [
+    { value: "pending", name: "قيد المراجعة", color: "text-amber-600" },
+    { value: "confirmed", name: "تم التأكيد", color: "text-blue-600" },
+    { value: "in_production", name: "قيد التنفيذ", color: "text-purple-600" },
+    { value: "quality_check", name: "فحص الجودة", color: "text-cyan-600" },
+    { value: "ready_to_ship", name: "جاهز للشحن", color: "text-emerald-600" },
+    { value: "shipped", name: "تم الشحن", color: "text-green-600" },
+    { value: "delivered", name: "تم التسليم", color: "text-green-700" },
+    { value: "cancelled", name: "ملغي", color: "text-red-600" },
+    { value: "returned", name: "مُرجع", color: "text-orange-600" },
+  ];
 
-    return () => {
-      // عند الخروج من صفحة التعديل، مسح بيانات التعديل
-      localStorage.removeItem("orderEditJacketState");
-
-      // استعادة بيانات الـ customizer إذا كانت موجودة
-      const customizerBackup = sessionStorage.getItem("customizerBackup");
-      if (customizerBackup) {
-        localStorage.setItem("jacketState", customizerBackup);
-        sessionStorage.removeItem("customizerBackup");
-      }
-    };
-  }, []);
-
-  const loadOrderData = useCallback(async () => {
-    // منع التحميل المتكرر
-    if (isDataLoaded) return;
-
-    if (!orderId) {
-      setError("معرف الطلب مطلوب");
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
+  const handleCreateTemporaryLink = async (orderId: string) => {
+    setIsCreatingLink(orderId);
     try {
       const token = authService.getToken();
-      if (!token) {
-        throw new Error("رمز المصادقة غير موجود");
-      }
+      if (!token) throw new Error("رمز المصادقة غير موجود");
 
-      const order = await orderService.getOrderById(orderId, token);
-      setOrderData(order);
-      setCustomerInfo(order.customerInfo);
-
-      // تحميل تكوين الجاكيت إلى الـ context
-      if (order.items.length > 0) {
-        const jacketConfig = order.items[0].jacketConfig;
-
-        // تنظيف البيانات من التكرارات
-        const cleanedConfig = cleanupJacketData(jacketConfig);
-
-        // التحقق من سلامة البيانات
-        const validation = validateDataIntegrity(cleanedConfig);
-        if (!validation.isValid) {
-          console.warn("Data integrity issues found:", validation.issues);
-        }
-
-        // مسح البيانات الحالية
-        jacketState.logos.forEach((logo) => removeLogo(logo.id));
-        jacketState.texts.forEach((text) => removeText(text.id));
-
-        // تطبيق الألوان والخامات والمقاس
-        setColor("body", jacketConfig.colors.body);
-        setColor("sleeves", jacketConfig.colors.sleeves);
-        setColor("trim", jacketConfig.colors.trim);
-        setMaterial(
-          "body",
-          jacketConfig.materials.body as "leather" | "cotton"
-        );
-        setMaterial(
-          "sleeves",
-          jacketConfig.materials.sleeves as "leather" | "cotton"
-        );
-        setSize(
-          jacketConfig.size as
-            | "XS"
-            | "S"
-            | "M"
-            | "L"
-            | "XL"
-            | "2XL"
-            | "3XL"
-            | "4XL"
-        );
-
-        // إضافة الشعارات المنظفة
-        cleanedConfig.logos.forEach((logo) => {
-          addLogo({
-            id: logo.id,
-            image: logo.image,
-            position: logo.position as
-              | "chestRight"
-              | "chestLeft"
-              | "backCenter"
-              | "rightSide_top"
-              | "rightSide_middle"
-              | "rightSide_bottom"
-              | "leftSide_top"
-              | "leftSide_middle"
-              | "leftSide_bottom",
-            x: logo.x,
-            y: logo.y,
-            scale: logo.scale,
-            rotation: logo.rotation,
-          });
-        });
-
-        // إضافة النصوص المنظفة
-        cleanedConfig.texts.forEach((text) => {
-          addText({
-            id: text.id,
-            content: text.content,
-            position: text.position as
-              | "chestRight"
-              | "chestLeft"
-              | "backBottom",
-            x: text.x,
-            y: text.y,
-            scale: text.scale,
-            font: text.font,
-            color: text.color,
-            isConnected: text.isConnected,
-            charStyles: text.charStyles,
-          });
-        });
-
-        // تعيين العرض الحالي
-        setCurrentView(
-          jacketConfig.currentView as "front" | "back" | "right" | "left"
-        );
-      }
-
-      setIsDataLoaded(true);
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "فشل في تحميل بيانات الطلب"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    orderId,
-    isDataLoaded,
-    jacketState.logos,
-    jacketState.texts,
-    removeLogo,
-    removeText,
-    setColor,
-    setMaterial,
-    setSize,
-    addLogo,
-    addText,
-    setCurrentView,
-  ]);
-
-  useEffect(() => {
-    if (!isDataLoaded) {
-      loadOrderData();
-    }
-  }, [orderId, isDataLoaded, loadOrderData]);
-
-  const handleSaveChanges = async () => {
-    setIsSaving(true);
-    setSaveMessage("");
-    setError("");
-
-    try {
-      // حفظ التعديلات في الباك إند
-      const token = authService.getToken();
-      if (!token) {
-        throw new Error("رمز المصادقة غير موجود");
-      }
-
-      const updateData = {
-        customerInfo,
-        jacketConfig: jacketState,
-        quantity: orderData?.items[0]?.quantity || 1,
-        totalPrice: jacketState.totalPrice,
-      };
-
-      const updatedOrder = await orderService.updateOrder(
-        orderId!,
-        updateData,
+      const linkData = await temporaryLinkService.createTemporaryLink(
+        orderId,
+        1, // ساعة واحدة افتراضياً
         token
       );
 
-      // تحديث بيانات الطلب المحلية
-      setOrderData(updatedOrder);
+      // نسخ الرابط إلى الحافظة
+      await navigator.clipboard.writeText(linkData.fullUrl);
+      setCopiedLink(true);
+      setSaveMessage("تم إنشاء الرابط المؤقت ونسخه إلى الحافظة بنجاح");
 
-      setSaveMessage("تم حفظ التغييرات في النظام بنجاح");
-      setShowMobileDetails(false);
-      setTimeout(() => setSaveMessage(""), 3000);
+      setTimeout(() => {
+        setSaveMessage("");
+        setCopiedLink(false);
+      }, 3000);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "فشل في حفظ التغييرات");
+      setError(
+        error instanceof Error ? error.message : "فشل في إنشاء الرابط المؤقت"
+      );
     } finally {
-      setIsSaving(false);
-      saveConfirmModal.closeModal();
+      setIsCreatingLink(null);
     }
   };
 
-  const handleDownloadPDF = async () => {
-    if (!orderData) return;
+  const loadOrders = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
 
+      const result = await orderService.getAllOrders(token, {
+        page: currentPage,
+        limit: ordersPerPage,
+        search: searchTerm,
+        status: statusFilter,
+        includePending: false,
+      });
+      setOrders(result.orders);
+      setTotalPages(result.pagination.totalPages);
+      setTotalOrders(result.pagination.totalOrders);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "فشل في تحميل الطلبات");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadPendingOrders = async () => {
+    setIsLoadingPending(true);
+    setError("");
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      const result = await orderService.getAllOrders(token, {
+        page: pendingCurrentPage,
+        limit: ordersPerPage,
+        search: searchTerm,
+        status: "pending",
+        includePending: true,
+      });
+      setPendingOrders(result.orders);
+      setPendingTotalPages(result.pagination.totalPages);
+      setTotalPendingOrders(result.pagination.totalOrders);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "فشل في تحميل الطلبات قيد المراجعة"
+      );
+    } finally {
+      setIsLoadingPending(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const token = authService.getToken();
+      if (!token) return;
+
+      const statsData = await orderService.getOrderStats(token);
+      setStats(statsData);
+    } catch (error) {
+      console.error("Error loading stats:", error);
+    }
+  };
+
+  // دالة لتحديث الأعداد في الوقت الفعلي
+  const updateOrderCounts = async () => {
+    try {
+      const token = authService.getToken();
+      if (!token) return;
+
+      // تحديث عدد الطلبات المؤكدة
+      const confirmedResult = await orderService.getAllOrders(token, {
+        page: 1,
+        limit: 1,
+        status: "",
+        includePending: false,
+      });
+      setTotalOrders(confirmedResult.pagination.totalOrders);
+
+      // تحديث عدد الطلبات قيد المراجعة
+      const pendingResult = await orderService.getAllOrders(token, {
+        page: 1,
+        limit: 1,
+        status: "pending",
+        includePending: true,
+      });
+      setTotalPendingOrders(pendingResult.pagination.totalOrders);
+    } catch (error) {
+      console.error("Error updating order counts:", error);
+    }
+  };
+
+  // دالة لتحديث كل البيانات بعد أي تغيير
+  const refreshAllData = async () => {
+    await Promise.all([
+      loadOrders(), // تحديث الطلبات المؤكدة
+      loadPendingOrders(), // تحديث الطلبات قيد المراجعة
+      loadStats(), // تحديث الإحصائيات
+      updateOrderCounts(), // تحديث الأعداد
+    ]);
+  };
+
+  // Initial load - load both confirmed and pending orders
+  useEffect(() => {
+    const initializeData = async () => {
+      await Promise.all([
+        loadOrders(), // Load confirmed orders
+        loadPendingOrders(), // Load pending orders
+        loadStats(), // Load statistics
+      ]);
+    };
+
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Load once on component mount
+
+  // Reload data when page changes
+  useEffect(() => {
+    if (activeTab === "confirmed") {
+      loadOrders();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, searchTerm, statusFilter]);
+
+  useEffect(() => {
+    if (activeTab === "pending") {
+      loadPendingOrders();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingCurrentPage, searchTerm]);
+
+  const handleTabSwitch = (tab: "confirmed" | "pending") => {
+    setActiveTab(tab);
+    // No need to manually load data as useEffect will handle it
+  };
+
+  const handleSearch = () => {
+    if (activeTab === "confirmed") {
+      setCurrentPage(1);
+      loadOrders();
+    } else {
+      setPendingCurrentPage(1);
+      loadPendingOrders();
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    if (activeTab === "confirmed" && page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    } else if (
+      activeTab === "pending" &&
+      page >= 1 &&
+      page <= pendingTotalPages
+    ) {
+      setPendingCurrentPage(page);
+    }
+  };
+
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    if (activeTab === "confirmed") {
+      setCurrentPage(1);
+      loadOrders();
+    } else {
+      setPendingCurrentPage(1);
+      loadPendingOrders();
+    }
+  };
+
+  const handleViewOrder = (order: OrderData) => {
+    setSelectedOrder(order);
+    orderDetailsModal.openModal();
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
+
+    setIsConfirmingOrder(true); // استخدام نفس حالة التأكيد
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      await orderService.deleteOrder(orderToDelete.id, token);
+
+      // تحديث فوري للأعداد
+      if (orderToDelete.status === "pending") {
+        setTotalPendingOrders((prev) => prev - 1);
+      } else {
+        setTotalOrders((prev) => prev - 1);
+      }
+
+      // تحديث كل البيانات
+      await refreshAllData();
+
+      deleteOrderModal.closeModal();
+      setOrderToDelete(null);
+      setSaveMessage("تم حذف الطلب بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "فشل في حذف الطلب");
+    } finally {
+      setIsConfirmingOrder(false); // إعادة تعيين حالة التأكيد
+    }
+  };
+
+  const handleConfirmOrder = async () => {
+    if (!orderToConfirm) return;
+
+    setIsConfirmingOrder(true);
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      await orderService.updateOrderStatus(
+        orderToConfirm.id,
+        "confirmed",
+        "تم تأكيد الطلب",
+        token
+      );
+
+      // تحديث فوري للأعداد
+      setTotalPendingOrders((prev) => prev - 1); // تقليل عدد الطلبات قيد المراجعة
+      setTotalOrders((prev) => prev + 1); // زيادة عدد الطلبات المؤكدة
+
+      // تحديث كل البيانات
+      await refreshAllData();
+
+      confirmOrderModal.closeModal();
+      setOrderToConfirm(null);
+      setSaveMessage("تم تأكيد الطلب بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "فشل في تأكيد الطلب");
+    } finally {
+      setIsConfirmingOrder(false);
+    }
+  };
+
+  const handleUpdateStatus = async () => {
+    if (!selectedOrder || !newStatus) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      const updatedOrder = await orderService.updateOrderStatus(
+        selectedOrder.id,
+        newStatus,
+        statusNote,
+        token
+      );
+
+      // تحديث فوري للأعداد إذا تم النقل من pending إلى confirmed
+      if (selectedOrder.status === "pending" && newStatus === "confirmed") {
+        setTotalPendingOrders((prev) => prev - 1); // تقليل عدد الطلبات قيد المراجعة
+        setTotalOrders((prev) => prev + 1); // زيادة عدد الطلبات المؤكدة
+      }
+
+      setSelectedOrder(updatedOrder);
+
+      // تحديث كل البيانات
+      await refreshAllData();
+
+      updateStatusModal.closeModal();
+      setNewStatus("");
+      setStatusNote("");
+      setSaveMessage("تم تحديث حالة الطلب بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "فشل في تحديث حالة الطلب"
+      );
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}/${month}/${day} ${hours}:${minutes}`;
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("ar-SA", {
+      style: "currency",
+      currency: "SAR",
+    }).format(price);
+  };
+
+  const convertToJacketState = (
+    jacketConfig: OrderData["items"][0]["jacketConfig"]
+  ): JacketState => {
+    return {
+      colors: jacketConfig.colors,
+      materials: {
+        body: jacketConfig.materials.body as JacketMaterial,
+        sleeves: jacketConfig.materials.sleeves as JacketMaterial,
+        trim: jacketConfig.materials.body as JacketMaterial,
+      },
+      size: jacketConfig.size as
+        | "XS"
+        | "S"
+        | "M"
+        | "L"
+        | "XL"
+        | "2XL"
+        | "3XL"
+        | "4XL",
+      logos: jacketConfig.logos.map((logo) => ({
+        ...logo,
+        position: logo.position as
+          | "chestRight"
+          | "chestLeft"
+          | "backCenter"
+          | "rightSide_top"
+          | "rightSide_middle"
+          | "rightSide_bottom"
+          | "leftSide_top"
+          | "leftSide_middle"
+          | "leftSide_bottom",
+      })),
+      texts: jacketConfig.texts.map((text) => ({
+        ...text,
+        position: text.position as "chestRight" | "chestLeft" | "backBottom",
+      })),
+      currentView: jacketConfig.currentView as
+        | "front"
+        | "back"
+        | "right"
+        | "left",
+      totalPrice: jacketConfig.totalPrice,
+      isCapturing: jacketConfig.isCapturing || false,
+      uploadedImages: jacketConfig.uploadedImages || [],
+    };
+  };
+
+  const handleDownloadPDF = async (order: OrderData) => {
     setIsGeneratingPDF(true);
     setShowPdfLoadingOverlay(true);
     setPdfLoadingStage("capturing");
 
     try {
-      // التأكد من تحميل الخطوط قبل بدء العملية
       await fontPreloader.preloadAllFonts();
 
       let jacketImages: string[] = [];
 
-      // التقاط صور الجاكيت الحالي
-      if (jacketImageCaptureRef.current) {
+      if (jacketImageCaptureRef.current && order.items.length > 0) {
         try {
-          jacketImages = await jacketImageCaptureRef.current.captureAllViews();
+          const convertedConfig = convertToJacketState(
+            order.items[0].jacketConfig
+          );
+          jacketImages = await jacketImageCaptureRef.current.captureFromConfig(
+            convertedConfig
+          );
         } catch (captureError) {
           console.warn("فشل في التقاط الصور:", captureError);
           jacketImages = [];
         }
       }
 
-      // الانتقال لمرحلة إنشاء PDF
       setPdfLoadingStage("generating");
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // إنشاء PDF
       const pdfBlob = await generateOrderPDFWithImages(
         {
-          cartItems: orderData.items.map((item) => ({
+          cartItems: order.items.map((item) => ({
             id: item.id,
-            jacketConfig: {
-              ...item.jacketConfig,
-              colors: item.jacketConfig.colors,
-              materials: {
-                body: item.jacketConfig.materials.body as "leather" | "cotton",
-                sleeves: item.jacketConfig.materials.sleeves as
-                  | "leather"
-                  | "cotton",
-                trim: item.jacketConfig.materials.body as "leather" | "cotton",
-              },
-              size: item.jacketConfig.size as
-                | "XS"
-                | "S"
-                | "M"
-                | "L"
-                | "XL"
-                | "2XL"
-                | "3XL"
-                | "4XL",
-              logos: item.jacketConfig.logos.map((logo) => ({
-                ...logo,
-                position: logo.position as
-                  | "chestRight"
-                  | "chestLeft"
-                  | "backCenter"
-                  | "rightSide_top"
-                  | "rightSide_middle"
-                  | "rightSide_bottom"
-                  | "leftSide_top"
-                  | "leftSide_middle"
-                  | "leftSide_bottom",
-              })),
-              texts: item.jacketConfig.texts.map((text) => ({
-                ...text,
-                position: text.position as
-                  | "chestRight"
-                  | "chestLeft"
-                  | "backBottom",
-              })),
-              currentView: item.jacketConfig.currentView as
-                | "front"
-                | "back"
-                | "right"
-                | "left",
-              totalPrice: item.jacketConfig.totalPrice,
-              isCapturing: false,
-              uploadedImages: item.jacketConfig.uploadedImages || [],
-            },
+            jacketConfig: convertToJacketState(item.jacketConfig),
             quantity: item.quantity,
             price: item.price,
-            addedAt: new Date(orderData.createdAt),
+            addedAt: new Date(order.createdAt),
           })),
-          totalPrice: orderData.totalPrice,
-          customerInfo: customerInfo,
-          orderNumber: orderData.orderNumber,
+          totalPrice: order.totalPrice,
+          customerInfo: order.customerInfo,
+          orderNumber: order.orderNumber,
         },
         jacketImages
       );
 
-      // مرحلة الإكمال
       setPdfLoadingStage("completed");
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // تحميل الملف
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `طلب-${orderData.orderNumber}-${customerInfo.name}.pdf`;
+      link.download = `طلب-${order.orderNumber}-${order.customerInfo.name}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -396,107 +535,187 @@ const OrderEditContent: React.FC = () => {
     setShowPdfLoadingOverlay(false);
   };
 
-  const handleCustomerInfoUpdate = (field: string, value: string) => {
-    setCustomerInfo((prev) => ({ ...prev, [field]: value }));
+  const getStatusColor = (status: string) => {
+    const statusObj = orderStatuses.find((s) => s.value === status);
+    return statusObj?.color || "text-gray-600";
   };
 
-  const handleExit = () => {
-    navigate("/admin");
+  const getStatusIcon = (status: string) => {
+    const icons: { [key: string]: React.ReactNode } = {
+      pending: <Clock className="w-4 h-4" />,
+      confirmed: <CheckCircle className="w-4 h-4" />,
+      in_production: <Package className="w-4 h-4" />,
+      quality_check: <CheckCircle className="w-4 h-4" />,
+      ready_to_ship: <Package className="w-4 h-4" />,
+      shipped: <Truck className="w-4 h-4" />,
+      delivered: <CheckCircle className="w-4 h-4" />,
+      cancelled: <AlertCircle className="w-4 h-4" />,
+      returned: <Package className="w-4 h-4" />,
+    };
+    return icons[status] || <Package className="w-4 h-4" />;
   };
 
-  const toggleMobileDetails = () => {
-    setShowMobileDetails((prev) => !prev);
-  };
-  // إعادة تعيين حالة التحميل عند تغيير orderId
-  useEffect(() => {
-    setIsDataLoaded(false);
-  }, [orderId]);
-  if (isLoading) {
+  const PaginationComponent = ({
+    currentPageProp,
+    totalPagesProp,
+    totalOrdersProp,
+    onPageChange,
+  }: {
+    currentPageProp: number;
+    totalPagesProp: number;
+    totalOrdersProp: number;
+    onPageChange: (page: number) => void;
+  }) => {
+    if (totalPagesProp <= 1) return null;
+
+    const getPageNumbers = () => {
+      const pages = [];
+      const maxVisiblePages = 5;
+
+      if (totalPagesProp <= maxVisiblePages) {
+        for (let i = 1; i <= totalPagesProp; i++) {
+          pages.push(i);
+        }
+      } else {
+        if (currentPageProp <= 3) {
+          for (let i = 1; i <= 4; i++) {
+            pages.push(i);
+          }
+          pages.push("...");
+          pages.push(totalPagesProp);
+        } else if (currentPageProp >= totalPagesProp - 2) {
+          pages.push(1);
+          pages.push("...");
+          for (let i = totalPagesProp - 3; i <= totalPagesProp; i++) {
+            pages.push(i);
+          }
+        } else {
+          pages.push(1);
+          pages.push("...");
+          for (let i = currentPageProp - 1; i <= currentPageProp + 1; i++) {
+            pages.push(i);
+          }
+          pages.push("...");
+          pages.push(totalPagesProp);
+        }
+      }
+
+      return pages;
+    };
+
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
-          <p className="text-gray-600">جاري تحميل بيانات الطلب...</p>
+      <div className="flex items-center justify-between mt-6 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>
+            عرض {(currentPageProp - 1) * ordersPerPage + 1} إلى{" "}
+            {Math.min(currentPageProp * ordersPerPage, totalOrdersProp)} من{" "}
+            {totalOrdersProp} طلب
+          </span>
         </div>
-      </div>
-    );
-  }
 
-  if (error && !orderData) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            خطأ في تحميل الطلب
-          </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+        <div className="flex items-center gap-1">
           <button
-            onClick={() => navigate("/admin")}
-            className="px-6 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
+            onClick={() => onPageChange(1)}
+            disabled={currentPageProp === 1}
+            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="الصفحة الأولى"
           >
-            العودة للوحة التحكم
+            <ChevronsRight className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => onPageChange(currentPageProp - 1)}
+            disabled={currentPageProp === 1}
+            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="الصفحة السابقة"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          <div className="flex items-center gap-1">
+            {getPageNumbers().map((page, index) => (
+              <React.Fragment key={index}>
+                {page === "..." ? (
+                  <span className="px-3 py-2 text-gray-500">...</span>
+                ) : (
+                  <button
+                    onClick={() => onPageChange(page as number)}
+                    className={`px-3 py-2 rounded-lg border transition-colors ${
+                      currentPageProp === page
+                        ? "bg-[#563660] text-white border-[#563660]"
+                        : "border-gray-300 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          <button
+            onClick={() => onPageChange(currentPageProp + 1)}
+            disabled={currentPageProp === totalPagesProp}
+            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="الصفحة التالية"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => onPageChange(totalPagesProp)}
+            disabled={currentPageProp === totalPagesProp}
+            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="الصفحة الأخيرة"
+          >
+            <ChevronsLeft className="w-4 h-4" />
           </button>
         </div>
       </div>
     );
-  }
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-white jacket-customizer-container order-edit-page">
-      {/* الشريط العلوي */}
-      <TopBar />
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <Package className="w-5 h-5 text-[#563660]" />
+            إدارة الطلبات
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            عرض وإدارة جميع طلبات العملاء
+          </p>
+        </div>
 
-      {/* شريط التنقل - مخفي في الهواتف */}
-      <div className="hidden lg:block bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={exitConfirmModal.openModal}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              العودة للوحة التحكم
-            </button>
-            <div className="h-6 w-px bg-gray-300"></div>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">
-                تعديل الطلب {orderData?.orderNumber}
-              </h1>
-              <p className="text-sm text-gray-600">
-                رمز التتبع: {orderData?.trackingCode}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={saveConfirmModal.openModal}
-              disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50"
-            >
-              {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              حفظ التغييرات
-            </button>
-          </div>
+        <div className="flex gap-2">
+          <button
+            onClick={refreshAllData}
+            disabled={isLoading || isLoadingPending}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 text-sm"
+          >
+            {isLoading || isLoadingPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            تحديث شامل
+          </button>
         </div>
       </div>
 
-      {/* رسائل النجاح والخطأ */}
+      {/* Messages */}
       <AnimatePresence>
         {saveMessage && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-[34px] left-1/2 transform -translate-x-1/2 z-[100] bg-green-50 border border-green-200 text-green-700 px-3 py-2 lg:px-6 lg:py-3 rounded-lg shadow-lg flex items-center gap-2 text-sm lg:text-base max-w-[90vw] lg:max-w-none"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2"
           >
-            <CheckCircle className="w-4 h-4 text-green-600" />
-            <span className="font-medium text-xs lg:text-base whitespace-nowrap overflow-hidden text-ellipsis">
+            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+            <span className="text-green-700 font-medium text-sm">
               {saveMessage}
             </span>
           </motion.div>
@@ -504,523 +723,789 @@ const OrderEditContent: React.FC = () => {
 
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-[34px] left-1/2 transform -translate-x-1/2 z-[100] bg-red-50 border border-red-200 text-red-700 px-3 py-2 lg:px-6 lg:py-3 rounded-lg shadow-lg flex items-center gap-2 text-sm lg:text-base max-w-[90vw] lg:max-w-none"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2"
           >
-            <AlertCircle className="w-4 h-4 text-red-600" />
-            <span className="font-medium text-xs lg:text-base whitespace-nowrap overflow-hidden text-ellipsis">
-              {error}
-            </span>
+            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+            <span className="text-red-700 font-medium text-sm">{error}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* المحتوى الرئيسي */}
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        {/* Hidden Jacket Image Capture Component */}
-        <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
-          <JacketImageCapture ref={jacketImageCaptureRef} />
-        </div>
+      {/* Statistics */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm">الطلبات المؤكدة</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </div>
+              <Package className="w-8 h-8 text-blue-200" />
+            </div>
+          </div>
 
-        {/* Loading Overlay for PDF Generation */}
-        <LoadingOverlay
-          isVisible={showPdfLoadingOverlay}
-          stage={pdfLoadingStage}
-          onComplete={handlePdfLoadingComplete}
-        />
+          <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-amber-100 text-sm">قيد المراجعة</p>
+                <p className="text-2xl font-bold">
+                  {stats.pendingReview.total}
+                </p>
+              </div>
+              <Clock className="w-8 h-8 text-amber-200" />
+            </div>
+          </div>
 
-        {/* Mobile Back to Admin Button */}
-        <button
-          onClick={exitConfirmModal.openModal}
-          className="lg:hidden fixed top-[34px] right-4 z-60 flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-gray-50"
-        >
-          <ArrowLeft className="w-4 h-4 text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">
-            العودة للوحة التحكم
-          </span>
-        </button>
-        {/* Sidebar for Desktop */}
-        <div
-          className={`${
-            window.innerWidth > 1250 ? "block" : "hidden"
-          } w-[380px] h-full`}
-        >
-          <div className="h-full">
-            <CustomizationSidebar setIsSidebarOpen={setIsSidebarOpen} />
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm">الإيرادات</p>
+                <p className="text-xl font-bold">
+                  {formatPrice(stats.totalRevenue)}
+                </p>
+              </div>
+              <DollarSign className="w-8 h-8 text-green-200" />
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm">قيد التنفيذ</p>
+                <p className="text-2xl font-bold">{stats.inProduction}</p>
+              </div>
+              <Package className="w-8 h-8 text-purple-200" />
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Jacket Viewer - Adjusted for mobile */}
-        <div
-          className={`flex-1 flex items-center justify-center p-4 lg:p-8 bg-gray-50 transition-all duration-300 ${
-            window.innerWidth <= 1250 && isSidebarOpen
-              ? "fixed top-[30px] left-0 right-0 z-20"
-              : "min-h-screen lg:min-h-auto"
-          }`}
-          style={{
-            height:
-              window.innerWidth <= 1250 && isSidebarOpen
-                ? "calc(100vh - 40vh - 8rem - 30px)"
-                : window.innerWidth <= 1250
-                ? "calc(100vh - 4rem - 30px)"
-                : "auto",
-            display: "flex",
-            alignItems: window.innerWidth > 1250 ? "flex-start" : "center",
-            justifyContent: "center",
-            paddingTop: window.innerWidth > 1250 ? "14rem" : "0",
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className={`w-full max-w-[400px] lg:max-w-[500px] relative ${
-              isSidebarOpen && window.innerWidth <= 1250 ? "z-40" : "z-10"
+      {/* Order Tabs */}
+      <div className="bg-white rounded-lg border border-gray-200 p-1">
+        <div className="flex flex-wrap gap-1">
+          <button
+            onClick={() => handleTabSwitch("confirmed")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+              activeTab === "confirmed"
+                ? "bg-[#563660] text-white"
+                : "text-gray-600 hover:bg-gray-100"
             }`}
           >
-            <JacketViewer isSidebarOpen={isSidebarOpen} />
-          </motion.div>
-        </div>
-
-        {/* Desktop Details Panel */}
-        <div
-          className={`${
-            window.innerWidth > 1250 ? "flex" : "hidden"
-          } w-80 bg-white shadow-xl p-6 flex-col border-l border-gray-200 rounded-l-2xl h-full overflow-y-auto`}
-        >
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-0 flex-1 flex flex-col h-full"
-          >
-            <h2 className="text-2xl font-light text-gray-900 gold-text-gradient">
-              تعديل الطلب
-            </h2>
-
-            {/* معلومات العميل */}
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <div className="flex items-center gap-2 mb-4">
-                <User className="w-5 h-5 text-[#563660]" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  معلومات العميل
-                </h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    اسم العميل
-                  </label>
-                  <div className="relative">
-                    <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={customerInfo.name}
-                      onChange={(e) =>
-                        handleCustomerInfoUpdate("name", e.target.value)
-                      }
-                      className="w-full pr-10 pl-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                      placeholder="اسم العميل"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    رقم الهاتف
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="tel"
-                      value={customerInfo.phone}
-                      onChange={(e) =>
-                        handleCustomerInfoUpdate("phone", e.target.value)
-                      }
-                      className="w-full pr-10 pl-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                      placeholder="رقم الهاتف"
-                      dir="ltr"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* معلومات الطلب */}
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <div className="flex items-center gap-2 mb-4">
-                <Package className="w-5 h-5 text-[#563660]" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  معلومات الطلب
-                </h3>
-              </div>
-
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">رقم الطلب:</span>
-                  <span className="font-medium">{orderData?.orderNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">رمز التتبع:</span>
-                  <span className="font-mono font-medium">
-                    {orderData?.trackingCode}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">الحالة:</span>
-                  <span className="font-medium text-[#563660]">
-                    {orderData?.statusName}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">الكمية:</span>
-                  <span className="font-medium">
-                    {orderData?.items[0]?.quantity || 1}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">السعر:</span>
-                  <span className="font-medium">
-                    {orderData?.totalPrice} ريال
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* عرض المقاس المحدد */}
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">
-                  المقاس المحدد
-                </span>
-              </div>
-              <div className="text-lg font-semibold text-[#563660]">
-                {jacketState.size}
-              </div>
-            </div>
-
-            <div className="space-y-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-xl">
-              <div className="flex justify-between">
-                <span>تاريخ الإنشاء:</span>
-                <span className="font-medium">
-                  {orderData && formatDate(orderData.createdAt)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>آخر تحديث:</span>
-                <span className="font-medium">
-                  {orderData && formatDate(orderData.updatedAt)}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-3 mt-auto">
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={saveConfirmModal.openModal}
-                disabled={isSaving}
-                className="w-full py-3 gold-gradient text-white rounded-xl font-semibold shadow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-50 relative z-10"
-              >
-                {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
-              </motion.button>
-
-              <button
-                onClick={exitConfirmModal.openModal}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                العودة للوحة التحكم
-              </button>
-
-              <button
-                onClick={pdfConfirmModal.openModal}
-                disabled={isGeneratingPDF}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-all duration-300 disabled:opacity-50 relative z-10"
-              >
-                {isGeneratingPDF ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-                تحميل PDF
-              </button>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Mobile Edit Button */}
-        <motion.div
-          className={`${
-            window.innerWidth <= 1250 ? "block" : "hidden"
-          } fixed top-[34px] left-4 z-60`}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <button
-            onClick={toggleMobileDetails}
-            className="p-2 gold-gradient rounded-full shadow-md transition-all"
-            title="تعديل الطلب"
-          >
-            <Edit3 size={18} className="text-white" />
+            <CheckCircle className="w-4 h-4" />
+            الطلبات المؤكدة ({totalOrders})
           </button>
-        </motion.div>
-
-        {/* Mobile Details Panel */}
-        <AnimatePresence>
-          {showMobileDetails && window.innerWidth <= 1250 && (
-            <motion.div
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="fixed top-[30px] left-0 right-0 bottom-0 bg-white shadow-xl z-70 p-4 mobile-details-panel overflow-y-auto"
-            >
-              <div className="flex justify-between items-center mb-0 p-4">
-                <h2 className="text-lg font-bold text-gray-900 gold-text-gradient">
-                  تعديل الطلب {orderData?.orderNumber}
-                </h2>
-                <button
-                  onClick={toggleMobileDetails}
-                  className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-all"
-                >
-                  <X size={16} className="text-gray-600" />
-                </button>
-              </div>
-
-              <div className="space-y-4 p-4">
-                {/* معلومات العميل للموبايل */}
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <div className="flex items-center gap-2 mb-3">
-                    <User className="w-4 h-4 text-[#563660]" />
-                    <h3 className="text-base font-semibold text-gray-900">
-                      معلومات العميل
-                    </h3>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        اسم العميل
-                      </label>
-                      <div className="relative">
-                        <User className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
-                        <input
-                          type="text"
-                          value={customerInfo.name}
-                          onChange={(e) =>
-                            handleCustomerInfoUpdate("name", e.target.value)
-                          }
-                          className="w-full pr-8 pl-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                          placeholder="اسم العميل"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        رقم الهاتف
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
-                        <input
-                          type="tel"
-                          value={customerInfo.phone}
-                          onChange={(e) =>
-                            handleCustomerInfoUpdate("phone", e.target.value)
-                          }
-                          className="w-full pr-8 pl-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
-                          placeholder="رقم الهاتف"
-                          dir="ltr"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* معلومات الطلب للموبايل */}
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Package className="w-4 h-4 text-[#563660]" />
-                    <h3 className="text-base font-semibold text-gray-900">
-                      معلومات الطلب
-                    </h3>
-                  </div>
-
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">رقم الطلب:</span>
-                      <span className="font-medium">
-                        {orderData?.orderNumber}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">رمز التتبع:</span>
-                      <span className="font-mono font-medium">
-                        {orderData?.trackingCode}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">الحالة:</span>
-                      <span className="font-medium text-[#563660]">
-                        {orderData?.statusName}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">الكمية:</span>
-                      <span className="font-medium">
-                        {orderData?.items[0]?.quantity || 1}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">السعر:</span>
-                      <span className="font-medium">
-                        {orderData?.totalPrice} ريال
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* عرض المقاس المحدد للموبايل */}
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">
-                      المقاس المحدد
-                    </span>
-                  </div>
-                  <div className="text-base font-semibold text-[#563660]">
-                    {jacketState.size}
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-xl">
-                  <div className="flex justify-between">
-                    <span>تاريخ الإنشاء:</span>
-                    <span className="font-medium">
-                      {orderData && formatDate(orderData.createdAt)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>آخر تحديث:</span>
-                    <span className="font-medium">
-                      {orderData && formatDate(orderData.updatedAt)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      saveConfirmModal.openModal();
-                      setShowMobileDetails(false);
-                    }}
-                    disabled={isSaving}
-                    className="w-full py-2 px-3 gold-gradient text-white rounded-xl text-sm font-semibold shadow-gold hover-lift disabled:opacity-50"
-                  >
-                    {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
-                  </motion.button>
-
-                  <button
-                    onClick={() => {
-                      exitConfirmModal.openModal();
-                      setShowMobileDetails(false);
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    العودة للوحة التحكم
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      pdfConfirmModal.openModal();
-                      setShowMobileDetails(false);
-                    }}
-                    disabled={isGeneratingPDF}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-xl shadow-md hover:bg-green-700 transition-all duration-300 text-sm font-medium disabled:opacity-50"
-                  >
-                    {isGeneratingPDF ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4" />
-                    )}
-                    تحميل PDF
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Mobile Sidebar - Fixed at bottom */}
-        <div
-          className={`${
-            window.innerWidth <= 1250 ? "block" : "hidden"
-          } fixed bottom-0 left-0 right-0 z-40 mobile-sidebar transition-all duration-300`}
-        >
-          <CustomizationSidebar
-            isMobile
-            setIsSidebarOpen={setIsSidebarOpen}
-            onAddToCart={() => {}} // تعطيل زر إضافة للسلة
-          />
+          <button
+            onClick={() => handleTabSwitch("pending")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+              activeTab === "pending"
+                ? "bg-amber-500 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            قيد المراجعة ({totalPendingOrders})
+          </button>
         </div>
       </div>
 
-      {/* نافذة تأكيد الحفظ */}
-      <ConfirmationModal
-        isOpen={saveConfirmModal.isOpen}
-        onClose={saveConfirmModal.closeModal}
-        onConfirm={handleSaveChanges}
-        title="تأكيد حفظ التغييرات"
-        message="سيتم حفظ جميع التعديلات التي أجريتها على الطلب. هل تريد المتابعة؟"
-        confirmText={isSaving ? "جاري الحفظ..." : "نعم، احفظ"}
-        cancelText="إلغاء"
-        type="info"
-        isLoading={isSaving}
+      {/* Search and Filter Tools */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="ابحث برقم الطلب، رمز التتبع، اسم العميل..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pr-10 pl-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            {activeTab === "confirmed" && (
+              <select
+                value={statusFilter}
+                onChange={(e) => handleStatusFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all text-sm"
+              >
+                <option value="">جميع الحالات</option>
+                {orderStatuses
+                  .filter((status) => status.value !== "pending")
+                  .map((status) => (
+                    <option key={status.value} value={status.value}>
+                      {status.name}
+                    </option>
+                  ))}
+              </select>
+            )}
+
+            <button
+              onClick={handleSearch}
+              disabled={isLoading || isLoadingPending}
+              className="flex items-center gap-2 px-4 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-all duration-200 disabled:opacity-50 text-sm"
+            >
+              <Filter className="w-4 h-4" />
+              فلترة
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Error Display */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+            <span className="text-red-700 font-medium text-sm">{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hidden Jacket Image Capture Component */}
+      <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
+        <JacketImageCapture ref={jacketImageCaptureRef} />
+      </div>
+
+      {/* PDF Loading Overlay */}
+      <LoadingOverlay
+        isVisible={showPdfLoadingOverlay}
+        stage={pdfLoadingStage}
+        onComplete={handlePdfLoadingComplete}
       />
 
-      {/* نافذة تأكيد تحميل PDF */}
+      {/* Orders List */}
+      {isLoading || isLoadingPending ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
+            <p className="text-gray-600 text-sm">
+              جاري تحميل{" "}
+              {activeTab === "confirmed"
+                ? "الطلبات المؤكدة"
+                : "الطلبات قيد المراجعة"}
+              ...
+            </p>
+          </div>
+        </div>
+      ) : (activeTab === "confirmed" ? orders : pendingOrders).length > 0 ? (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden space-y-0">
+          <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-700">
+                {activeTab === "confirmed"
+                  ? `الطلبات المؤكدة (${totalOrders} طلب)`
+                  : `الطلبات قيد المراجعة (${totalPendingOrders} طلب)`}
+              </h3>
+              {activeTab === "pending" && (
+                <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium">
+                  لا تُحتسب في الإيرادات
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  {activeTab === "pending" && (
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      تأكيد
+                    </th>
+                  )}
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    رقم الطلب
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    العميل
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    الحالة
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    الإجمالي
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    التاريخ
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    الإجراءات
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {(activeTab === "confirmed" ? orders : pendingOrders).map(
+                  (order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      {activeTab === "pending" && (
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => {
+                              setOrderToConfirm(order);
+                              confirmOrderModal.openModal();
+                            }}
+                            className="flex items-center justify-center w-8 h-8 bg-green-100 hover:bg-green-200 text-green-600 rounded-full transition-colors"
+                            title="تأكيد الطلب"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                        </td>
+                      )}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Package className="w-4 h-4 text-[#563660] mr-2" />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {order.orderNumber}
+                            </div>
+                            <div className="text-xs text-gray-500 font-mono">
+                              {order.trackingCode}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <User className="w-4 h-4 text-gray-400 mr-2" />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {order.customerInfo.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {order.customerInfo.phone}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            order.status
+                          )} bg-opacity-10 border`}
+                        >
+                          {getStatusIcon(order.status)}
+                          {order.statusName}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <div className="flex flex-col">
+                          <span>{formatPrice(order.totalPrice)}</span>
+                          {activeTab === "pending" && (
+                            <span className="text-xs text-amber-600">
+                              غير محتسب
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(order.createdAt)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewOrder(order)}
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            title="عرض التفاصيل"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={() => handleCreateTemporaryLink(order.id)}
+                            disabled={isCreatingLink === order.id}
+                            className="text-purple-600 hover:text-purple-800 transition-colors disabled:opacity-50"
+                            title="إنشاء رابط مؤقت"
+                          >
+                            {isCreatingLink === order.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : copiedLink ? (
+                              <Check className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <LinkIcon className="w-4 h-4" />
+                            )}
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              navigate(`/admin/orders/${order.id}/edit`)
+                            }
+                            className="text-purple-600 hover:text-purple-800 transition-colors"
+                            title="تعديل الطلب"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDownloadPDF(order)}
+                            disabled={isGeneratingPDF}
+                            className="text-green-600 hover:text-green-800 transition-colors disabled:opacity-50"
+                            title="تحميل PDF"
+                          >
+                            {isGeneratingPDF ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setNewStatus(order.status);
+                              updateStatusModal.openModal();
+                            }}
+                            className="text-green-600 hover:text-green-800 transition-colors"
+                            title="تحديث الحالة"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setOrderToDelete(order);
+                              deleteOrderModal.openModal();
+                            }}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                            title="حذف"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <PaginationComponent
+            currentPageProp={
+              activeTab === "confirmed" ? currentPage : pendingCurrentPage
+            }
+            totalPagesProp={
+              activeTab === "confirmed" ? totalPages : pendingTotalPages
+            }
+            totalOrdersProp={
+              activeTab === "confirmed" ? totalOrders : totalPendingOrders
+            }
+            onPageChange={handlePageChange}
+          />
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+          <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {activeTab === "confirmed"
+              ? "لا توجد طلبات مؤكدة"
+              : "لا توجد طلبات قيد المراجعة"}
+          </h3>
+          <p className="text-sm text-gray-600">
+            {searchTerm || statusFilter
+              ? `لا توجد ${
+                  activeTab === "confirmed"
+                    ? "طلبات مؤكدة"
+                    : "طلبات قيد المراجعة"
+                } تطابق معايير البحث`
+              : `لا توجد ${
+                  activeTab === "confirmed"
+                    ? "طلبات مؤكدة"
+                    : "طلبات قيد المراجعة"
+                } حالياً`}
+          </p>
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <Modal
+          isOpen={orderDetailsModal.isOpen}
+          shouldRender={orderDetailsModal.shouldRender}
+          onClose={orderDetailsModal.closeModal}
+          title={`تفاصيل الطلب ${selectedOrder.orderNumber}`}
+          size="lg"
+          options={orderDetailsModal.options}
+        >
+          <div className="space-y-3 max-h-[70vh] sm:max-h-[80vh] overflow-y-auto">
+            <div className="grid grid-cols-1 gap-3">
+              <div className="bg-gradient-to-r from-[#563660] to-[#4b2e55] rounded-lg p-3 sm:p-4 text-white">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                  <div>
+                    <span className="text-purple-100 block text-xs">
+                      رقم الطلب
+                    </span>
+                    <span className="font-medium text-sm sm:text-base">
+                      {selectedOrder.orderNumber}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-purple-100 block text-xs">
+                      الإجمالي
+                    </span>
+                    <span className="font-bold text-sm sm:text-lg">
+                      {formatPrice(selectedOrder.totalPrice)}
+                    </span>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <span className="text-purple-100 block text-xs">
+                      الحالة
+                    </span>
+                    <span className="font-medium text-sm">
+                      {selectedOrder.statusName}
+                    </span>
+                  </div>
+                  <div className="hidden sm:block">
+                    <span className="text-purple-100 block text-xs">
+                      رمز التتبع
+                    </span>
+                    <span className="font-mono text-xs">
+                      {selectedOrder.trackingCode}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-100">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2 text-blue-800">
+                    <User className="w-3 h-3" />
+                    <span className="font-medium truncate">
+                      {selectedOrder.customerInfo.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <Phone className="w-3 h-3" />
+                    <span className="truncate">
+                      {selectedOrder.customerInfo.phone}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-blue-600">
+                    <Calendar className="w-3 h-3" />
+                    <span className="text-xs">
+                      {(() => {
+                        const date = new Date(selectedOrder.createdAt);
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(
+                          2,
+                          "0"
+                        );
+                        const day = String(date.getDate()).padStart(2, "0");
+                        const hours = String(date.getHours()).padStart(2, "0");
+                        const minutes = String(date.getMinutes()).padStart(
+                          2,
+                          "0"
+                        );
+                        return `${year}/${month}/${day} ${hours}:${minutes}`;
+                      })()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+              <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <Package className="w-4 h-4 text-[#563660]" />
+                العناصر ({selectedOrder.items.length})
+              </h3>
+              <div className="space-y-2">
+                {selectedOrder.items.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-lg p-2 sm:p-3 border border-gray-100"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 bg-[#563660] text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-900 text-xs sm:text-sm block">
+                            جاكيت مخصص
+                          </span>
+                          <span className="text-xs text-gray-600">
+                            {item.jacketConfig.size} | ك{item.quantity}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-left">
+                        <span className="font-bold text-[#563660] text-xs sm:text-sm block">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                        <button
+                          onClick={() => handleDownloadPDF(selectedOrder)}
+                          disabled={isGeneratingPDF}
+                          className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors disabled:opacity-50 mt-1"
+                        >
+                          {isGeneratingPDF ? "..." : "PDF"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-amber-50 rounded-lg p-3 sm:p-4 border border-amber-100">
+              <h3 className="text-sm sm:text-base font-semibold text-amber-900 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                الحالات ({selectedOrder.statusHistory.length})
+              </h3>
+              <div className="max-h-24 sm:max-h-32 overflow-y-auto space-y-1">
+                {selectedOrder.statusHistory
+                  .slice()
+                  .reverse()
+                  .slice(0, 3)
+                  .map((history, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-white rounded p-2 border border-amber-100"
+                    >
+                      <div
+                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center flex-shrink-0 ${getStatusColor(
+                          history.status
+                        )} bg-opacity-20`}
+                      >
+                        {React.cloneElement(
+                          getStatusIcon(history.status) as React.ReactElement,
+                          { className: "w-2 h-2 sm:w-3 sm:h-3" }
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-gray-900 text-xs sm:text-sm truncate">
+                            {history.statusName}
+                          </span>
+                          <span className="text-xs text-gray-500 whitespace-nowrap ml-1">
+                            {(() => {
+                              const date = new Date(history.timestamp);
+                              const year = date.getFullYear();
+                              const month = String(
+                                date.getMonth() + 1
+                              ).padStart(2, "0");
+                              const day = String(date.getDate()).padStart(
+                                2,
+                                "0"
+                              );
+                              return `${year}/${month}/${day}`;
+                            })()}
+                          </span>
+                        </div>
+                        {history.note && (
+                          <p className="text-xs text-gray-600 truncate sm:line-clamp-1">
+                            {history.note}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                {selectedOrder.statusHistory.length > 3 && (
+                  <div className="text-center text-xs text-gray-500 py-1">
+                    +{selectedOrder.statusHistory.length - 3} حالات أخرى
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2 pt-2">
+              <button
+                onClick={() => {
+                  setNewStatus(selectedOrder.status);
+                  orderDetailsModal.closeModal();
+                  updateStatusModal.openModal();
+                }}
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-blue-50 text-blue-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">تحديث</span>
+                <span className="sm:hidden">حالة</span>
+              </button>
+              <button
+                onClick={() => handleCreateTemporaryLink(selectedOrder.id)}
+                disabled={isCreatingLink === selectedOrder.id}
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-purple-50 text-purple-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50"
+              >
+                {isCreatingLink === selectedOrder.id ? (
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                ) : copiedLink ? (
+                  <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                ) : (
+                  <LinkIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                )}
+                <span>رابط</span>
+              </button>
+              <button
+                onClick={() => handleDownloadPDF(selectedOrder)}
+                disabled={isGeneratingPDF}
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-green-50 text-green-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50"
+              >
+                {isGeneratingPDF ? (
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                ) : (
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                )}
+                <span>PDF</span>
+              </button>
+              <button
+                onClick={() =>
+                  navigate(`/admin/orders/${selectedOrder.id}/edit`)
+                }
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-orange-50 text-orange-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-orange-100 transition-colors"
+              >
+                <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">تعديل</span>
+                <span className="sm:hidden">طلب</span>
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Confirm Order Modal */}
       <ConfirmationModal
-        isOpen={pdfConfirmModal.isOpen}
-        onClose={pdfConfirmModal.closeModal}
-        onConfirm={handleDownloadPDF}
-        title="تحميل ملف PDF للطلب"
-        message="سيتم إنشاء ملف PDF يحتوي على جميع تفاصيل الطلب والتصميم الحالي. هل تريد المتابعة؟"
-        confirmText={isGeneratingPDF ? "جاري الإنشاء..." : "نعم، حمّل PDF"}
+        isOpen={confirmOrderModal.isOpen}
+        onClose={() => {
+          confirmOrderModal.closeModal();
+          setOrderToConfirm(null);
+        }}
+        onConfirm={handleConfirmOrder}
+        title="تأكيد الطلب"
+        message={`هل تريد تأكيد الطلب رقم "${orderToConfirm?.orderNumber}"؟ سيتم نقله إلى الطلبات المؤكدة وإدراجه في الحسابات والإيرادات.`}
+        confirmText="نعم، أكد الطلب"
         cancelText="إلغاء"
-        type="info"
-        isLoading={isGeneratingPDF}
+        type="success"
+        isLoading={isConfirmingOrder}
       />
 
-      {/* نافذة تأكيد الخروج */}
+      {/* Update Status Modal */}
+      {selectedOrder && (
+        <Modal
+          isOpen={updateStatusModal.isOpen}
+          shouldRender={updateStatusModal.shouldRender}
+          onClose={updateStatusModal.closeModal}
+          title={`تحديث حالة الطلب ${selectedOrder.orderNumber}`}
+          size="md"
+          options={updateStatusModal.options}
+        >
+          <div className="space-y-4">
+            {selectedOrder.status === "pending" && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-amber-800 font-medium mb-1">
+                      ملاحظة مهمة
+                    </h4>
+                    <p className="text-amber-700 text-sm">
+                      هذا الطلب قيد المراجعة ولا يُحتسب ضمن الإيرادات أو
+                      الإحصائيات. عند تأكيده، سيتم نقله تلقائياً إلى الطلبات
+                      المؤكدة.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                الحالة الجديدة
+              </label>
+              <select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all"
+              >
+                {orderStatuses.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.name}
+                  </option>
+                ))}
+              </select>
+              {selectedOrder.status === "pending" &&
+                newStatus === "confirmed" && (
+                  <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4" />
+                    سيتم نقل الطلب إلى الطلبات المؤكدة وإدراجه في الحسابات
+                  </p>
+                )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ملاحظة (اختيارية)
+              </label>
+              <textarea
+                value={statusNote}
+                onChange={(e) => setStatusNote(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#563660] focus:border-transparent transition-all resize-none"
+                placeholder="أضف ملاحظة حول تحديث الحالة..."
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={handleUpdateStatus}
+                disabled={isUpdatingStatus || !newStatus}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50"
+              >
+                {isUpdatingStatus ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-4 h-4" />
+                )}
+                {selectedOrder.status === "pending" && newStatus === "confirmed"
+                  ? "تأكيد الطلب ونقله"
+                  : "تحديث الحالة"}
+              </button>
+              <button
+                onClick={updateStatusModal.closeModal}
+                disabled={isUpdatingStatus}
+                className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Modal */}
       <ConfirmationModal
-        isOpen={exitConfirmModal.isOpen}
-        onClose={exitConfirmModal.closeModal}
-        onConfirm={handleExit}
-        title="تأكيد الخروج"
-        message="هل أنت متأكد من الخروج؟ سيتم فقدان أي تغييرات غير محفوظة."
-        confirmText="نعم، اخرج"
+        isOpen={deleteOrderModal.isOpen}
+        onClose={() => {
+          deleteOrderModal.closeModal();
+          setOrderToDelete(null);
+        }}
+        onConfirm={handleDeleteOrder}
+        title="تأكيد حذف الطلب"
+        message={`هل أنت متأكد من حذف الطلب رقم "${orderToDelete?.orderNumber}"؟ سيتم حذفه نهائياً ولا يمكن التراجع عن هذا الإجراء.`}
+        confirmText="نعم، احذف"
         cancelText="إلغاء"
-        type="warning"
+        type="danger"
+        isLoading={isConfirmingOrder} // استخدام نفس حالة التحميل
       />
     </div>
   );
 };
 
-const OrderEditPage: React.FC = () => {
-  return (
-    <JacketProvider>
-      <CartProvider>
-        <ImageLibraryProvider>
-          <OrderEditContent />
-        </ImageLibraryProvider>
-      </CartProvider>
-    </JacketProvider>
-  );
-};
-
-export default OrderEditPage;
+export default OrdersManagement;
