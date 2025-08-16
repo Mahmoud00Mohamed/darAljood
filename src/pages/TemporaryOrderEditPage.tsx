@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,7 +15,6 @@ import {
   Clock,
   Shield,
   ExternalLink,
-  Download,
 } from "lucide-react";
 import { JacketProvider, useJacket } from "../context/JacketContext";
 import { CartProvider } from "../context/CartContext";
@@ -26,15 +25,9 @@ import temporaryLinkService, {
 import JacketViewer from "../components/jacket/JacketViewer";
 import CustomizationSidebar from "../components/sidebar/CustomizationSidebar";
 import TopBar from "../components/ui/TopBar";
-import JacketImageCapture, {
-  JacketImageCaptureRef,
-} from "../components/jacket/JacketImageCapture";
 import ConfirmationModal from "../components/ui/ConfirmationModal";
-import LoadingOverlay from "../components/ui/LoadingOverlay";
 import { useModal } from "../hooks/useModal";
 import { cleanupJacketData, validateDataIntegrity } from "../utils/dataCleanup";
-import { generateOrderPDFWithImages } from "../utils/pdfGenerator";
-import fontPreloader from "../utils/fontPreloader";
 
 // دالة مساعدة لتحويل التاريخ إلى الصيغة المطلوبة YYYY/MM/DD
 const formatDate = (dateString: string): string => {
@@ -73,17 +66,9 @@ const TemporaryOrderEditContent: React.FC = () => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [linkExpired, setLinkExpired] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [pdfLoadingStage, setPdfLoadingStage] = useState<
-    "capturing" | "generating" | "completed"
-  >("capturing");
-  const [showPdfLoadingOverlay, setShowPdfLoadingOverlay] = useState(false);
-
-  const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
 
   const saveConfirmModal = useModal();
   const exitConfirmModal = useModal();
-  const pdfConfirmModal = useModal();
 
   // تنظيف البيانات عند دخول الصفحة
   useEffect(() => {
@@ -310,122 +295,6 @@ const TemporaryOrderEditContent: React.FC = () => {
     }
   };
 
-  const handleDownloadPDF = async () => {
-    if (!orderData) return;
-
-    setIsGeneratingPDF(true);
-    setShowPdfLoadingOverlay(true);
-    setPdfLoadingStage("capturing");
-
-    try {
-      // التأكد من تحميل الخطوط قبل بدء العملية
-      await fontPreloader.preloadAllFonts();
-
-      let jacketImages: string[] = [];
-
-      // التقاط صور الجاكيت الحالي
-      if (jacketImageCaptureRef.current) {
-        try {
-          jacketImages = await jacketImageCaptureRef.current.captureAllViews();
-        } catch (captureError) {
-          console.warn("فشل في التقاط الصور:", captureError);
-          jacketImages = [];
-        }
-      }
-
-      // الانتقال لمرحلة إنشاء PDF
-      setPdfLoadingStage("generating");
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // إنشاء PDF
-      const pdfBlob = await generateOrderPDFWithImages(
-        {
-          cartItems: orderData.order.items.map((item) => ({
-            id: item.id,
-            jacketConfig: {
-              ...item.jacketConfig,
-              colors: item.jacketConfig.colors,
-              materials: {
-                body: item.jacketConfig.materials.body as "leather" | "cotton",
-                sleeves: item.jacketConfig.materials.sleeves as
-                  | "leather"
-                  | "cotton",
-                trim: item.jacketConfig.materials.body as "leather" | "cotton",
-              },
-              size: item.jacketConfig.size as
-                | "XS"
-                | "S"
-                | "M"
-                | "L"
-                | "XL"
-                | "2XL"
-                | "3XL"
-                | "4XL",
-              logos: item.jacketConfig.logos.map((logo) => ({
-                ...logo,
-                position: logo.position as
-                  | "chestRight"
-                  | "chestLeft"
-                  | "backCenter"
-                  | "rightSide_top"
-                  | "rightSide_middle"
-                  | "rightSide_bottom"
-                  | "leftSide_top"
-                  | "leftSide_middle"
-                  | "leftSide_bottom",
-              })),
-              texts: item.jacketConfig.texts.map((text) => ({
-                ...text,
-                position: text.position as
-                  | "chestRight"
-                  | "chestLeft"
-                  | "backBottom",
-              })),
-              currentView: item.jacketConfig.currentView as
-                | "front"
-                | "back"
-                | "right"
-                | "left",
-              totalPrice: item.jacketConfig.totalPrice,
-              isCapturing: false,
-              uploadedImages: item.jacketConfig.uploadedImages || [],
-            },
-            quantity: item.quantity,
-            price: item.price,
-            addedAt: new Date(orderData.order.createdAt),
-          })),
-          totalPrice: orderData.order.totalPrice,
-          customerInfo: customerInfo,
-          orderNumber: orderData.order.orderNumber,
-        },
-        jacketImages
-      );
-
-      // مرحلة الإكمال
-      setPdfLoadingStage("completed");
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // تحميل الملف
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `طلب-${orderData.order.orderNumber}-${customerInfo.name}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      setError("حدث خطأ أثناء إنشاء ملف PDF");
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
-
-  const handlePdfLoadingComplete = () => {
-    setShowPdfLoadingOverlay(false);
-  };
-
   const handleCustomerInfoUpdate = (field: string, value: string) => {
     setCustomerInfo((prev) => ({ ...prev, [field]: value }));
   };
@@ -470,7 +339,7 @@ const TemporaryOrderEditContent: React.FC = () => {
             </a>
             <button
               onClick={() => navigate("/")}
-              className="w-full px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full px-6 py-2  border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               العودة للموقع الرئيسي
             </button>
@@ -513,7 +382,7 @@ const TemporaryOrderEditContent: React.FC = () => {
             </a>
             <button
               onClick={() => navigate("/")}
-              className="w-full px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full px-6 py-2  border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               العودة للموقع الرئيسي
             </button>
@@ -534,7 +403,7 @@ const TemporaryOrderEditContent: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={exitConfirmModal.openModal}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4  py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               العودة للموقع الرئيسي
@@ -626,18 +495,6 @@ const TemporaryOrderEditContent: React.FC = () => {
 
       {/* المحتوى الرئيسي */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        {/* Hidden Jacket Image Capture Component */}
-        <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
-          <JacketImageCapture ref={jacketImageCaptureRef} />
-        </div>
-
-        {/* Loading Overlay for PDF Generation */}
-        <LoadingOverlay
-          isVisible={showPdfLoadingOverlay}
-          stage={pdfLoadingStage}
-          onComplete={handlePdfLoadingComplete}
-        />
-
         {/* Mobile Back to Home Button */}
         <button
           onClick={exitConfirmModal.openModal}
@@ -845,7 +702,7 @@ const TemporaryOrderEditContent: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-3 mt-auto">
+            <div className="space-y-3 mt-auto pb-10">
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={saveConfirmModal.openModal}
@@ -1039,6 +896,32 @@ const TemporaryOrderEditContent: React.FC = () => {
                     </span>
                   </div>
                 </div>
+
+                <div className="space-y-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      saveConfirmModal.openModal();
+                      setShowMobileDetails(false);
+                    }}
+                    disabled={isSaving || remainingTime <= 0}
+                    className="w-full py-2 px-3 gold-gradient text-white rounded-xl text-sm font-semibold shadow-gold hover-lift disabled:opacity-50"
+                  >
+                    {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
+                  </motion.button>
+
+                  <button
+                    onClick={() => {
+                      exitConfirmModal.openModal();
+                      setShowMobileDetails(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    العودة للموقع الرئيسي
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
@@ -1059,50 +942,6 @@ const TemporaryOrderEditContent: React.FC = () => {
         </div>
       </div>
 
-      {/* الشريط السفلي الجديد - مماثل لصفحة الإدارة */}
-      <div className="bg-white border-t border-gray-200 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-600">رابط آمن ومشفر</span>
-          </div>
-          {remainingTime > 0 && (
-            <div className="flex items-center gap-2 text-sm text-amber-600">
-              <Clock className="w-4 h-4" />
-              <span>الوقت المتبقي: {remainingTime} دقيقة</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={pdfConfirmModal.openModal}
-            disabled={isGeneratingPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm"
-          >
-            {isGeneratingPDF ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            <span className="hidden sm:inline">تحميل PDF</span>
-          </button>
-
-          <button
-            onClick={saveConfirmModal.openModal}
-            disabled={isSaving || remainingTime <= 0}
-            className="flex items-center gap-2 px-4 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors disabled:opacity-50 text-sm"
-          >
-            {isSaving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            <span className="hidden sm:inline">حفظ التغييرات</span>
-          </button>
-        </div>
-      </div>
-
       {/* نافذة تأكيد الحفظ */}
       <ConfirmationModal
         isOpen={saveConfirmModal.isOpen}
@@ -1114,19 +953,6 @@ const TemporaryOrderEditContent: React.FC = () => {
         cancelText="إلغاء"
         type="info"
         isLoading={isSaving}
-      />
-
-      {/* نافذة تأكيد تحميل PDF */}
-      <ConfirmationModal
-        isOpen={pdfConfirmModal.isOpen}
-        onClose={pdfConfirmModal.closeModal}
-        onConfirm={handleDownloadPDF}
-        title="تحميل ملف PDF للطلب"
-        message="سيتم إنشاء ملف PDF يحتوي على جميع تفاصيل الطلب والتصميم الحالي. هل تريد المتابعة؟"
-        confirmText={isGeneratingPDF ? "جاري الإنشاء..." : "نعم، حمّل PDF"}
-        cancelText="إلغاء"
-        type="info"
-        isLoading={isGeneratingPDF}
       />
 
       {/* نافذة تأكيد الخروج */}
