@@ -15,6 +15,7 @@ import {
   Clock,
   Shield,
   ExternalLink,
+  Download,
 } from "lucide-react";
 import { JacketProvider, useJacket } from "../context/JacketContext";
 import { CartProvider } from "../context/CartContext";
@@ -25,9 +26,15 @@ import temporaryLinkService, {
 import JacketViewer from "../components/jacket/JacketViewer";
 import CustomizationSidebar from "../components/sidebar/CustomizationSidebar";
 import TopBar from "../components/ui/TopBar";
+import JacketImageCapture, {
+  JacketImageCaptureRef,
+} from "../components/jacket/JacketImageCapture";
 import ConfirmationModal from "../components/ui/ConfirmationModal";
 import { useModal } from "../hooks/useModal";
 import { cleanupJacketData, validateDataIntegrity } from "../utils/dataCleanup";
+import { generateOrderPDFWithImages } from "../utils/pdfGenerator";
+import LoadingOverlay from "../components/ui/LoadingOverlay";
+import fontPreloader from "../utils/fontPreloader";
 
 // دالة مساعدة لتحويل التاريخ إلى الصيغة المطلوبة YYYY/MM/DD
 const formatDate = (dateString: string): string => {
@@ -66,9 +73,16 @@ const TemporaryOrderEditContent: React.FC = () => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [linkExpired, setLinkExpired] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [pdfLoadingStage, setPdfLoadingStage] = useState<
+    "capturing" | "generating" | "completed"
+  >("capturing");
+  const [showPdfLoadingOverlay, setShowPdfLoadingOverlay] = useState(false);
 
+  const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
   const saveConfirmModal = useModal();
   const exitConfirmModal = useModal();
+  const pdfConfirmModal = useModal();
 
   // تنظيف البيانات عند دخول الصفحة
   useEffect(() => {
@@ -295,6 +309,121 @@ const TemporaryOrderEditContent: React.FC = () => {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!orderData) return;
+
+    setIsGeneratingPDF(true);
+    setShowPdfLoadingOverlay(true);
+    setPdfLoadingStage("capturing");
+
+    try {
+      // التأكد من تحميل الخطوط قبل بدء العملية
+      await fontPreloader.preloadAllFonts();
+
+      let jacketImages: string[] = [];
+
+      // التقاط صور الجاكيت الحالي
+      if (jacketImageCaptureRef.current) {
+        try {
+          jacketImages = await jacketImageCaptureRef.current.captureAllViews();
+        } catch (captureError) {
+          console.warn("فشل في التقاط الصور:", captureError);
+          jacketImages = [];
+        }
+      }
+
+      // الانتقال لمرحلة إنشاء PDF
+      setPdfLoadingStage("generating");
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // إنشاء PDF
+      const pdfBlob = await generateOrderPDFWithImages(
+        {
+          cartItems: orderData.order.items.map((item) => ({
+            id: item.id,
+            jacketConfig: {
+              ...item.jacketConfig,
+              colors: item.jacketConfig.colors,
+              materials: {
+                body: item.jacketConfig.materials.body as "leather" | "cotton",
+                sleeves: item.jacketConfig.materials.sleeves as
+                  | "leather"
+                  | "cotton",
+                trim: item.jacketConfig.materials.body as "leather" | "cotton",
+              },
+              size: item.jacketConfig.size as
+                | "XS"
+                | "S"
+                | "M"
+                | "L"
+                | "XL"
+                | "2XL"
+                | "3XL"
+                | "4XL",
+              logos: item.jacketConfig.logos.map((logo) => ({
+                ...logo,
+                position: logo.position as
+                  | "chestRight"
+                  | "chestLeft"
+                  | "backCenter"
+                  | "rightSide_top"
+                  | "rightSide_middle"
+                  | "rightSide_bottom"
+                  | "leftSide_top"
+                  | "leftSide_middle"
+                  | "leftSide_bottom",
+              })),
+              texts: item.jacketConfig.texts.map((text) => ({
+                ...text,
+                position: text.position as
+                  | "chestRight"
+                  | "chestLeft"
+                  | "backBottom",
+              })),
+              currentView: item.jacketConfig.currentView as
+                | "front"
+                | "back"
+                | "right"
+                | "left",
+              totalPrice: item.jacketConfig.totalPrice,
+              isCapturing: false,
+              uploadedImages: item.jacketConfig.uploadedImages || [],
+            },
+            quantity: item.quantity,
+            price: item.price,
+            addedAt: new Date(orderData.order.createdAt),
+          })),
+          totalPrice: orderData.order.totalPrice,
+          customerInfo: customerInfo,
+          orderNumber: orderData.order.orderNumber,
+        },
+        jacketImages
+      );
+
+      // مرحلة الإكمال
+      setPdfLoadingStage("completed");
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // تحميل الملف
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `طلب-${orderData.order.orderNumber}-${customerInfo.name}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      setError("حدث خطأ أثناء إنشاء ملف PDF");
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const handlePdfLoadingComplete = () => {
+    setShowPdfLoadingOverlay(false);
+  };
   const handleCustomerInfoUpdate = (field: string, value: string) => {
     setCustomerInfo((prev) => ({ ...prev, [field]: value }));
   };
@@ -495,6 +624,17 @@ const TemporaryOrderEditContent: React.FC = () => {
 
       {/* المحتوى الرئيسي */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* Hidden Jacket Image Capture Component */}
+        <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
+          <JacketImageCapture ref={jacketImageCaptureRef} />
+        </div>
+
+        {/* Loading Overlay for PDF Generation */}
+        <LoadingOverlay
+          isVisible={showPdfLoadingOverlay}
+          stage={pdfLoadingStage}
+          onComplete={handlePdfLoadingComplete}
+        />
         {/* Mobile Back to Home Button */}
         <button
           onClick={exitConfirmModal.openModal}
@@ -713,6 +853,18 @@ const TemporaryOrderEditContent: React.FC = () => {
               </motion.button>
 
               <button
+                onClick={pdfConfirmModal.openModal}
+                disabled={isGeneratingPDF}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-all duration-300 disabled:opacity-50 relative z-10"
+              >
+                {isGeneratingPDF ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                تحميل PDF
+              </button>
+              <button
                 onClick={exitConfirmModal.openModal}
                 className="w-full py-3 flex items-center justify-center gap-2 px-4 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
               >
@@ -913,6 +1065,21 @@ const TemporaryOrderEditContent: React.FC = () => {
 
                   <button
                     onClick={() => {
+                      pdfConfirmModal.openModal();
+                      setShowMobileDetails(false);
+                    }}
+                    disabled={isGeneratingPDF}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-xl shadow-md hover:bg-green-700 transition-all duration-300 text-sm font-medium disabled:opacity-50"
+                  >
+                    {isGeneratingPDF ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
+                    تحميل PDF
+                  </button>
+                  <button
+                    onClick={() => {
                       exitConfirmModal.openModal();
                       setShowMobileDetails(false);
                     }}
@@ -955,6 +1122,18 @@ const TemporaryOrderEditContent: React.FC = () => {
         isLoading={isSaving}
       />
 
+      {/* نافذة تأكيد تحميل PDF */}
+      <ConfirmationModal
+        isOpen={pdfConfirmModal.isOpen}
+        onClose={pdfConfirmModal.closeModal}
+        onConfirm={handleDownloadPDF}
+        title="تحميل ملف PDF للطلب"
+        message="سيتم إنشاء ملف PDF يحتوي على جميع تفاصيل الطلب والتصميم الحالي. هل تريد المتابعة؟"
+        confirmText={isGeneratingPDF ? "جاري الإنشاء..." : "نعم، حمّل PDF"}
+        cancelText="إلغاء"
+        type="info"
+        isLoading={isGeneratingPDF}
+      />
       {/* نافذة تأكيد الخروج */}
       <ConfirmationModal
         isOpen={exitConfirmModal.isOpen}
