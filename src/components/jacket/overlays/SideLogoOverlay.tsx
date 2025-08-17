@@ -134,8 +134,21 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
     basePosition.minScale,
     Math.min(basePosition.maxScale, logo.scale)
   );
-  const rotation =
-    typeof logo.rotation === "number" ? logo.rotation : basePosition.rotation;
+
+  // تطبيق rotation - للمواقع السفلية نستخدم rotation الافتراضي إذا لم يكن هناك تدوير مخصص
+  let rotation = logo.rotation;
+
+  // للمواقع السفلية، إذا كان rotation غير محدد أو يساوي 0، استخدم الافتراضي
+  if (logo.position.includes("_bottom")) {
+    if (rotation === undefined || rotation === null || rotation === 0) {
+      rotation = basePosition.rotation;
+    }
+  } else {
+    // للمواقع الأخرى، استخدم rotation المحدد أو 0 كافتراضي
+    if (rotation === undefined || rotation === null) {
+      rotation = 0;
+    }
+  }
 
   const boxWidthPercent = (basePosition.boxWidth / SVG_WIDTH) * 100;
   const boxHeightPercent = (basePosition.boxHeight / SVG_HEIGHT) * 100;
@@ -154,6 +167,7 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
         border: "1px dashed #000000",
         transform: `rotate(${rotation}deg)`,
         transformOrigin: "center",
+        willChange: "transform",
       }}
       className="logo-overlay-container"
     >

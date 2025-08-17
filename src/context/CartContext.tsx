@@ -185,6 +185,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     ) {
       return "orderEditCart";
     }
+    if (currentPath.startsWith("/edit-order/")) {
+      return "temporaryOrderEditCart";
+    }
     return "cart";
   };
 

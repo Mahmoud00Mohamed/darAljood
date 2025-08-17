@@ -10,9 +10,12 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
     );
 
     // إنشاء public_id جديد للصورة في مجلد الطلبات باستخدام رقم الطلب
-    const newPublicId = `dar-aljoud/orders/${orderNumber}/${originalPublicId
-      .split("/")
-      .pop()}`;
+    // استخراج اسم الملف من originalPublicId بشكل صحيح
+    const fileName = originalPublicId.includes("/")
+      ? originalPublicId.split("/").pop()
+      : originalPublicId;
+
+    const newPublicId = `dar-aljoud/orders/${orderNumber}/${fileName}`;
 
     // التحقق من وجود الصورة مسبقاً في مجلد الطلب
     try {
@@ -43,7 +46,6 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
       }),
       {
         public_id: newPublicId,
-        folder: `dar-aljoud/orders/${orderNumber}`,
         resource_type: "image",
         overwrite: false, // لا تستبدل إذا كانت موجودة
         invalidate: true, // تحديث الكاش
@@ -78,15 +80,23 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
 export const copyImagesToOrderFolder = async (imagePublicIds, orderNumber) => {
   const results = [];
 
+  console.log(
+    `🔄 بدء نسخ ${imagePublicIds.length} صورة إلى مجلد الطلب ${orderNumber}`
+  );
+
   for (const publicId of imagePublicIds) {
     if (publicId && publicId.trim()) {
       const result = await copyImageToOrderFolder(publicId, orderNumber);
       results.push(result);
 
-      // تأخير قصير بين العمليات لتجنب إرهاق Cloudinary
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // تقليل التأخير لتسريع العملية
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
   }
+
+  const successCount = results.filter((r) => r.success).length;
+  const failCount = results.filter((r) => !r.success).length;
+  console.log(`📊 نتائج النسخ: ${successCount} نجح، ${failCount} فشل`);
 
   return results;
 };

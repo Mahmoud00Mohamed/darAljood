@@ -161,6 +161,9 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
     ) {
       return "orderEditJacketState";
     }
+    if (currentPath.startsWith("/edit-order/")) {
+      return "temporaryOrderEditJacketState";
+    }
     return "jacketState";
   };
 

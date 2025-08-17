@@ -3,6 +3,7 @@ import { CloudinaryImageData } from "../services/imageUploadService";
 import predefinedImagesService from "../services/predefinedImagesService";
 import categoryService, { CategoryData } from "../services/categoryService";
 import authService from "../services/authService";
+import { useJacket } from "./JacketContext";
 
 export interface PredefinedImage {
   id: string;
@@ -87,6 +88,9 @@ interface ImageLibraryContextType {
   // حالة التحميل
   isLoading: boolean;
   error: string | null;
+
+  // وظائف مزامنة التصميم
+  removeImageFromDesign: (imageUrl: string) => void;
 }
 
 const ImageLibraryContext = createContext<ImageLibraryContextType | undefined>(
@@ -102,6 +106,16 @@ export const useImageLibrary = () => {
   return context;
 };
 
+// Hook منفصل لاستخدام JacketContext داخل ImageLibraryProvider
+const useImageDesignSync = () => {
+  try {
+    const jacketContext = useJacket();
+    return jacketContext;
+  } catch {
+    // إذا لم يكن JacketContext متوفراً، أرجع null
+    return null;
+  }
+};
 export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -142,6 +156,8 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // استخدام hook منفصل للحصول على JacketContext
+  const jacketContext = useImageDesignSync();
   // حفظ صور المستخدم في localStorage عند تغييرها
   useEffect(() => {
     try {
@@ -160,6 +176,37 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [selectedImages]);
 
+  // وظيفة إزالة الصورة من التصميم
+  const removeImageFromDesign = (imageUrl: string) => {
+    if (!jacketContext) {
+      console.warn(
+        "JacketContext not available, cannot remove image from design"
+      );
+      return;
+    }
+
+    try {
+      // البحث عن الشعارات التي تستخدم هذه الصورة وحذفها
+      const logosToRemove = jacketContext.jacketState.logos.filter(
+        (logo) => logo.image === imageUrl
+      );
+
+      logosToRemove.forEach((logo) => {
+        console.log(
+          `Removing logo ${logo.id} from design due to image deletion`
+        );
+        jacketContext.removeLogo(logo.id);
+      });
+
+      if (logosToRemove.length > 0) {
+        console.log(
+          `Removed ${logosToRemove.length} logos from design after image deletion`
+        );
+      }
+    } catch (error) {
+      console.error("Error removing image from design:", error);
+    }
+  };
   // تحميل الصور الجاهزة من الباك إند
   const loadPredefinedImages = async () => {
     setIsLoading(true);
@@ -215,10 +262,19 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
 
     try {
+      // العثور على الصورة المراد حذفها للحصول على URL
+      const imageToDelete = predefinedImages.find((img) => img.id === imageId);
+      const imageUrl = imageToDelete?.url;
+
       await predefinedImagesService.deletePredefinedImage(imageId);
       setPredefinedImages((prev) => prev.filter((img) => img.id !== imageId));
       // حذف من الصور المحددة أيضاً
       setSelectedImages((prev) => prev.filter((img) => img.id !== imageId));
+
+      // حذف الصورة من التصميم إذا كانت مستخدمة
+      if (imageUrl) {
+        removeImageFromDesign(imageUrl);
+      }
     } catch (error) {
       console.error("Error deleting predefined image:", error);
       setError(
@@ -354,6 +410,11 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = authService.getToken();
       if (!token) throw new Error("رمز المصادقة غير موجود");
 
+      // العثور على جميع الصور في هذا التصنيف قبل الحذف
+      const imagesInCategory = predefinedImages.filter(
+        (img) => img.categoryId === categoryId
+      );
+
       await categoryService.deleteCategory(categoryId, token);
       setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
       // حذف الصور المرتبطة بهذا التصنيف من الصور المحددة
@@ -365,6 +426,11 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
           return !predefinedImg || predefinedImg.categoryId !== categoryId;
         })
       );
+
+      // حذف جميع الصور في هذا التصنيف من التصميم
+      imagesInCategory.forEach((image) => {
+        removeImageFromDesign(image.url);
+      });
     } catch (error) {
       console.error("Error deleting category:", error);
       setError(error instanceof Error ? error.message : "فشل في حذف التصنيف");
@@ -387,9 +453,18 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // حذف صورة مستخدم
   const removeUserImage = (publicId: string) => {
+    // العثور على الصورة المراد حذفها للحصول على URL
+    const imageToDelete = userImages.find((img) => img.publicId === publicId);
+    const imageUrl = imageToDelete?.url;
+
     setUserImages((prev) => prev.filter((img) => img.publicId !== publicId));
     // حذف من الصور المحددة أيضاً
     setSelectedImages((prev) => prev.filter((img) => img.id !== publicId));
+
+    // حذف الصورة من التصميم إذا كانت مستخدمة
+    if (imageUrl) {
+      removeImageFromDesign(imageUrl);
+    }
   };
 
   // تحديد صورة للاستخدام في التصميم
@@ -428,11 +503,25 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // إلغاء تحديد صورة
   const unselectImage = (imageId: string) => {
+    // العثور على الصورة المراد إلغاء تحديدها للحصول على URL
+    const imageToUnselect = selectedImages.find((img) => img.id === imageId);
+    const imageUrl = imageToUnselect?.url;
+
     setSelectedImages((prev) => prev.filter((img) => img.id !== imageId));
+
+    // حذف الصورة من التصميم عند إلغاء التحديد
+    if (imageUrl) {
+      removeImageFromDesign(imageUrl);
+    }
   };
 
   // مسح جميع الصور المحددة
   const clearSelectedImages = () => {
+    // حذف جميع الصور المحددة من التصميم
+    selectedImages.forEach((image) => {
+      removeImageFromDesign(image.url);
+    });
+
     setSelectedImages([]);
   };
 
@@ -469,6 +558,7 @@ export const ImageLibraryProvider: React.FC<{ children: React.ReactNode }> = ({
         isImageSelected,
         isLoading,
         error,
+        removeImageFromDesign,
       }}
     >
       {children}

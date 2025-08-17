@@ -43,7 +43,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const [rotate, setRotate] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   // استخدام النوع المُعرّف صراحة
-  const [cropMode, setCropMode] = useState<CropMode>("flexible");
+  const [cropMode, setCropMode] = useState<CropMode>("full");
 
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -334,7 +334,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   const handleReset = () => {
     setRotate(0);
-    setCropMode("flexible");
+    setCropMode("full");
     if (imgRef.current) {
       onImageLoad({ currentTarget: imgRef.current } as React.SyntheticEvent<
         HTMLImageElement,

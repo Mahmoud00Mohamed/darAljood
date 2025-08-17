@@ -54,17 +54,31 @@ export const createOrder = async (req, res) => {
       totalPrice,
     });
 
-    // نسخ الصور إلى مجلد الطلب
-    // نسخ الصور باستخدام OrderImageManager
-    const imageBackupResult = await OrderImageManager.backupOrderImages(
-      newOrder
-    );
+    // نسخ الصور في الخلفية بدون انتظار (لا نريد تأخير استجابة إنشاء الطلب)
+    setImmediate(async () => {
+      try {
+        console.log(
+          `🔄 بدء نسخ صور الطلب ${newOrder.orderNumber} في الخلفية...`
+        );
+        const imageBackupResult = await OrderImageManager.backupOrderImages(
+          newOrder
+        );
 
-    if (imageBackupResult.success) {
-      console.log(`📸 ${imageBackupResult.message}`);
-    } else {
-      console.error(`❌ فشل في نسخ صور الطلب: ${imageBackupResult.message}`);
-    }
+        if (imageBackupResult.success) {
+          console.log(`📸 ${imageBackupResult.message}`);
+        } else {
+          console.error(
+            `❌ فشل في نسخ صور الطلب: ${imageBackupResult.message}`
+          );
+        }
+      } catch (error) {
+        console.error(
+          `❌ خطأ في نسخ صور الطلب ${newOrder.orderNumber}:`,
+          error
+        );
+      }
+    });
+
     res.status(201).json({
       success: true,
       message: "تم إنشاء الطلب بنجاح",

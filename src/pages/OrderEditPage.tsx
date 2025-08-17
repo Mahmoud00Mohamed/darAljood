@@ -81,22 +81,39 @@ const OrderEditContent: React.FC = () => {
 
   // تنظيف البيانات عند دخول الصفحة
   useEffect(() => {
-    // مسح بيانات الـ customizer من localStorage عند دخول صفحة التعديل
+    // حفظ نسخة احتياطية من بيانات الـ customizer
     const customizerState = localStorage.getItem("jacketState");
+    const customizerCart = localStorage.getItem("cart");
+
     if (customizerState) {
-      // حفظ نسخة احتياطية مؤقتة
       sessionStorage.setItem("customizerBackup", customizerState);
     }
+    if (customizerCart) {
+      sessionStorage.setItem("customizerCartBackup", customizerCart);
+    }
+
+    // مسح بيانات التعديل السابقة إذا كانت موجودة
+    localStorage.removeItem("orderEditJacketState");
+    localStorage.removeItem("orderEditCart");
 
     return () => {
       // عند الخروج من صفحة التعديل، مسح بيانات التعديل
       localStorage.removeItem("orderEditJacketState");
+      localStorage.removeItem("orderEditCart");
 
       // استعادة بيانات الـ customizer إذا كانت موجودة
       const customizerBackup = sessionStorage.getItem("customizerBackup");
+      const customizerCartBackup = sessionStorage.getItem(
+        "customizerCartBackup"
+      );
+
       if (customizerBackup) {
         localStorage.setItem("jacketState", customizerBackup);
         sessionStorage.removeItem("customizerBackup");
+      }
+      if (customizerCartBackup) {
+        localStorage.setItem("cart", customizerCartBackup);
+        sessionStorage.removeItem("customizerCartBackup");
       }
     };
   }, []);

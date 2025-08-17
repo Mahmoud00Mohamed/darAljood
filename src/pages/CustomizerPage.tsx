@@ -4,11 +4,17 @@ import JacketCustomizer from "../components/customizer/JacketCustomizer";
 const CustomizerPage: React.FC = () => {
   // تنظيف بيانات صفحة التعديل عند دخول صفحة التخصيص
   useEffect(() => {
-    // مسح بيانات صفحة تعديل الطلب عند دخول صفحة التخصيص
+    // مسح بيانات صفحات التعديل عند دخول صفحة التخصيص
     localStorage.removeItem("orderEditJacketState");
+    localStorage.removeItem("orderEditCart");
+    localStorage.removeItem("temporaryOrderEditJacketState");
+    localStorage.removeItem("temporaryOrderEditCart");
 
-    // مسح النسخة الاحتياطية إذا كانت موجودة
+    // مسح النسخ الاحتياطية إذا كانت موجودة
     sessionStorage.removeItem("customizerBackup");
+    sessionStorage.removeItem("customizerCartBackup");
+    sessionStorage.removeItem("tempEditBackup");
+    sessionStorage.removeItem("tempEditCartBackup");
   }, []);
 
   return <JacketCustomizer />;

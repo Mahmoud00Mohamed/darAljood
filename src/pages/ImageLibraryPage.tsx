@@ -112,7 +112,13 @@ const ImageLibraryPage: React.FC = () => {
         imageToDelete.publicId
       );
       if (success) {
+        // حذف الصورة من المكتبة (سيتم حذفها من التصميم تلقائياً)
         removeUserImage(imageToDelete.publicId);
+
+        // عرض رسالة تأكيد تتضمن معلومات الحذف من التصميم
+        console.log(
+          `Image ${imageToDelete.publicId} removed from library and design`
+        );
       } else {
         alert("فشل في حذف الصورة من الخادم");
       }
@@ -803,7 +809,7 @@ const ImageLibraryPage: React.FC = () => {
           onClose={deleteConfirmModal.closeModal}
           onConfirm={confirmDeleteImage}
           title="تأكيد حذف الصورة"
-          message="سيتم حذف هذه الصورة نهائياً من مكتبتك ومن الخادم. لا يمكن التراجع عن هذا الإجراء."
+          message="سيتم حذف هذه الصورة نهائياً من مكتبتك ومن الخادم، وسيتم إزالتها تلقائياً من أي تصميم يستخدمها حالياً. لا يمكن التراجع عن هذا الإجراء."
           confirmText="نعم، احذف"
           cancelText="إلغاء"
           type="danger"
