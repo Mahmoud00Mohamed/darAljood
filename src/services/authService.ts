@@ -18,7 +18,7 @@ export interface ApiResponse<T> {
 }
 
 class AuthService {
-  private baseUrl = "https://server-algood-cw2j.onrender.com/api/auth";
+  private baseUrl = "http://localhost:3001/api/auth";
   private tokenKey = "admin_token";
 
   /**

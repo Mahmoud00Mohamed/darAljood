@@ -1,4 +1,8 @@
 import OrderModel, { ORDER_STATUSES, STATUS_NAMES } from "../models/Order.js";
+import OrderImageManager from "../utils/orderImageManager.js";
+import TemporaryLinkModel from "../models/TemporaryLink.js";
+import OrderCleanupService from "../utils/orderCleanupService.js";
+import OrderImageSyncService from "../utils/orderImageSyncService.js";
 
 // إنشاء طلب جديد (عام - بدون مصادقة)
 export const createOrder = async (req, res) => {
@@ -50,6 +54,17 @@ export const createOrder = async (req, res) => {
       totalPrice,
     });
 
+    // نسخ الصور إلى مجلد الطلب
+    // نسخ الصور باستخدام OrderImageManager
+    const imageBackupResult = await OrderImageManager.backupOrderImages(
+      newOrder
+    );
+
+    if (imageBackupResult.success) {
+      console.log(`📸 ${imageBackupResult.message}`);
+    } else {
+      console.error(`❌ فشل في نسخ صور الطلب: ${imageBackupResult.message}`);
+    }
     res.status(201).json({
       success: true,
       message: "تم إنشاء الطلب بنجاح",
@@ -308,6 +323,18 @@ export const updateOrder = async (req, res) => {
       });
     }
 
+    // الحصول على التكوين القديم للمقارنة
+    const orders = await OrderModel.getOrders();
+    const existingOrder = orders.find((o) => o.id === orderId);
+
+    if (!existingOrder) {
+      return res.status(400).json({
+        success: false,
+        message: "الطلب غير موجود",
+        error: "ORDER_NOT_FOUND",
+      });
+    }
+
     // التحقق من البيانات المطلوبة
     if (!customerInfo || !jacketConfig) {
       return res.status(400).json({
@@ -315,6 +342,50 @@ export const updateOrder = async (req, res) => {
         message: "بيانات العميل وتكوين الجاكيت مطلوبة",
         error: "MISSING_REQUIRED_DATA",
       });
+    }
+
+    // الحصول على التكوين القديم للمقارنة
+    const oldJacketConfig = existingOrder.items[0]?.jacketConfig;
+
+    // مزامنة صور الطلب إذا تغير التكوين
+    let imageSyncResult = null;
+    if (oldJacketConfig && jacketConfig) {
+      console.log(`🔄 بدء مزامنة صور الطلب ${orderId} بعد التعديل...`);
+      console.log(
+        `📋 التكوين القديم - عدد الشعارات: ${
+          oldJacketConfig.logos?.length || 0
+        }`
+      );
+      console.log(
+        `📋 التكوين الجديد - عدد الشعارات: ${jacketConfig.logos?.length || 0}`
+      );
+
+      imageSyncResult = await OrderImageSyncService.syncOrderImages(
+        orderId,
+        oldJacketConfig,
+        jacketConfig
+      );
+
+      if (imageSyncResult.success) {
+        console.log(`✅ ${imageSyncResult.message}`);
+
+        // طباعة تفاصيل المزامنة
+        if (imageSyncResult.imageChanges) {
+          console.log(`📊 تفاصيل المزامنة:`);
+          console.log(
+            `   🗑️ صور محذوفة: ${imageSyncResult.imageChanges.removed.length}`
+          );
+          console.log(
+            `   ➕ صور مضافة: ${imageSyncResult.imageChanges.added.length}`
+          );
+          console.log(
+            `   ✅ صور محتفظ بها: ${imageSyncResult.imageChanges.retained.length}`
+          );
+        }
+      } else {
+        console.error(`❌ فشل في مزامنة الصور: ${imageSyncResult.message}`);
+        // نتابع العملية حتى لو فشلت المزامنة
+      }
     }
 
     const updatedOrder = await OrderModel.updateOrder(
@@ -338,11 +409,31 @@ export const updateOrder = async (req, res) => {
       })),
     };
 
-    res.status(200).json({
+    // إضافة معلومات مزامنة الصور إلى الاستجابة
+    const responseData = {
       success: true,
       message: "تم تحديث الطلب بنجاح",
       data: orderWithStatusNames,
-    });
+    };
+
+    // إضافة معلومات المزامنة إذا كانت متوفرة
+    if (imageSyncResult) {
+      responseData.imageSync = {
+        success: imageSyncResult.success,
+        hasChanges: imageSyncResult.hasChanges,
+        message: imageSyncResult.message,
+        hasWarnings: imageSyncResult.hasWarnings,
+        ...(imageSyncResult.imageChanges && {
+          changes: {
+            removed: imageSyncResult.imageChanges.removed.length,
+            added: imageSyncResult.imageChanges.added.length,
+            retained: imageSyncResult.imageChanges.retained.length,
+          },
+        }),
+      };
+    }
+
+    res.status(200).json(responseData);
   } catch (error) {
     console.error("Error updating order:", error);
 
@@ -532,24 +623,252 @@ export const deleteOrder = async (req, res) => {
       });
     }
 
+    console.log(`🗑️ بدء عملية حذف شاملة للطلب: ${orderId}`);
+
+    // الحصول على بيانات الطلب أولاً
+    const orders = await OrderModel.getOrders();
+    const orderToDelete = orders.find((o) => o.id === orderId);
+
+    if (!orderToDelete) {
+      return res.status(404).json({
+        success: false,
+        message: "لم يتم العثور على الطلب",
+        error: "ORDER_NOT_FOUND",
+      });
+    }
+
+    // استخدام خدمة التنظيف الشاملة
+    const cleanupResult =
+      await OrderCleanupService.performCompleteOrderDeletion(orderToDelete);
+
+    // حذف الطلب من قاعدة البيانات (الخطوة الأخيرة)
     await OrderModel.deleteOrder(orderId);
+
+    // إضافة خطوة حذف قاعدة البيانات للسجل
+    cleanupResult.log.steps.push({
+      step: cleanupResult.log.steps.length + 1,
+      name: "حذف من قاعدة البيانات",
+      startTime: new Date(),
+      endTime: new Date(),
+      success: true,
+      details: { orderId, orderNumber: orderToDelete.orderNumber },
+    });
+
+    cleanupResult.log.summary.successfulSteps++;
+    cleanupResult.log.summary.totalSteps++;
 
     res.status(200).json({
       success: true,
-      message: "تم حذف الطلب بنجاح",
-      data: { orderId },
+      message: cleanupResult.success
+        ? `تم حذف الطلب وجميع البيانات المرتبطة به بنجاح`
+        : `تم حذف الطلب مع بعض التحذيرات`,
+      data: {
+        orderId: orderId,
+        orderNumber: orderToDelete.orderNumber,
+        cleanupLog: cleanupResult.log,
+        hasWarnings: cleanupResult.hasWarnings,
+        summary: {
+          totalSteps: cleanupResult.log.summary.totalSteps,
+          successfulSteps: cleanupResult.log.summary.successfulSteps,
+          failedSteps: cleanupResult.log.summary.failedSteps,
+          duration: cleanupResult.log.summary.duration,
+          warnings: cleanupResult.log.summary.warnings,
+          errors: cleanupResult.log.summary.errors,
+        },
+      },
     });
   } catch (error) {
     console.error("Error deleting order:", error);
 
     res.status(500).json({
       success: false,
-      message: error.message || "حدث خطأ أثناء حذف الطلب",
+      message: error.message || "حدث خطأ أثناء حذف الطلب وبياناته المرتبطة",
       error: "DELETE_ORDER_FAILED",
     });
   }
 };
 
+// الحصول على صور الطلب (يتطلب مصادقة المدير)
+export const getOrderImages = async (req, res) => {
+  try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بعرض صور الطلبات",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
+    const { orderId } = req.params;
+
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف الطلب مطلوب",
+        error: "ORDER_ID_REQUIRED",
+      });
+    }
+
+    // الحصول على رقم الطلب أولاً
+    const orders = await OrderModel.getOrders();
+    const order = orders.find((o) => o.id === orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "لم يتم العثور على الطلب",
+        error: "ORDER_NOT_FOUND",
+      });
+    }
+
+    const imagesInfo = await OrderImageManager.getOrderImagesInfo(
+      order.orderNumber
+    );
+
+    if (!imagesInfo.success) {
+      return res.status(500).json({
+        success: false,
+        message: "فشل في الحصول على صور الطلب",
+        error: "GET_ORDER_IMAGES_FAILED",
+        details: imagesInfo.error,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "تم الحصول على صور الطلب بنجاح",
+      data: {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        images: imagesInfo.images,
+        totalCount: imagesInfo.totalCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting order images:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "حدث خطأ أثناء الحصول على صور الطلب",
+      error: "GET_ORDER_IMAGES_FAILED",
+    });
+  }
+};
+
+// التحقق من تطابق صور الطلب (يتطلب مصادقة المدير)
+export const validateOrderImageSync = async (req, res) => {
+  try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالتحقق من صور الطلبات",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
+    const { orderId } = req.params;
+
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف الطلب مطلوب",
+        error: "ORDER_ID_REQUIRED",
+      });
+    }
+
+    const validationResult =
+      await OrderImageSyncService.validateOrderFolderSync(orderId);
+
+    res.status(200).json({
+      success: true,
+      message: "تم التحقق من تطابق صور الطلب",
+      data: validationResult,
+    });
+  } catch (error) {
+    console.error("Error validating order image sync:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "حدث خطأ أثناء التحقق من تطابق صور الطلب",
+      error: "VALIDATE_ORDER_IMAGE_SYNC_FAILED",
+    });
+  }
+};
+
+// إصلاح تلقائي لتطابق صور الطلب (يتطلب مصادقة المدير)
+export const autoFixOrderImageSync = async (req, res) => {
+  try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإصلاح صور الطلبات",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
+    const { orderId } = req.params;
+
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف الطلب مطلوب",
+        error: "ORDER_ID_REQUIRED",
+      });
+    }
+
+    const fixResult = await OrderImageSyncService.autoFixOrderImageSync(
+      orderId
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "تم إصلاح تطابق صور الطلب",
+      data: fixResult,
+    });
+  } catch (error) {
+    console.error("Error auto-fixing order image sync:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "حدث خطأ أثناء إصلاح تطابق صور الطلب",
+      error: "AUTO_FIX_ORDER_IMAGE_SYNC_FAILED",
+    });
+  }
+};
+
+// تقرير شامل عن حالة صور جميع الطلبات (يتطلب مصادقة المدير)
+export const getOrderImagesReport = async (req, res) => {
+  try {
+    // التحقق الإضافي من صلاحيات المدير
+    if (!req.admin || req.admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بعرض تقارير صور الطلبات",
+        error: "INSUFFICIENT_PERMISSIONS",
+      });
+    }
+
+    const reportResult =
+      await OrderImageSyncService.generateOrderImagesReport();
+
+    res.status(200).json({
+      success: true,
+      message: "تم إنشاء تقرير صور الطلبات بنجاح",
+      data: reportResult,
+    });
+  } catch (error) {
+    console.error("Error generating order images report:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "حدث خطأ أثناء إنشاء تقرير صور الطلبات",
+      error: "GENERATE_ORDER_IMAGES_REPORT_FAILED",
+    });
+  }
+};
 // الحصول على حالات الطلب المتاحة (عام)
 export const getOrderStatuses = async (req, res) => {
   try {

@@ -44,7 +44,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   // استخدام النوع المُعرّف صراحة
   const [cropMode, setCropMode] = useState<CropMode>("flexible");
-  const [isMobile, setIsMobile] = useState(false);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,17 +62,63 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     }
   }, [isOpen, imageFile]);
 
-  // كشف وضع الهاتف المحمول
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+  // إضافة دالة مساعدة لحساب completedCrop من crop
+  const calculateCompletedCrop = useCallback(
+    (cropData: Crop, imageWidth: number, imageHeight: number): PixelCrop => {
+      return {
+        x: (cropData.x / 100) * imageWidth,
+        y: (cropData.y / 100) * imageHeight,
+        width: (cropData.width / 100) * imageWidth,
+        height: (cropData.height / 100) * imageHeight,
+        unit: "px",
+      };
+    },
+    []
+  );
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
+  // دالة لمحاكاة حركة صغيرة لتفعيل completedCrop
+  const simulateSmallCropMovement = useCallback(
+    (initialCrop: Crop) => {
+      if (!imgRef.current) return;
 
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+      const { width, height } = imgRef.current;
+
+      // حركة صغيرة جداً (0.1 بكسل تقريباً)
+      const microMovement = (0.1 / Math.max(width, height)) * 100; // تحويل إلى نسبة مئوية
+
+      // إنشاء crop بحركة صغيرة
+      const movedCrop: Crop = {
+        ...initialCrop,
+        x: Math.max(
+          0,
+          Math.min(100 - initialCrop.width, initialCrop.x + microMovement)
+        ),
+        y: Math.max(
+          0,
+          Math.min(100 - initialCrop.height, initialCrop.y + microMovement)
+        ),
+      };
+
+      // تطبيق الحركة مع تأخير قصير
+      setTimeout(() => {
+        setCrop(movedCrop);
+        const completedCrop = calculateCompletedCrop(movedCrop, width, height);
+        setCompletedCrop(completedCrop);
+
+        // العودة للموضع الأصلي بعد تأخير قصير
+        setTimeout(() => {
+          setCrop(initialCrop);
+          const originalCompletedCrop = calculateCompletedCrop(
+            initialCrop,
+            width,
+            height
+          );
+          setCompletedCrop(originalCompletedCrop);
+        }, 50);
+      }, 100);
+    },
+    [calculateCompletedCrop]
+  );
 
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -116,8 +161,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
       );
 
       setCrop(newCrop);
+
+      // ⭐ محاكاة حركة صغيرة لتفعيل completedCrop تلقائياً
+      simulateSmallCropMovement(newCrop);
     },
-    [cropMode, aspectRatio]
+    [cropMode, aspectRatio, simulateSmallCropMovement]
   );
 
   const handleCropModeChange = (mode: CropMode) => {
@@ -160,8 +208,30 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
       );
 
       setCrop(newCrop);
+
+      // ⭐ محاكاة حركة صغيرة لتفعيل completedCrop تلقائياً عند تغيير النمط
+      simulateSmallCropMovement(newCrop);
     }
   };
+
+  // ⭐ تعديل دالة onChange لضمان تحديث completedCrop
+  const handleCropChange = useCallback(
+    (_c: PixelCrop, percentCrop: Crop) => {
+      setCrop(percentCrop);
+
+      // إذا كان لدينا المرجع للصورة، احسب completedCrop فورًا
+      if (imgRef.current && percentCrop.width && percentCrop.height) {
+        const { width, height } = imgRef.current;
+        const newCompletedCrop = calculateCompletedCrop(
+          percentCrop,
+          width,
+          height
+        );
+        setCompletedCrop(newCompletedCrop);
+      }
+    },
+    [calculateCompletedCrop]
+  );
 
   const handleApplyCrop = async () => {
     if (
@@ -299,12 +369,12 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center p-0 md:p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="w-full h-full max-w-6xl max-h-[95vh] bg-white flex flex-col overflow-hidden rounded-none md:rounded-2xl shadow-2xl"
+        className="w-full h-full md:max-w-6xl md:max-h-[95vh] bg-white flex flex-col overflow-hidden rounded-none md:rounded-2xl shadow-2xl"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-3 md:p-4 border-b border-gray-200 bg-white flex-shrink-0">
@@ -329,7 +399,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                 className={`p-1.5 md:p-2 rounded-md transition-all ${
                   cropMode === "flexible"
                     ? "bg-[#563660] text-white shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100"
+                    : "text-gray-600 md:hover:bg-gray-100"
                 }`}
                 title="اقتصاص مرن من جميع الجهات"
               >
@@ -340,7 +410,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                 className={`p-1.5 md:p-2 rounded-md transition-all ${
                   cropMode === "circle"
                     ? "bg-[#563660] text-white shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100"
+                    : "text-gray-600 md:hover:bg-gray-100"
                 }`}
                 title="اقتصاص دائري"
               >
@@ -351,7 +421,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                 className={`p-1.5 md:p-2 rounded-md transition-all ${
                   cropMode === "full"
                     ? "bg-[#563660] text-white shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100"
+                    : "text-gray-600 md:hover:bg-gray-100"
                 }`}
                 title="الصورة الكاملة"
               >
@@ -363,13 +433,13 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
             <div className="flex gap-1 md:gap-2">
               <button
                 onClick={() => setRotate((rotate + 90) % 360)}
-                className="p-1.5 md:p-2 bg-white border text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                className="p-1.5 md:p-2 bg-white border text-gray-600 rounded-lg md:hover:bg-gray-50 transition-colors"
               >
                 <RotateCw className="w-3 h-3 md:w-4 md:h-4" />
               </button>
               <button
                 onClick={handleReset}
-                className="p-1.5 md:p-2 bg-white border text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                className="p-1.5 md:p-2 bg-white border text-gray-600 rounded-lg md:hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
               </button>
@@ -406,7 +476,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                   <div className="relative">
                     <ReactCrop
                       crop={crop}
-                      onChange={(_, percentCrop) => setCrop(percentCrop)}
+                      onChange={handleCropChange}
                       onComplete={(c) => setCompletedCrop(c)}
                       aspect={cropMode === "circle" ? 1 : undefined}
                       circularCrop={cropMode === "circle"}
@@ -419,29 +489,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
                       }}
                       ruleOfThirds={true}
                       keepSelection={true}
-                      minWidth={50} // حد أدنى أكبر للهواتف
-                      minHeight={50}
+                      minWidth={80} // حد أدنى محسن للهواتف
+                      minHeight={80}
                       // إعدادات محسنة للهواتف
                       disabled={false}
                       locked={false}
-                      renderSelectionAddon={() => (
-                        <div className="absolute inset-0 pointer-events-none">
-                          {/* مقابض الزوايا - دائماً موجودة */}
-                          <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
-                          <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
-                          <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#563660] border-2 border-white rounded-full shadow-lg md:w-4 md:h-4"></div>
-                          {/* مقابض جانبية - تظهر فقط في أجهزة الكمبيوتر وليس في الاقتصاص الدائري */}
-                          {!isMobile && cropMode !== "circle" && (
-                            <>
-                              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#563660] border-2 border-white rounded-full shadow-lg"></div>
-                              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#563660] border-2 border-white rounded-full shadow-lg"></div>
-                              <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-[#563660] border-2 border-white rounded-full shadow-lg"></div>
-                              <div className="absolute -right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-[#563660] border-2 border-white rounded-full shadow-lg"></div>
-                            </>
-                          )}
-                        </div>
-                      )}
                     >
                       <img
                         ref={imgRef}
@@ -468,14 +520,14 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
         </div>
 
         {/* أزرار الإجراءات */}
-        <div className="p-3 md:p-4 bg-white border-t border-gray-200 flex-shrink-0">
-          <div className="flex gap-2 md:gap-3">
+        <div className="p-4 bg-white border-t border-gray-200 flex-shrink-0">
+          <div className="flex gap-3">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleApplyCrop}
               disabled={(!completedCrop && cropMode !== "full") || isProcessing}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 md:py-3 font-medium rounded-xl transition-all duration-200 text-sm md:text-base ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 font-medium rounded-xl transition-all duration-200 text-base ${
                 (completedCrop || cropMode === "full") && !isProcessing
                   ? "bg-gradient-to-r from-[#563660] to-[#7e4a8c] text-white shadow-lg hover:shadow-xl"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -483,12 +535,12 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
             >
               {isProcessing ? (
                 <>
-                  <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   جاري المعالجة...
                 </>
               ) : (
                 <>
-                  <Check className="w-3 h-3 md:w-4 md:h-4" />
+                  <Check className="w-4 h-4" />
                   تطبيق
                 </>
               )}
@@ -496,7 +548,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
             <button
               onClick={onClose}
-              className="flex-1 py-2.5 md:py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors duration-200 text-sm md:text-base"
+              className="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl md:hover:bg-gray-50 transition-colors duration-200 text-base"
             >
               إلغاء
             </button>

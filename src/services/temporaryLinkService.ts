@@ -1,4 +1,16 @@
 // خدمة إدارة الروابط المؤقتة
+export interface ImageSyncResult {
+  success: boolean;
+  hasChanges: boolean;
+  message: string;
+  hasWarnings: boolean;
+  changes?: {
+    removed: number;
+    added: number;
+    retained: number;
+  };
+}
+
 export interface TemporaryLinkData {
   id: string;
   orderId: string;
@@ -115,8 +127,7 @@ export interface ApiResponse<T> {
 }
 
 class TemporaryLinkService {
-  private baseUrl =
-    "https://server-algood-cw2j.onrender.com/api/temporary-links";
+  private baseUrl = "http://localhost:3001/api/temporary-links";
 
   /**
    * إنشاء رابط مؤقت لطلب (يتطلب مصادقة المدير)
@@ -285,7 +296,7 @@ class TemporaryLinkService {
       quantity?: number;
       totalPrice?: number;
     }
-  ): Promise<TemporaryOrderData> {
+  ): Promise<TemporaryOrderData & { imageSync?: ImageSyncResult }> {
     try {
       const response = await fetch(`${this.baseUrl}/order/${token}`, {
         method: "PUT",
@@ -302,7 +313,9 @@ class TemporaryLinkService {
         );
       }
 
-      const result: ApiResponse<TemporaryOrderData> = await response.json();
+      const result: ApiResponse<
+        TemporaryOrderData & { imageSync?: ImageSyncResult }
+      > = await response.json();
 
       if (!result.success) {
         throw new Error(result.message || "فشل في تحديث الطلب");

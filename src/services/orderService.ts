@@ -105,6 +105,91 @@ export interface PublicOrderInfo {
   itemsCount: number;
 }
 
+export interface ImageSyncResult {
+  success: boolean;
+  hasChanges: boolean;
+  message: string;
+  hasWarnings: boolean;
+  changes?: {
+    removed: number;
+    added: number;
+    retained: number;
+  };
+}
+
+export interface OrderValidationResult {
+  success: boolean;
+  isInSync: boolean;
+  orderNumber: string;
+  expected: {
+    count: number;
+    publicIds: string[];
+  };
+  actual: {
+    count: number;
+    publicIds: string[];
+    images: Array<{
+      publicId: string;
+      url: string;
+      originalPublicId: string;
+      size: number;
+      format: string;
+      createdAt: string;
+    }>;
+  };
+  differences: {
+    missing: string[];
+    extra: string[];
+    matching: string[];
+  };
+  message: string;
+  error?: string;
+}
+
+export interface OrderImageFixResult {
+  success: boolean;
+  wasFixed: boolean;
+  validationResult: OrderValidationResult;
+  fixResults: {
+    deletedExtra: {
+      success: boolean;
+      count: number;
+      details?: unknown;
+    };
+    addedMissing: {
+      success: boolean;
+      count: number;
+      details?: unknown;
+    };
+  };
+  message: string;
+  error?: string;
+}
+
+export interface OrderImagesReport {
+  totalOrders: number;
+  checkedOrders: number;
+  syncedOrders: number;
+  unsyncedOrders: number;
+  ordersWithIssues: Array<{
+    orderId: string;
+    orderNumber: string;
+    issues?: {
+      missing: string[];
+      extra: string[];
+      matching: string[];
+    };
+    message?: string;
+    error?: string;
+  }>;
+  summary: {
+    totalImages: number;
+    totalMissingImages: number;
+    totalExtraImages: number;
+  };
+  generatedAt: string;
+}
+
 export interface OrderStats {
   total: number;
   pending: number;
@@ -145,7 +230,7 @@ export interface ApiResponse<T> {
 }
 
 class OrderService {
-  private baseUrl = "https://server-algood-cw2j.onrender.com/api/orders";
+  private baseUrl = "http://localhost:3001/api/orders";
 
   /**
    * إنشاء طلب جديد
@@ -413,7 +498,7 @@ class OrderService {
       totalPrice?: number;
     },
     token: string
-  ): Promise<OrderData> {
+  ): Promise<OrderData & { imageSync?: ImageSyncResult }> {
     try {
       const response = await fetch(`${this.baseUrl}/${orderId}`, {
         method: "PUT",
@@ -431,7 +516,8 @@ class OrderService {
         );
       }
 
-      const result: ApiResponse<OrderData> = await response.json();
+      const result: ApiResponse<OrderData & { imageSync?: ImageSyncResult }> =
+        await response.json();
 
       if (!result.success) {
         throw new Error(result.message || "فشل في تحديث الطلب");
@@ -585,6 +671,121 @@ class OrderService {
         error instanceof Error
           ? error.message
           : "حدث خطأ أثناء الحصول على حالات الطلب"
+      );
+    }
+  }
+
+  /**
+   * التحقق من تطابق صور الطلب (يتطلب مصادقة المدير)
+   */
+  async validateOrderImageSync(
+    orderId: string,
+    token: string
+  ): Promise<OrderValidationResult> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/${orderId}/images/validate`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      const result: ApiResponse<OrderValidationResult> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "فشل في التحقق من تطابق صور الطلب");
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error("Error validating order image sync:", error);
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : "حدث خطأ أثناء التحقق من تطابق صور الطلب"
+      );
+    }
+  }
+
+  /**
+   * إصلاح تلقائي لتطابق صور الطلب (يتطلب مصادقة المدير)
+   */
+  async autoFixOrderImageSync(
+    orderId: string,
+    token: string
+  ): Promise<OrderImageFixResult> {
+    try {
+      const response = await fetch(`${this.baseUrl}/${orderId}/images/fix`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      const result: ApiResponse<OrderImageFixResult> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "فشل في إصلاح تطابق صور الطلب");
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error("Error auto-fixing order image sync:", error);
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : "حدث خطأ أثناء إصلاح تطابق صور الطلب"
+      );
+    }
+  }
+
+  /**
+   * تقرير شامل عن حالة صور جميع الطلبات (يتطلب مصادقة المدير)
+   */
+  async getOrderImagesReport(token: string): Promise<OrderImagesReport> {
+    try {
+      const response = await fetch(`${this.baseUrl}/images/report`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      const result: ApiResponse<OrderImagesReport> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "فشل في إنشاء تقرير صور الطلبات");
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error("Error getting order images report:", error);
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : "حدث خطأ أثناء إنشاء تقرير صور الطلبات"
       );
     }
   }

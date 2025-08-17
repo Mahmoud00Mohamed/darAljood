@@ -23,7 +23,7 @@ export interface UploadError {
 }
 
 class ImageUploadService {
-  private baseUrl = "https://server-algood-cw2j.onrender.com/api/upload";
+  private baseUrl = "http://localhost:3001/api/upload";
 
   /**
    * رفع صورة واحدة إلى Cloudinary

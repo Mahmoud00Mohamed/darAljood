@@ -60,12 +60,12 @@ categorySchema.index({ name: 1, isDefault: 1 });
 categorySchema.index({ order: 1 });
 
 // Middleware لتحديث updatedAt تلقائياً
-categorySchema.pre("save", function(next) {
+categorySchema.pre("save", function (next) {
   this.updatedAt = new Date();
   next();
 });
 
-categorySchema.pre("findOneAndUpdate", function(next) {
+categorySchema.pre("findOneAndUpdate", function (next) {
   this.set({ updatedAt: new Date() });
   next();
 });

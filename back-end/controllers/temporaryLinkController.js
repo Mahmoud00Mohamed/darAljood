@@ -1,6 +1,7 @@
 import TemporaryLinkModel from "../models/TemporaryLink.js";
 import OrderModel from "../models/Order.js";
 import { STATUS_NAMES } from "../models/Order.js";
+import OrderImageSyncService from "../utils/orderImageSyncService.js";
 
 // إنشاء رابط مؤقت لتعديل الطلب (يتطلب مصادقة المدير)
 export const createTemporaryLink = async (req, res) => {
@@ -276,6 +277,54 @@ export const updateOrderByTemporaryLink = async (req, res) => {
       });
     }
 
+    // الحصول على التكوين القديم للمقارنة
+    const orders = await OrderModel.getOrders();
+    const existingOrder = orders.find((o) => o.id === validation.orderId);
+    const oldJacketConfig = existingOrder?.items?.[0]?.jacketConfig;
+
+    // مزامنة صور الطلب إذا تغير التكوين
+    let imageSyncResult = null;
+    if (oldJacketConfig && jacketConfig) {
+      console.log(
+        `🔄 بدء مزامنة صور الطلب ${validation.orderId} عبر الرابط المؤقت...`
+      );
+      console.log(
+        `📋 التكوين القديم - عدد الشعارات: ${
+          oldJacketConfig.logos?.length || 0
+        }`
+      );
+      console.log(
+        `📋 التكوين الجديد - عدد الشعارات: ${jacketConfig.logos?.length || 0}`
+      );
+
+      imageSyncResult = await OrderImageSyncService.syncOrderImages(
+        validation.orderId,
+        oldJacketConfig,
+        jacketConfig
+      );
+
+      if (imageSyncResult.success) {
+        console.log(`✅ ${imageSyncResult.message}`);
+
+        // طباعة تفاصيل المزامنة
+        if (imageSyncResult.imageChanges) {
+          console.log(`📊 تفاصيل المزامنة:`);
+          console.log(
+            `   🗑️ صور محذوفة: ${imageSyncResult.imageChanges.removed.length}`
+          );
+          console.log(
+            `   ➕ صور مضافة: ${imageSyncResult.imageChanges.added.length}`
+          );
+          console.log(
+            `   ✅ صور محتفظ بها: ${imageSyncResult.imageChanges.retained.length}`
+          );
+        }
+      } else {
+        console.error(`❌ فشل في مزامنة الصور: ${imageSyncResult.message}`);
+        // نتابع العملية حتى لو فشلت المزامنة
+      }
+    }
+
     // تحديث الطلب
     const updatedOrder = await OrderModel.updateOrder(
       validation.orderId,
@@ -292,7 +341,8 @@ export const updateOrderByTemporaryLink = async (req, res) => {
     // فقط نحديث عدد مرات الوصول
     await TemporaryLinkModel.incrementAccessCount(token);
 
-    res.status(200).json({
+    // إعداد الاستجابة
+    const responseData = {
       success: true,
       message: "تم تحديث الطلب بنجاح",
       data: {
@@ -312,7 +362,26 @@ export const updateOrderByTemporaryLink = async (req, res) => {
           )
         ), // الوقت المتبقي بالدقائق
       },
-    });
+    };
+
+    // إضافة معلومات المزامنة إذا كانت متوفرة
+    if (imageSyncResult) {
+      responseData.imageSync = {
+        success: imageSyncResult.success,
+        hasChanges: imageSyncResult.hasChanges,
+        message: imageSyncResult.message,
+        hasWarnings: imageSyncResult.hasWarnings,
+        ...(imageSyncResult.imageChanges && {
+          changes: {
+            removed: imageSyncResult.imageChanges.removed.length,
+            added: imageSyncResult.imageChanges.added.length,
+            retained: imageSyncResult.imageChanges.retained.length,
+          },
+        }),
+      };
+    }
+
+    res.status(200).json(responseData);
   } catch (error) {
     console.error("Error updating order by temporary link:", error);
 

@@ -228,7 +228,7 @@ const DEFAULT_PREDEFINED_IMAGES = [
 export const initializeDefaultImages = async () => {
   try {
     const existingCount = await PredefinedImageSchema.countDocuments();
-    
+
     if (existingCount === 0) {
       console.log("🔧 إنشاء الشعارات الجاهزة الافتراضية...");
       await PredefinedImageSchema.insertMany(DEFAULT_PREDEFINED_IMAGES);
@@ -243,9 +243,11 @@ export const initializeDefaultImages = async () => {
 // الحصول على جميع الشعارات الجاهزة (عام - بدون مصادقة)
 export const getPredefinedImages = async (req, res) => {
   try {
-    const images = await PredefinedImageSchema.find().sort({ createdAt: -1 }).lean();
-    
-    const cleanImages = images.map(img => ({
+    const images = await PredefinedImageSchema.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const cleanImages = images.map((img) => ({
       ...img,
       _id: undefined,
     }));
@@ -423,12 +425,12 @@ export const deletePredefinedImage = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "تم حذف الشعار الجاهز بنجاح",
-      data: { 
-        imageId, 
+      data: {
+        imageId,
         deletedImage: {
           ...imageToDelete.toObject(),
           _id: undefined,
-        }
+        },
       },
     });
   } catch (error) {
@@ -521,10 +523,10 @@ export const resetPredefinedImages = async (req, res) => {
     }
 
     const updatedBy = req.admin?.username || "admin";
-    
+
     // حذف جميع الشعارات الموجودة
     await PredefinedImageSchema.deleteMany({});
-    
+
     // إنشاء الشعارات الافتراضية مع تحديث updatedBy
     const defaultImages = DEFAULT_PREDEFINED_IMAGES.map((img) => ({
       ...img,
@@ -532,9 +534,11 @@ export const resetPredefinedImages = async (req, res) => {
       updatedBy,
     }));
 
-    const insertedImages = await PredefinedImageSchema.insertMany(defaultImages);
+    const insertedImages = await PredefinedImageSchema.insertMany(
+      defaultImages
+    );
 
-    const cleanImages = insertedImages.map(img => ({
+    const cleanImages = insertedImages.map((img) => ({
       ...img.toObject(),
       _id: undefined,
     }));
@@ -572,7 +576,7 @@ export const getPredefinedImagesByCategory = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const cleanImages = images.map(img => ({
+    const cleanImages = images.map((img) => ({
       ...img,
       _id: undefined,
     }));
@@ -596,21 +600,25 @@ export const getPredefinedImagesByCategory = async (req, res) => {
 // الحصول على الشعارات مع معلومات التصنيفات (عام - بدون مصادقة)
 export const getPredefinedImagesWithCategories = async (req, res) => {
   try {
-    const images = await PredefinedImageSchema.find().sort({ createdAt: -1 }).lean();
+    const images = await PredefinedImageSchema.find()
+      .sort({ createdAt: -1 })
+      .lean();
     const categories = await CategoryModel.getCategories();
 
     // إضافة معلومات التصنيف لكل صورة
-    const imagesWithCategories = images.map(image => {
-      const category = categories.find(cat => cat.id === image.categoryId);
+    const imagesWithCategories = images.map((image) => {
+      const category = categories.find((cat) => cat.id === image.categoryId);
       return {
         ...image,
         _id: undefined,
-        category: category ? {
-          id: category.id,
-          name: category.name,
-          color: category.color,
-          icon: category.icon,
-        } : null,
+        category: category
+          ? {
+              id: category.id,
+              name: category.name,
+              color: category.color,
+              icon: category.icon,
+            }
+          : null,
       };
     });
 

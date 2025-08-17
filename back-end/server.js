@@ -6,6 +6,7 @@ import CategoryModel from "./models/Category.js";
 import PricingModel from "./models/Pricing.js";
 import { initializeDefaultImages } from "./controllers/predefinedImagesController.js";
 import { scheduleTemporaryLinkCleanup } from "./utils/temporaryLinkCleanup.js";
+import OrderCleanupService from "./utils/orderCleanupService.js";
 import uploadRoutes from "./routes/upload.js";
 import authRoutes from "./routes/auth.js";
 import pricingRoutes from "./routes/pricing.js";
@@ -76,6 +77,12 @@ app.get("/api/info", (req, res) => {
       trackOrder: "GET /api/orders/track/:trackingCode",
       getAllOrders: "GET /api/orders (requires auth)",
       getOrderById: "GET /api/orders/:orderId (requires auth)",
+      getOrderImages: "GET /api/orders/:orderId/images (requires auth)",
+      validateOrderImageSync:
+        "GET /api/orders/:orderId/images/validate (requires auth)",
+      autoFixOrderImageSync:
+        "POST /api/orders/:orderId/images/fix (requires auth)",
+      getOrderImagesReport: "GET /api/orders/images/report (requires auth)",
       updateOrderStatus: "PUT /api/orders/:orderId/status (requires auth)",
       addOrderNote: "POST /api/orders/:orderId/notes (requires auth)",
       getOrderStats: "GET /api/orders/stats (requires auth)",
@@ -96,6 +103,16 @@ app.get("/api/info", (req, res) => {
         "PUT /api/temporary-links/invalidate/:token (requires auth)",
       getTemporaryLinkStats: "GET /api/temporary-links/stats (requires auth)",
       cleanupExpiredLinks: "POST /api/temporary-links/cleanup (requires auth)",
+    },
+    notes: {
+      orderDeletion:
+        "حذف الطلبات يتضمن حذف شامل لجميع البيانات المرتبطة: الصور، الروابط المؤقتة، وبيانات قاعدة البيانات",
+      dataIntegrity:
+        "النظام يضمن تنظيف كامل للبيانات لتجنب تراكم الملفات غير المستخدمة",
+      imageSync:
+        "نظام مزامنة متقدم لإدارة صور الطلبات عند التعديل - يحذف الصور القديمة ويضيف الجديدة تلقائياً",
+      imageSyncFeatures:
+        "التحقق من تطابق الصور، الإصلاح التلقائي، وتقارير شاملة عن حالة صور جميع الطلبات",
     },
   });
 });

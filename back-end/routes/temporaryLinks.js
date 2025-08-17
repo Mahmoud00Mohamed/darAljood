@@ -11,13 +11,43 @@ import {
 } from "../controllers/temporaryLinkController.js";
 import { authenticateAdmin } from "../middleware/auth.js";
 import { generalRateLimit } from "../middleware/security.js";
+import OrderImageSyncService from "../utils/orderImageSyncService.js";
 
 const router = express.Router();
 
 // المسارات العامة (بدون مصادقة)
 router.get("/validate/:token", generalRateLimit, validateTemporaryLink);
 router.get("/order/:token", generalRateLimit, getOrderByTemporaryLink);
-router.put("/order/:token", generalRateLimit, updateOrderByTemporaryLink);
+
+// تحديث الطلب عبر الرابط المؤقت مع مزامنة الصور
+router.put(
+  "/order/:token",
+  generalRateLimit,
+  async (req, res, next) => {
+    try {
+      // الحصول على التكوين القديم قبل التحديث
+      const { token } = req.params;
+      const orderData = await import(
+        "../controllers/temporaryLinkController.js"
+      )
+        .then((module) =>
+          module.getOrderByTemporaryLink(
+            { params: { token } },
+            { json: () => {} }
+          )
+        )
+        .catch(() => null);
+
+      // تمرير الطلب للمعالج الأصلي
+      req.oldJacketConfig = orderData?.order?.items?.[0]?.jacketConfig;
+      next();
+    } catch (error) {
+      console.error("Error preparing order update:", error);
+      next(); // متابعة العملية حتى لو فشل الحصول على التكوين القديم
+    }
+  },
+  updateOrderByTemporaryLink
+);
 
 // المسارات الإدارية (تتطلب مصادقة)
 router.post("/create/:orderId", authenticateAdmin, createTemporaryLink);

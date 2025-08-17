@@ -99,10 +99,11 @@ class OrderModel {
         ],
         estimatedDelivery: this.calculateEstimatedDelivery(),
         notes: [],
+        backupImages: [], // سيتم تحديثها بعد نسخ الصور
       });
 
       const savedOrder = await newOrder.save();
-      
+
       return {
         ...savedOrder.toObject(),
         _id: undefined,
@@ -114,12 +115,46 @@ class OrderModel {
   }
 
   /**
+   * تحديث معلومات الصور المنسوخة للطلب باستخدام معرف الطلب
+   */
+  async updateOrderBackupImages(orderId, backupImagesInfo) {
+    try {
+      const order = await OrderSchema.findOne({ id: orderId });
+
+      if (!order) {
+        throw new Error("الطلب غير موجود");
+      }
+
+      // إضافة معلومات الصور المنسوخة
+      order.backupImages = backupImagesInfo.map((info) => ({
+        originalPublicId: info.originalPublicId,
+        backupPublicId: info.newPublicId,
+        backupUrl: info.newUrl,
+        copiedAt: new Date(),
+        size: info.size,
+        format: info.format,
+      }));
+
+      order.updatedAt = new Date();
+
+      const updatedOrder = await order.save();
+
+      return {
+        ...updatedOrder.toObject(),
+        _id: undefined,
+      };
+    } catch (error) {
+      console.error("Error updating order backup images:", error);
+      throw new Error("فشل في تحديث معلومات الصور المنسوخة");
+    }
+  }
+  /**
    * الحصول على طلب بواسطة رقم الطلب
    */
   async getOrderByNumber(orderNumber) {
     try {
       const order = await OrderSchema.findOne({ orderNumber }).lean();
-      
+
       if (!order) {
         return null;
       }
@@ -140,7 +175,7 @@ class OrderModel {
   async getOrderByTrackingCode(trackingCode) {
     try {
       const order = await OrderSchema.findOne({ trackingCode }).lean();
-      
+
       if (!order) {
         return null;
       }
@@ -161,7 +196,7 @@ class OrderModel {
   async getOrders() {
     try {
       const orders = await OrderSchema.find().sort({ createdAt: -1 }).lean();
-      return orders.map(order => ({
+      return orders.map((order) => ({
         ...order,
         _id: undefined,
       }));
@@ -211,7 +246,7 @@ class OrderModel {
       }
 
       const updatedOrder = await order.save();
-      
+
       return {
         ...updatedOrder.toObject(),
         _id: undefined,
@@ -271,7 +306,7 @@ class OrderModel {
       });
 
       const updatedOrder = await order.save();
-      
+
       return {
         ...updatedOrder.toObject(),
         _id: undefined,
@@ -304,7 +339,7 @@ class OrderModel {
       order.updatedAt = new Date();
 
       const updatedOrder = await order.save();
-      
+
       return {
         ...updatedOrder.toObject(),
         _id: undefined,
@@ -364,7 +399,7 @@ class OrderModel {
 
       // البحث النصي
       if (query) {
-        const searchRegex = new RegExp(query, 'i');
+        const searchRegex = new RegExp(query, "i");
         searchQuery.$or = [
           { orderNumber: searchRegex },
           { trackingCode: searchRegex },
@@ -377,7 +412,7 @@ class OrderModel {
         .sort({ createdAt: -1 })
         .lean();
 
-      return orders.map(order => ({
+      return orders.map((order) => ({
         ...order,
         _id: undefined,
       }));
@@ -393,16 +428,16 @@ class OrderModel {
   async getOrderStats() {
     try {
       const totalOrders = await OrderSchema.countDocuments();
-      
+
       // إحصائيات حسب الحالة
       const statusStats = await OrderSchema.aggregate([
         {
           $group: {
             _id: "$status",
             count: { $sum: 1 },
-            totalValue: { $sum: "$totalPrice" }
-          }
-        }
+            totalValue: { $sum: "$totalPrice" },
+          },
+        },
       ]);
 
       // تحويل النتائج إلى كائن
@@ -426,7 +461,7 @@ class OrderModel {
       };
 
       // ملء الإحصائيات
-      statusStats.forEach(stat => {
+      statusStats.forEach((stat) => {
         switch (stat._id) {
           case ORDER_STATUSES.PENDING:
             stats.pending = stat.count;
@@ -457,7 +492,8 @@ class OrderModel {
 
       // حساب متوسط قيمة الطلب
       const validOrdersCount = totalOrders - stats.pending - stats.cancelled;
-      stats.averageOrderValue = validOrdersCount > 0 ? stats.totalRevenue / validOrdersCount : 0;
+      stats.averageOrderValue =
+        validOrdersCount > 0 ? stats.totalRevenue / validOrdersCount : 0;
 
       // حساب طلبات هذا الشهر والشهر الماضي
       const now = new Date();
@@ -467,17 +503,17 @@ class OrderModel {
 
       const thisMonthCount = await OrderSchema.countDocuments({
         createdAt: { $gte: thisMonthStart },
-        status: { $ne: ORDER_STATUSES.PENDING }
+        status: { $ne: ORDER_STATUSES.PENDING },
       });
 
       const lastMonthCount = await OrderSchema.countDocuments({
         createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
-        status: { $ne: ORDER_STATUSES.PENDING }
+        status: { $ne: ORDER_STATUSES.PENDING },
       });
 
       const pendingThisMonth = await OrderSchema.countDocuments({
         createdAt: { $gte: thisMonthStart },
-        status: ORDER_STATUSES.PENDING
+        status: ORDER_STATUSES.PENDING,
       });
 
       stats.thisMonth = thisMonthCount;

@@ -277,23 +277,41 @@ const TemporaryOrderEditContent: React.FC = () => {
         totalPrice: jacketState.totalPrice,
       };
 
-      const updatedOrder =
+      const updateResult =
         await temporaryLinkService.updateOrderByTemporaryLink(
           token,
           updateData
         );
 
       // تحديث بيانات الطلب المحلية
-      setOrderData(updatedOrder);
+      setOrderData(updateResult);
 
       // تحديث الوقت المتبقي إذا كان متوفراً في الاستجابة
-      if (updatedOrder.linkInfo && updatedOrder.linkInfo.remainingTime) {
-        setRemainingTime(updatedOrder.linkInfo.remainingTime);
+      if (updateResult.linkInfo && updateResult.linkInfo.remainingTime) {
+        setRemainingTime(updateResult.linkInfo.remainingTime);
       }
 
-      setSaveMessage(
-        "تم حفظ التغييرات بنجاح! سيتم التواصل معك قريباً لتأكيد التفاصيل."
-      );
+      // عرض رسالة مفصلة حسب نتيجة مزامنة الصور
+      let message =
+        "تم حفظ التغييرات بنجاح! سيتم التواصل معك قريباً لتأكيد التفاصيل.";
+
+      if (updateResult.imageSync) {
+        if (updateResult.imageSync.hasChanges) {
+          if (updateResult.imageSync.success) {
+            message += ` تم تحديث الصور (${
+              updateResult.imageSync.changes?.removed || 0
+            } محذوفة، ${updateResult.imageSync.changes?.added || 0} مضافة).`;
+          } else {
+            message += " مع تحذيرات في مزامنة الصور.";
+          }
+        }
+
+        if (updateResult.imageSync.hasWarnings) {
+          message += " (مع بعض التحذيرات)";
+        }
+      }
+
+      setSaveMessage(message);
       setShowMobileDetails(false);
       setTimeout(() => setSaveMessage(""), 5000);
     } catch (error) {

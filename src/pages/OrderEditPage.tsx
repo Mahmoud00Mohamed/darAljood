@@ -260,16 +260,35 @@ const OrderEditContent: React.FC = () => {
         totalPrice: jacketState.totalPrice,
       };
 
-      const updatedOrder = await orderService.updateOrder(
+      const updateResult = await orderService.updateOrder(
         orderId!,
         updateData,
         token
       );
 
       // تحديث بيانات الطلب المحلية
-      setOrderData(updatedOrder);
+      setOrderData(updateResult);
 
-      setSaveMessage("تم حفظ التغييرات في النظام بنجاح");
+      // عرض رسالة مفصلة حسب نتيجة مزامنة الصور
+      let message = "تم حفظ التغييرات في النظام بنجاح";
+
+      if (updateResult.imageSync) {
+        if (updateResult.imageSync.hasChanges) {
+          if (updateResult.imageSync.success) {
+            message += ` وتم تحديث الصور (${
+              updateResult.imageSync.changes?.removed || 0
+            } محذوفة، ${updateResult.imageSync.changes?.added || 0} مضافة)`;
+          } else {
+            message += " مع تحذيرات في مزامنة الصور";
+          }
+        }
+
+        if (updateResult.imageSync.hasWarnings) {
+          message += " (مع بعض التحذيرات)";
+        }
+      }
+
+      setSaveMessage(message);
       setShowMobileDetails(false);
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {

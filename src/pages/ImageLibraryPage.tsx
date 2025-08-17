@@ -26,6 +26,7 @@ import imageUploadService from "../services/imageUploadService";
 import ImageModal from "../components/ui/ImageModal";
 import { useModal } from "../hooks/useModal";
 import ConfirmationModal from "../components/ui/ConfirmationModal";
+import Modal from "../components/ui/Modal";
 
 const ImageLibraryPage: React.FC = () => {
   const {
@@ -52,16 +53,19 @@ const ImageLibraryPage: React.FC = () => {
   const [selectedImageForView, setSelectedImageForView] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [showSelectedSidebar, setShowSelectedSidebar] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const imageModal = useModal();
   const deleteConfirmModal = useModal();
+  const uploadModal = useModal({
+    closeOnEscape: !isUploading,
+    closeOnBackdropClick: !isUploading,
+  });
   const [imageToDelete, setImageToDelete] =
     useState<CloudinaryImageData | null>(null);
 
-  // تحميل مسبق للصور المرئية عند تحميل الصفحة
   useEffect(() => {
     const preloadVisibleImages = async () => {
-      // تحميل أول 12 صورة من الشعارات الجاهزة فوراً
       const visiblePredefined = predefinedImages.slice(0, 12);
       const preloadPromises = visiblePredefined.map((image, index) => {
         const img = new Image();
@@ -73,7 +77,6 @@ const ImageLibraryPage: React.FC = () => {
         return img;
       });
 
-      // تحميل الصور بالتوازي
       await Promise.allSettled(
         preloadPromises.map((img) => {
           return new Promise((resolve) => {
@@ -88,8 +91,11 @@ const ImageLibraryPage: React.FC = () => {
       preloadVisibleImages();
     }
   }, [predefinedImages]);
+
   const handleImageUpload = (imageData: CloudinaryImageData) => {
     addUserImage(imageData);
+    selectImage(imageData, "user");
+    uploadModal.closeModal();
   };
 
   const handleDeleteUserImage = async (image: CloudinaryImageData) => {
@@ -145,11 +151,9 @@ const ImageLibraryPage: React.FC = () => {
       image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (image.description &&
         image.description.toLowerCase().includes(searchTerm.toLowerCase()));
-
     const matchesCategory =
       selectedCategoryFilter === "all" ||
       image.categoryId === selectedCategoryFilter;
-
     return matchesSearch && matchesCategory;
   });
 
@@ -202,7 +206,6 @@ const ImageLibraryPage: React.FC = () => {
         </motion.div>
 
         {selectedImages.length > 0 && (
-          // MODIFIED: Replaced motion.div with a regular div
           <div className="bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -232,7 +235,6 @@ const ImageLibraryPage: React.FC = () => {
         )}
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-8">
-          {/* Search and Tabs */}
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             <div className="relative w-full lg:flex-1 lg:max-w-md">
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
@@ -277,7 +279,6 @@ const ImageLibraryPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Category Filter for Predefined Images */}
           {activeTab === "predefined" && categories.length > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-200">
               <h4 className="text-sm font-medium text-gray-700 mb-3">
@@ -368,7 +369,6 @@ const ImageLibraryPage: React.FC = () => {
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-6">
                       {filteredPredefinedImages.map((image) => (
-                        // MODIFIED: Replaced motion.div with a regular div
                         <div
                           key={image.id}
                           className="relative group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all"
@@ -443,26 +443,53 @@ const ImageLibraryPage: React.FC = () => {
 
               {activeTab === "user" && (
                 <div key="user" className="space-y-6">
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-                    <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                      <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-[#563660]" />
+                  <div className="bg-gradient-to-r from-[#563660] to-[#7e4a8c] rounded-xl shadow-lg border border-gray-200 p-6 sm:p-8 text-white">
+                    <h3 className="text-lg sm:text-xl font-semibold mb-6 flex items-center gap-3">
+                      <Upload className="w-6 h-6 sm:w-7 sm:h-7" />
                       رفع صور جديدة
                     </h3>
-                    <CloudinaryImageUpload
-                      onImageSelect={handleImageUpload}
-                      multiple={false}
-                      placeholder="اسحب الصورة هنا أو انقر للاختيار"
-                      acceptedFormats={[
-                        "image/jpeg",
-                        "image/jpg",
-                        "image/png",
-                        "image/webp",
-                      ]}
-                      maxFileSize={10}
-                      aspectRatio={1}
-                      cropTitle="اقتطاع الصورة"
-                      autoAddToLibrary={false}
-                    />
+                    <div className="text-center">
+                      <p className="text-sm sm:text-base mb-4 opacity-90">
+                        اسحب صورتك هنا أو انقر لاختيار ملف من جهازك
+                      </p>
+                      <button
+                        onClick={uploadModal.openModal}
+                        className="w-full sm:w-64 py-3 bg-white text-[#563660] rounded-lg hover:bg-gray-100 transition-colors text-sm sm:text-base font-medium shadow-md"
+                      >
+                        اختر صورة للرفع
+                      </button>
+                      <p className="text-xs mt-4 opacity-80">
+                        الحد الأقصى: 10MB | الأنواع: JPG, PNG, WEBP
+                      </p>
+                    </div>
+                    <Modal
+                      isOpen={uploadModal.isOpen}
+                      shouldRender={uploadModal.shouldRender}
+                      onClose={isUploading ? () => {} : uploadModal.closeModal}
+                      title="رفع شعار"
+                      size="sm"
+                      showCloseButton={!isUploading}
+                    >
+                      <CloudinaryImageUpload
+                        onImageSelect={handleImageUpload}
+                        multiple={false}
+                        placeholder="اسحب الصورة هنا أو انقر للاختيار"
+                        acceptedFormats={[
+                          "image/jpeg",
+                          "image/jpg",
+                          "image/png",
+                          "image/webp",
+                        ]}
+                        maxFileSize={10}
+                        aspectRatio={1}
+                        cropTitle="اقتطاع الصورة"
+                        onUploadStateChange={setIsUploading}
+                        autoAddToLibrary={true}
+                      />
+                      <div className="text-xs text-gray-500 text-center">
+                        <p>• الحد الأقصى: 10MB | الأنواع: JPG, PNG, WEBP</p>
+                      </div>
+                    </Modal>
                   </div>
 
                   {userImages.length === 0 ? (
@@ -478,7 +505,6 @@ const ImageLibraryPage: React.FC = () => {
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-6">
                       {filteredUserImages.map((image) => (
-                        // MODIFIED: Replaced motion.div with a regular div
                         <div
                           key={image.publicId}
                           className="relative group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all"
@@ -783,15 +809,6 @@ const ImageLibraryPage: React.FC = () => {
           type="danger"
           isLoading={!!isDeleting}
         />
-
-        {selectedImages.length > 0 && (
-          <button
-            onClick={() => setShowSelectedSidebar(true)}
-            className="lg:hidden fixed bottom-6 right-6 w-12 h-12 bg-[#563660] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#4b2e55] transition-colors z-40 active:scale-95"
-          >
-            <span className="text-sm font-bold">{selectedImages.length}</span>
-          </button>
-        )}
       </div>
     </div>
   );

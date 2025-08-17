@@ -153,17 +153,55 @@ class TemporaryLinkModel {
    */
   async invalidateOrderLinks(orderId) {
     try {
-      await TemporaryLinkSchema.updateMany(
+      const result = await TemporaryLinkSchema.updateMany(
         { orderId, isUsed: false },
         { isUsed: true, usedAt: new Date() }
       );
-      return true;
+
+      console.log(
+        `🔗 تم إلغاء ${result.modifiedCount} رابط مؤقت للطلب ${orderId}`
+      );
+      return result.modifiedCount;
+      console.log(
+        `🔗 تم إلغاء ${result.modifiedCount} رابط مؤقت للطلب ${orderId}`
+      );
+      return result.modifiedCount;
     } catch (error) {
       console.error("Error invalidating order links:", error);
       throw new Error("فشل في إلغاء الروابط المؤقتة");
     }
   }
 
+  /**
+   * حذف جميع الروابط المؤقتة لطلب معين نهائياً
+   */
+  async deleteOrderLinks(orderId) {
+    try {
+      const result = await TemporaryLinkSchema.deleteMany({ orderId });
+      console.log(
+        `🗑️ تم حذف ${result.deletedCount} رابط مؤقت للطلب ${orderId} نهائياً`
+      );
+      return result.deletedCount;
+    } catch (error) {
+      console.error("Error deleting order links:", error);
+      throw new Error("فشل في حذف الروابط المؤقتة");
+    }
+  }
+  /**
+   * حذف جميع الروابط المؤقتة لطلب معين نهائياً
+   */
+  async deleteOrderLinks(orderId) {
+    try {
+      const result = await TemporaryLinkSchema.deleteMany({ orderId });
+      console.log(
+        `🗑️ تم حذف ${result.deletedCount} رابط مؤقت للطلب ${orderId} نهائياً`
+      );
+      return result.deletedCount;
+    } catch (error) {
+      console.error("Error deleting order links:", error);
+      throw new Error("فشل في حذف الروابط المؤقتة");
+    }
+  }
   /**
    * الحصول على الروابط المؤقتة لطلب معين
    */
