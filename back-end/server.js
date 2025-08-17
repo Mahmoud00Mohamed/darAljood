@@ -5,12 +5,14 @@ import { initializeCloudinary } from "./config/cloudinary.js";
 import CategoryModel from "./models/Category.js";
 import PricingModel from "./models/Pricing.js";
 import { initializeDefaultImages } from "./controllers/predefinedImagesController.js";
+import { scheduleTemporaryLinkCleanup } from "./utils/temporaryLinkCleanup.js";
 import uploadRoutes from "./routes/upload.js";
 import authRoutes from "./routes/auth.js";
 import pricingRoutes from "./routes/pricing.js";
 import predefinedImagesRoutes from "./routes/predefinedImages.js";
 import ordersRoutes from "./routes/orders.js";
 import categoriesRoutes from "./routes/categories.js";
+import temporaryLinksRoutes from "./routes/temporaryLinks.js";
 import corsMiddleware from "./middleware/cors.js";
 import {
   uploadRateLimit,
@@ -83,6 +85,17 @@ app.get("/api/info", (req, res) => {
       updateCategory: "PUT /api/categories/:categoryId (requires auth)",
       deleteCategory: "DELETE /api/categories/:categoryId (requires auth)",
       reorderCategories: "POST /api/categories/reorder (requires auth)",
+      createTemporaryLink:
+        "POST /api/temporary-links/create/:orderId (requires auth)",
+      validateTemporaryLink: "GET /api/temporary-links/validate/:token",
+      getOrderByTemporaryLink: "GET /api/temporary-links/order/:token",
+      updateOrderByTemporaryLink: "PUT /api/temporary-links/order/:token",
+      getOrderTemporaryLinks:
+        "GET /api/temporary-links/order-links/:orderId (requires auth)",
+      invalidateTemporaryLink:
+        "PUT /api/temporary-links/invalidate/:token (requires auth)",
+      getTemporaryLinkStats: "GET /api/temporary-links/stats (requires auth)",
+      cleanupExpiredLinks: "POST /api/temporary-links/cleanup (requires auth)",
     },
   });
 });
@@ -105,6 +118,9 @@ app.use("/api/orders", ordersRoutes);
 // مسارات التصنيفات
 app.use("/api/categories", categoriesRoutes);
 
+// مسارات الروابط المؤقتة
+app.use("/api/temporary-links", temporaryLinksRoutes);
+
 // معالج المسارات غير الموجودة
 app.use(notFoundHandler);
 
@@ -124,9 +140,19 @@ const startServer = async () => {
     await PricingModel.initializeDefaultPricing();
     await initializeDefaultImages();
 
+    // تنظيف الروابط المنتهية الصلاحية عند بدء الخادم
+    console.log("🔧 جاري تنظيف الروابط المنتهية الصلاحية...");
+    const { default: TemporaryLinkModel } = await import(
+      "./models/TemporaryLink.js"
+    );
+    await TemporaryLinkModel.cleanupExpiredLinks();
+
     // تهيئة Cloudinary
     console.log("🔧 جاري تهيئة Cloudinary...");
     await initializeCloudinary();
+
+    // بدء جدولة تنظيف الروابط المؤقتة
+    scheduleTemporaryLinkCleanup();
 
     // بدء الخادم
     app.listen(PORT, () => {

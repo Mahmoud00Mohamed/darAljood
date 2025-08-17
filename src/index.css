@@ -750,7 +750,7 @@ button.text-xs {
   .mobile-content-padding {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   }
-  
+
   /* Adjust specific pages that might need extra spacing */
   .page-content {
     min-height: calc(100vh - 4rem);

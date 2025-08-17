@@ -135,7 +135,7 @@ const SideLogoOverlay: React.FC<SideLogoOverlayProps> = ({ logo, view }) => {
     Math.min(basePosition.maxScale, logo.scale)
   );
   const rotation =
-    logo.rotation !== undefined ? logo.rotation : basePosition.rotation;
+    typeof logo.rotation === "number" ? logo.rotation : basePosition.rotation;
 
   const boxWidthPercent = (basePosition.boxWidth / SVG_WIDTH) * 100;
   const boxHeightPercent = (basePosition.boxHeight / SVG_HEIGHT) * 100;

@@ -561,7 +561,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
                 className="flex items-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors"
               >
                 <Images size={14} />
-                <span>المكتبة</span>
+                <span>مكتبة الصور</span>
               </Link>
               <button
                 onClick={uploadModal.openModal}
@@ -583,7 +583,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
                 className="flex items-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors"
               >
                 <Images size={14} />
-                <span>المكتبة</span>
+                <span>مكتبة الصور</span>
               </Link>
               {(!showPredefinedLogos || logoSource === "upload") && (
                 <button
@@ -607,7 +607,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
                 className="flex items-center justify-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors w-full"
               >
                 <Images size={14} />
-                <span>المكتبة</span>
+                <span>مكتبة الصور</span>
               </Link>
               <div className="flex gap-2">
                 {positions.map((pos) => (

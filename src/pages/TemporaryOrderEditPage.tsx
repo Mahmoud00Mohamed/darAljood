@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,13 +12,17 @@ import {
   Package,
   Edit3,
   X,
+  Clock,
+  Shield,
+  ExternalLink,
   Download,
 } from "lucide-react";
 import { JacketProvider, useJacket } from "../context/JacketContext";
 import { CartProvider } from "../context/CartContext";
 import { ImageLibraryProvider } from "../context/ImageLibraryContext";
-import orderService, { OrderData } from "../services/orderService";
-import authService from "../services/authService";
+import temporaryLinkService, {
+  TemporaryOrderData,
+} from "../services/temporaryLinkService";
 import JacketViewer from "../components/jacket/JacketViewer";
 import CustomizationSidebar from "../components/sidebar/CustomizationSidebar";
 import TopBar from "../components/ui/TopBar";
@@ -27,10 +31,10 @@ import JacketImageCapture, {
 } from "../components/jacket/JacketImageCapture";
 import ConfirmationModal from "../components/ui/ConfirmationModal";
 import { useModal } from "../hooks/useModal";
-import fontPreloader from "../utils/fontPreloader";
 import { cleanupJacketData, validateDataIntegrity } from "../utils/dataCleanup";
 import { generateOrderPDFWithImages } from "../utils/pdfGenerator";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
+import fontPreloader from "../utils/fontPreloader";
 
 // دالة مساعدة لتحويل التاريخ إلى الصيغة المطلوبة YYYY/MM/DD
 const formatDate = (dateString: string): string => {
@@ -41,8 +45,8 @@ const formatDate = (dateString: string): string => {
   return `${year}/${month}/${day}`;
 };
 
-const OrderEditContent: React.FC = () => {
-  const { orderId } = useParams<{ orderId: string }>();
+const TemporaryOrderEditContent: React.FC = () => {
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const {
     jacketState,
@@ -55,8 +59,7 @@ const OrderEditContent: React.FC = () => {
     removeText,
     setCurrentView,
   } = useJacket();
-
-  const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [orderData, setOrderData] = useState<TemporaryOrderData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -67,6 +70,9 @@ const OrderEditContent: React.FC = () => {
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [linkExpired, setLinkExpired] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfLoadingStage, setPdfLoadingStage] = useState<
     "capturing" | "generating" | "completed"
@@ -74,59 +80,69 @@ const OrderEditContent: React.FC = () => {
   const [showPdfLoadingOverlay, setShowPdfLoadingOverlay] = useState(false);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const saveConfirmModal = useModal();
   const exitConfirmModal = useModal();
   const pdfConfirmModal = useModal();
 
   // تنظيف البيانات عند دخول الصفحة
   useEffect(() => {
-    // مسح بيانات الـ customizer من localStorage عند دخول صفحة التعديل
+    // مسح بيانات الـ customizer من localStorage عند دخول صفحة التعديل المؤقت
     const customizerState = localStorage.getItem("jacketState");
     if (customizerState) {
       // حفظ نسخة احتياطية مؤقتة
-      sessionStorage.setItem("customizerBackup", customizerState);
+      sessionStorage.setItem("tempEditBackup", customizerState);
     }
 
     return () => {
-      // عند الخروج من صفحة التعديل، مسح بيانات التعديل
-      localStorage.removeItem("orderEditJacketState");
-
-      // استعادة بيانات الـ customizer إذا كانت موجودة
-      const customizerBackup = sessionStorage.getItem("customizerBackup");
+      // عند الخروج من صفحة التعديل المؤقت، استعادة بيانات الـ customizer
+      const customizerBackup = sessionStorage.getItem("tempEditBackup");
       if (customizerBackup) {
         localStorage.setItem("jacketState", customizerBackup);
-        sessionStorage.removeItem("customizerBackup");
+        sessionStorage.removeItem("tempEditBackup");
       }
     };
   }, []);
 
-  const loadOrderData = useCallback(async () => {
-    // منع التحميل المتكرر
-    if (isDataLoaded) return;
+  // عداد الوقت المتبقي
+  useEffect(() => {
+    if (remainingTime > 0) {
+      const timer = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            setLinkExpired(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 60000); // كل دقيقة
 
-    if (!orderId) {
-      setError("معرف الطلب مطلوب");
-      setIsLoading(false);
-      return;
+      return () => clearInterval(timer);
     }
+  }, [remainingTime]);
+
+  const loadOrderData = useCallback(async () => {
+    if (isDataLoaded || !token) return;
 
     setIsLoading(true);
     setError("");
 
     try {
-      const token = authService.getToken();
-      if (!token) {
-        throw new Error("رمز المصادقة غير موجود");
-      }
+      // التحقق من صحة الرابط أولاً
+      const validation = await temporaryLinkService.validateTemporaryLink(
+        token
+      );
+      setRemainingTime(validation.remainingTime);
 
-      const order = await orderService.getOrderById(orderId, token);
-      setOrderData(order);
-      setCustomerInfo(order.customerInfo);
+      // الحصول على بيانات الطلب
+      const orderData = await temporaryLinkService.getOrderByTemporaryLink(
+        token
+      );
+      setOrderData(orderData);
+      setCustomerInfo(orderData.order.customerInfo);
 
       // تحميل تكوين الجاكيت إلى الـ context
-      if (order.items.length > 0) {
-        const jacketConfig = order.items[0].jacketConfig;
+      if (orderData.order.items.length > 0) {
+        const jacketConfig = orderData.order.items[0].jacketConfig;
 
         // تنظيف البيانات من التكرارات
         const cleanedConfig = cleanupJacketData(jacketConfig);
@@ -217,11 +233,16 @@ const OrderEditContent: React.FC = () => {
       setError(
         error instanceof Error ? error.message : "فشل في تحميل بيانات الطلب"
       );
+
+      // إذا كان الرابط منتهي الصلاحية أو غير صحيح، اعرض رسالة خاصة
+      if (error instanceof Error && error.message.includes("منتهي الصلاحية")) {
+        setLinkExpired(true);
+      }
     } finally {
       setIsLoading(false);
     }
   }, [
-    orderId,
+    token,
     isDataLoaded,
     jacketState.logos,
     jacketState.texts,
@@ -236,44 +257,52 @@ const OrderEditContent: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (!isDataLoaded) {
+    if (!isDataLoaded && token) {
       loadOrderData();
     }
-  }, [orderId, isDataLoaded, loadOrderData]);
+  }, [token, isDataLoaded, loadOrderData]);
 
   const handleSaveChanges = async () => {
+    if (!token) return;
+
     setIsSaving(true);
     setSaveMessage("");
     setError("");
 
     try {
-      // حفظ التعديلات في الباك إند
-      const token = authService.getToken();
-      if (!token) {
-        throw new Error("رمز المصادقة غير موجود");
-      }
-
       const updateData = {
         customerInfo,
         jacketConfig: jacketState,
-        quantity: orderData?.items[0]?.quantity || 1,
+        quantity: orderData?.order.items[0]?.quantity || 1,
         totalPrice: jacketState.totalPrice,
       };
 
-      const updatedOrder = await orderService.updateOrder(
-        orderId!,
-        updateData,
-        token
-      );
+      const updatedOrder =
+        await temporaryLinkService.updateOrderByTemporaryLink(
+          token,
+          updateData
+        );
 
       // تحديث بيانات الطلب المحلية
       setOrderData(updatedOrder);
 
-      setSaveMessage("تم حفظ التغييرات في النظام بنجاح");
+      // تحديث الوقت المتبقي إذا كان متوفراً في الاستجابة
+      if (updatedOrder.linkInfo && updatedOrder.linkInfo.remainingTime) {
+        setRemainingTime(updatedOrder.linkInfo.remainingTime);
+      }
+
+      setSaveMessage(
+        "تم حفظ التغييرات بنجاح! سيتم التواصل معك قريباً لتأكيد التفاصيل."
+      );
       setShowMobileDetails(false);
-      setTimeout(() => setSaveMessage(""), 3000);
+      setTimeout(() => setSaveMessage(""), 5000);
     } catch (error) {
       setError(error instanceof Error ? error.message : "فشل في حفظ التغييرات");
+
+      // إذا كان الخطأ متعلق بانتهاء الصلاحية، حدث الحالة
+      if (error instanceof Error && error.message.includes("منتهي الصلاحية")) {
+        setLinkExpired(true);
+      }
     } finally {
       setIsSaving(false);
       saveConfirmModal.closeModal();
@@ -310,7 +339,7 @@ const OrderEditContent: React.FC = () => {
       // إنشاء PDF
       const pdfBlob = await generateOrderPDFWithImages(
         {
-          cartItems: orderData.items.map((item) => ({
+          cartItems: orderData.order.items.map((item) => ({
             id: item.id,
             jacketConfig: {
               ...item.jacketConfig,
@@ -362,11 +391,11 @@ const OrderEditContent: React.FC = () => {
             },
             quantity: item.quantity,
             price: item.price,
-            addedAt: new Date(orderData.createdAt),
+            addedAt: new Date(orderData.order.createdAt),
           })),
-          totalPrice: orderData.totalPrice,
+          totalPrice: orderData.order.totalPrice,
           customerInfo: customerInfo,
-          orderNumber: orderData.orderNumber,
+          orderNumber: orderData.order.orderNumber,
         },
         jacketImages
       );
@@ -379,7 +408,7 @@ const OrderEditContent: React.FC = () => {
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `طلب-${orderData.orderNumber}-${customerInfo.name}.pdf`;
+      link.download = `طلب-${orderData.order.orderNumber}-${customerInfo.name}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -395,28 +424,67 @@ const OrderEditContent: React.FC = () => {
   const handlePdfLoadingComplete = () => {
     setShowPdfLoadingOverlay(false);
   };
-
   const handleCustomerInfoUpdate = (field: string, value: string) => {
     setCustomerInfo((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleExit = () => {
-    navigate("/admin");
+    navigate("/");
   };
 
   const toggleMobileDetails = () => {
     setShowMobileDetails((prev) => !prev);
   };
-  // إعادة تعيين حالة التحميل عند تغيير orderId
+
+  // إعادة تعيين حالة التحميل عند تغيير token
   useEffect(() => {
     setIsDataLoaded(false);
-  }, [orderId]);
+  }, [token]);
+
+  // إذا كان الرابط منتهي الصلاحية
+  if (linkExpired) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Clock className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            انتهت صلاحية الرابط
+          </h2>
+          <p className="text-gray-600 mb-6">
+            عذراً، انتهت صلاحية رابط التعديل. يرجى التواصل مع خدمة العملاء
+            للحصول على رابط جديد.
+          </p>
+          <div className="space-y-3">
+            <a
+              href="https://wa.me/966536065766"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              تواصل عبر واتساب
+            </a>
+            <button
+              onClick={() => navigate("/")}
+              className="w-full px-6 py-2  border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              العودة للموقع الرئيسي
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-[#563660] mx-auto mb-4" />
           <p className="text-gray-600">جاري تحميل بيانات الطلب...</p>
+          <p className="text-sm text-gray-500 mt-2">يرجى الانتظار...</p>
         </div>
       </div>
     );
@@ -424,19 +492,30 @@ const OrderEditContent: React.FC = () => {
 
   if (error && !orderData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             خطأ في تحميل الطلب
           </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => navigate("/admin")}
-            className="px-6 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
-          >
-            العودة للوحة التحكم
-          </button>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="space-y-3">
+            <a
+              href="https://wa.me/966536065766"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              تواصل مع الدعم
+            </a>
+            <button
+              onClick={() => navigate("/")}
+              className="w-full px-6 py-2  border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              العودة للموقع الرئيسي
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -453,23 +532,35 @@ const OrderEditContent: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={exitConfirmModal.openModal}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4  py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              العودة للوحة التحكم
+              العودة للموقع الرئيسي
             </button>
             <div className="h-6 w-px bg-gray-300"></div>
             <div>
               <h1 className="text-lg font-semibold text-gray-900">
-                تعديل الطلب {orderData?.orderNumber}
+                تعديل الطلب {orderData?.order.orderNumber}
               </h1>
-              <p className="text-sm text-gray-600">
-                رمز التتبع: {orderData?.trackingCode}
-              </p>
+              <div className="flex items-center gap-4 text-sm text-gray-600">
+                <span>رمز التتبع: {orderData?.order.trackingCode}</span>
+                {remainingTime > 0 && (
+                  <div className="flex items-center gap-1 text-amber-600">
+                    <Clock className="w-3 h-3" />
+                    <span>الوقت المتبقي: {remainingTime} دقيقة</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-lg">
+              <Shield className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-green-700 font-medium">
+                رابط آمن
+              </span>
+            </div>
             <button
               onClick={saveConfirmModal.openModal}
               disabled={isSaving}
@@ -517,6 +608,20 @@ const OrderEditContent: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* تحذير انتهاء الصلاحية */}
+      {remainingTime > 0 && remainingTime <= 10 && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-[70px] left-1/2 transform -translate-x-1/2 z-[99] bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 lg:px-6 lg:py-3 rounded-lg shadow-lg flex items-center gap-2 text-sm lg:text-base max-w-[90vw] lg:max-w-none"
+        >
+          <Clock className="w-4 h-4 text-amber-600" />
+          <span className="font-medium text-xs lg:text-base">
+            تحذير: سينتهي الرابط خلال {remainingTime} دقيقة
+          </span>
+        </motion.div>
+      )}
+
       {/* المحتوى الرئيسي */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Hidden Jacket Image Capture Component */}
@@ -530,17 +635,17 @@ const OrderEditContent: React.FC = () => {
           stage={pdfLoadingStage}
           onComplete={handlePdfLoadingComplete}
         />
-
-        {/* Mobile Back to Admin Button */}
+        {/* Mobile Back to Home Button */}
         <button
           onClick={exitConfirmModal.openModal}
           className="lg:hidden fixed top-[34px] right-4 z-60 flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-gray-50"
         >
           <ArrowLeft className="w-4 h-4 text-gray-600" />
           <span className="text-sm font-medium text-gray-700">
-            العودة للوحة التحكم
+            العودة للموقع
           </span>
         </button>
+
         {/* Sidebar for Desktop */}
         <div
           className={`${
@@ -594,11 +699,29 @@ const OrderEditContent: React.FC = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-0 flex-1 flex flex-col h-full"
+            className="space-y-6 flex-1 flex flex-col h-full"
           >
             <h2 className="text-2xl font-light text-gray-900 gold-text-gradient">
-              تعديل الطلب
+              تعديل طلبك
             </h2>
+
+            {/* تحذير الوقت المتبقي */}
+            {remainingTime > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-amber-600" />
+                  <span className="text-sm font-medium text-amber-800">
+                    الوقت المتبقي للتعديل
+                  </span>
+                </div>
+                <div className="text-lg font-bold text-amber-900">
+                  {remainingTime} دقيقة
+                </div>
+                <p className="text-xs text-amber-700 mt-1">
+                  احفظ تغييراتك قبل انتهاء الوقت
+                </p>
+              </div>
+            )}
 
             {/* معلومات العميل */}
             <div className="bg-gray-50 p-4 rounded-xl">
@@ -661,30 +784,32 @@ const OrderEditContent: React.FC = () => {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">رقم الطلب:</span>
-                  <span className="font-medium">{orderData?.orderNumber}</span>
+                  <span className="font-medium">
+                    {orderData?.order.orderNumber}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">رمز التتبع:</span>
                   <span className="font-mono font-medium">
-                    {orderData?.trackingCode}
+                    {orderData?.order.trackingCode}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">الحالة:</span>
                   <span className="font-medium text-[#563660]">
-                    {orderData?.statusName}
+                    {orderData?.order.statusName}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">الكمية:</span>
                   <span className="font-medium">
-                    {orderData?.items[0]?.quantity || 1}
+                    {orderData?.order.items[0]?.quantity || 1}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">السعر:</span>
                   <span className="font-medium">
-                    {orderData?.totalPrice} ريال
+                    {orderData?.order.totalPrice} ريال
                   </span>
                 </div>
               </div>
@@ -706,34 +831,26 @@ const OrderEditContent: React.FC = () => {
               <div className="flex justify-between">
                 <span>تاريخ الإنشاء:</span>
                 <span className="font-medium">
-                  {orderData && formatDate(orderData.createdAt)}
+                  {orderData && formatDate(orderData.order.createdAt)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>آخر تحديث:</span>
                 <span className="font-medium">
-                  {orderData && formatDate(orderData.updatedAt)}
+                  {orderData && formatDate(orderData.order.updatedAt)}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-3 mt-auto">
+            <div className="space-y-3 mt-auto pb-10">
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={saveConfirmModal.openModal}
-                disabled={isSaving}
+                disabled={isSaving || remainingTime <= 0}
                 className="w-full py-3 gold-gradient text-white rounded-xl font-semibold shadow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-50 relative z-10"
               >
                 {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
               </motion.button>
-
-              <button
-                onClick={exitConfirmModal.openModal}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                العودة للوحة التحكم
-              </button>
 
               <button
                 onClick={pdfConfirmModal.openModal}
@@ -746,6 +863,13 @@ const OrderEditContent: React.FC = () => {
                   <Download className="w-4 h-4" />
                 )}
                 تحميل PDF
+              </button>
+              <button
+                onClick={exitConfirmModal.openModal}
+                className="w-full py-3 flex items-center justify-center gap-2 px-4 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                العودة للموقع الرئيسي
               </button>
             </div>
           </motion.div>
@@ -780,7 +904,7 @@ const OrderEditContent: React.FC = () => {
             >
               <div className="flex justify-between items-center mb-0 p-4">
                 <h2 className="text-lg font-bold text-gray-900 gold-text-gradient">
-                  تعديل الطلب {orderData?.orderNumber}
+                  تعديل الطلب {orderData?.order.orderNumber}
                 </h2>
                 <button
                   onClick={toggleMobileDetails}
@@ -791,6 +915,21 @@ const OrderEditContent: React.FC = () => {
               </div>
 
               <div className="space-y-4 p-4">
+                {/* تحذير الوقت المتبقي للموبايل */}
+                {remainingTime > 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="w-4 h-4 text-amber-600" />
+                      <span className="text-sm font-medium text-amber-800">
+                        الوقت المتبقي
+                      </span>
+                    </div>
+                    <div className="text-base font-bold text-amber-900">
+                      {remainingTime} دقيقة
+                    </div>
+                  </div>
+                )}
+
                 {/* معلومات العميل للموبايل */}
                 <div className="bg-gray-50 p-3 rounded-xl">
                   <div className="flex items-center gap-2 mb-3">
@@ -853,31 +992,31 @@ const OrderEditContent: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">رقم الطلب:</span>
                       <span className="font-medium">
-                        {orderData?.orderNumber}
+                        {orderData?.order.orderNumber}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">رمز التتبع:</span>
                       <span className="font-mono font-medium">
-                        {orderData?.trackingCode}
+                        {orderData?.order.trackingCode}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">الحالة:</span>
                       <span className="font-medium text-[#563660]">
-                        {orderData?.statusName}
+                        {orderData?.order.statusName}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">الكمية:</span>
                       <span className="font-medium">
-                        {orderData?.items[0]?.quantity || 1}
+                        {orderData?.order.items[0]?.quantity || 1}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">السعر:</span>
                       <span className="font-medium">
-                        {orderData?.totalPrice} ريال
+                        {orderData?.order.totalPrice} ريال
                       </span>
                     </div>
                   </div>
@@ -899,13 +1038,13 @@ const OrderEditContent: React.FC = () => {
                   <div className="flex justify-between">
                     <span>تاريخ الإنشاء:</span>
                     <span className="font-medium">
-                      {orderData && formatDate(orderData.createdAt)}
+                      {orderData && formatDate(orderData.order.createdAt)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>آخر تحديث:</span>
                     <span className="font-medium">
-                      {orderData && formatDate(orderData.updatedAt)}
+                      {orderData && formatDate(orderData.order.updatedAt)}
                     </span>
                   </div>
                 </div>
@@ -918,22 +1057,11 @@ const OrderEditContent: React.FC = () => {
                       saveConfirmModal.openModal();
                       setShowMobileDetails(false);
                     }}
-                    disabled={isSaving}
+                    disabled={isSaving || remainingTime <= 0}
                     className="w-full py-2 px-3 gold-gradient text-white rounded-xl text-sm font-semibold shadow-gold hover-lift disabled:opacity-50"
                   >
                     {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
                   </motion.button>
-
-                  <button
-                    onClick={() => {
-                      exitConfirmModal.openModal();
-                      setShowMobileDetails(false);
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    العودة للوحة التحكم
-                  </button>
 
                   <button
                     onClick={() => {
@@ -949,6 +1077,16 @@ const OrderEditContent: React.FC = () => {
                       <Download className="w-4 h-4" />
                     )}
                     تحميل PDF
+                  </button>
+                  <button
+                    onClick={() => {
+                      exitConfirmModal.openModal();
+                      setShowMobileDetails(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 text-sm font-medium"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    العودة للموقع الرئيسي
                   </button>
                 </div>
               </div>
@@ -966,6 +1104,7 @@ const OrderEditContent: React.FC = () => {
             isMobile
             setIsSidebarOpen={setIsSidebarOpen}
             onAddToCart={() => {}} // تعطيل زر إضافة للسلة
+            isCapturingImages={false}
           />
         </div>
       </div>
@@ -995,7 +1134,6 @@ const OrderEditContent: React.FC = () => {
         type="info"
         isLoading={isGeneratingPDF}
       />
-
       {/* نافذة تأكيد الخروج */}
       <ConfirmationModal
         isOpen={exitConfirmModal.isOpen}
@@ -1011,16 +1149,16 @@ const OrderEditContent: React.FC = () => {
   );
 };
 
-const OrderEditPage: React.FC = () => {
+const TemporaryOrderEditPage: React.FC = () => {
   return (
     <JacketProvider>
       <CartProvider>
         <ImageLibraryProvider>
-          <OrderEditContent />
+          <TemporaryOrderEditContent />
         </ImageLibraryProvider>
       </CartProvider>
     </JacketProvider>
   );
 };
 
-export default OrderEditPage;
+export default TemporaryOrderEditPage;

@@ -227,10 +227,11 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
     </div>
   );
 
-  // التحقق من كون الصفحة الحالية هي صفحة تعديل الطلب
+  // التحقق من كون الصفحة الحالية هي صفحة تعديل الطلب (دائمة أو مؤقتة)
   const isOrderEditPage =
-    location.pathname.startsWith("/admin/orders/") &&
-    location.pathname.endsWith("/edit");
+    (location.pathname.startsWith("/admin/orders/") &&
+      location.pathname.endsWith("/edit")) ||
+    location.pathname.startsWith("/edit-order/");
 
   if (isMobile || window.innerWidth <= 1250) {
     return (

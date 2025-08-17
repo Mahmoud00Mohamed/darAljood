@@ -23,12 +23,15 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Check,
+  LinkIcon,
+  Copy,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import orderService, {
   OrderData,
   OrderStats,
 } from "../../services/orderService";
+import temporaryLinkService from "../../services/temporaryLinkService";
 import authService from "../../services/authService";
 import ConfirmationModal from "../ui/ConfirmationModal";
 import Modal from "../ui/Modal";
@@ -49,6 +52,7 @@ const OrdersManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [error, setError] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,6 +69,7 @@ const OrdersManagement: React.FC = () => {
   const [statusNote, setStatusNote] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isConfirmingOrder, setIsConfirmingOrder] = useState(false);
+
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfLoadingStage, setPdfLoadingStage] = useState<
     "capturing" | "generating" | "completed"
@@ -73,12 +78,150 @@ const OrdersManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"confirmed" | "pending">(
     "confirmed"
   );
+  const [copiedLinks, setCopiedLinks] = useState<Set<string>>(new Set());
+  const [isCreatingLink, setIsCreatingLink] = useState<string | null>(null);
+  const [generatedLink, setGeneratedLink] = useState<string>("");
+  const [modalCopied, setModalCopied] = useState(false);
 
+  // بعد هذا السطر:
   const jacketImageCaptureRef = React.useRef<JacketImageCaptureRef>(null);
+  useEffect(() => {
+    // حل مشكلة التمرير على الهواتف
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      // إعادة تعيين أي قيود على التمرير
+      document.body.style.overflow = "auto";
+      document.body.style.overscrollBehavior = "auto";
+      document.body.style.touchAction = "auto";
+      document.documentElement.style.overflow = "auto";
+      document.documentElement.style.overscrollBehavior = "auto";
+
+      // إزالة أي position: fixed قد يتداخل مع التمرير
+      const fixedElements = document.querySelectorAll(
+        '[style*="position: fixed"]'
+      );
+      fixedElements.forEach((el) => {
+        const htmlElement = el as HTMLElement;
+        if (
+          !htmlElement.classList.contains("modal-portal") &&
+          !htmlElement.classList.contains("pdf-loading-overlay")
+        ) {
+          htmlElement.style.position = "";
+        }
+      });
+
+      // التأكد من أن container الرئيسي يدعم التمرير
+      const mainContainer = document.querySelector(".space-y-6") as HTMLElement;
+      if (mainContainer) {
+        mainContainer.style.minHeight = "auto";
+        mainContainer.style.height = "auto";
+        mainContainer.style.overflow = "visible";
+      }
+
+      // إجبار إعادة حساب التمرير
+      const forceScrollRecalculation = () => {
+        window.scrollTo(0, 0);
+        setTimeout(() => {
+          window.scrollTo(0, 1);
+          setTimeout(() => {
+            window.scrollTo(0, 0);
+          }, 50);
+        }, 50);
+      };
+
+      forceScrollRecalculation();
+    }
+
+    return () => {
+      // تنظيف عند إلغاء التحميل
+      if (isMobile) {
+        document.body.style.overflow = "";
+        document.body.style.overscrollBehavior = "";
+        document.body.style.touchAction = "";
+        document.documentElement.style.overflow = "";
+        document.documentElement.style.overscrollBehavior = "";
+      }
+    };
+  }, []);
+
+  // إضافة useEffect للتعامل مع تغيير التبويبات
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      // عند تغيير التبويب، تأكد من إعادة تفعيل التمرير
+      setTimeout(() => {
+        document.body.style.overflow = "auto";
+        document.documentElement.style.overflow = "auto";
+
+        // إجبار إعادة حساب التمرير
+        window.scrollTo(0, window.scrollY);
+      }, 100);
+    }
+  }, [activeTab]);
+
+  // إضافة CSS للتأكد من التمرير السليم
+  useEffect(() => {
+    const mobileScrollStyles = `
+    @media (max-width: 768px) {
+      body {
+        overflow: auto !important;
+        overscroll-behavior: auto !important;
+        touch-action: auto !important;
+        position: static !important;
+        height: auto !important;
+        min-height: 100vh !important;
+      }
+      
+      html {
+        overflow: auto !important;
+        overscroll-behavior: auto !important;
+      }
+      
+      .space-y-6 {
+        overflow: visible !important;
+        height: auto !important;
+        min-height: auto !important;
+      }
+      
+      .mobile-scroll-container {
+        overflow: visible !important;
+        height: auto !important;
+        min-height: auto !important;
+      }
+      
+      /* التأكد من أن الجداول قابلة للتمرير */
+      .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+      }
+      
+      /* إصلاح مشكلة التمرير في المودالز */
+      .modal-content {
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+    }
+  `;
+
+    const style = document.createElement("style");
+    style.textContent = mobileScrollStyles;
+    document.head.appendChild(style);
+
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []); // إزالة dependency لتجنب warning
+
   const orderDetailsModal = useModal();
   const deleteOrderModal = useModal();
   const updateStatusModal = useModal();
   const confirmOrderModal = useModal();
+  const linkModal = useModal();
 
   const orderStatuses = [
     { value: "pending", name: "قيد المراجعة", color: "text-amber-600" },
@@ -91,6 +234,89 @@ const OrdersManagement: React.FC = () => {
     { value: "cancelled", name: "ملغي", color: "text-red-600" },
     { value: "returned", name: "مُرجع", color: "text-orange-600" },
   ];
+
+  const copyToClipboard = async (text: string, orderId: string) => {
+    try {
+      // تجربة API الجديد أولاً
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // استخدام الطريقة التقليدية للهواتف
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          document.execCommand("copy");
+        } catch {
+          throw new Error("فشل في النسخ");
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+
+      // إذا كان النسخ من النافذة (orderId فارغ)، حدث حالة النافذة فقط
+      if (!orderId) {
+        setModalCopied(true);
+        setTimeout(() => setModalCopied(false), 3000);
+        // لا نعرض رسالة نجاح عامة للنافذة
+      } else {
+        setCopiedLinks((prev) => new Set(prev).add(orderId));
+        setTimeout(() => {
+          setCopiedLinks((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(orderId);
+            return newSet;
+          });
+        }, 3000);
+
+        // رسالة النجاح فقط للنسخ من الجدول
+        setSaveMessage("تم نسخ الرابط المؤقت بنجاح");
+        setTimeout(() => setSaveMessage(""), 3000);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("فشل في نسخ النص:", error);
+      return false;
+    }
+  };
+
+  const handleCreateTemporaryLink = async (orderId: string) => {
+    setIsCreatingLink(orderId);
+    setModalCopied(false); // إعادة تعيين حالة النسخ في النافذة
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("رمز المصادقة غير موجود");
+
+      const linkData = await temporaryLinkService.createTemporaryLink(
+        orderId,
+        1, // ساعة واحدة افتراضياً
+        token
+      );
+
+      setGeneratedLink(linkData.fullUrl);
+
+      // محاولة النسخ التلقائي
+      const copied = await copyToClipboard(linkData.fullUrl, orderId);
+
+      if (!copied) {
+        // إذا فشلت النسخ التلقائية، اعرض المودال
+        linkModal.openModal();
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "فشل في إنشاء الرابط المؤقت"
+      );
+    } finally {
+      setIsCreatingLink(null);
+    }
+  };
 
   const loadOrders = async () => {
     setIsLoading(true);
@@ -225,7 +451,20 @@ const OrdersManagement: React.FC = () => {
 
   const handleTabSwitch = (tab: "confirmed" | "pending") => {
     setActiveTab(tab);
-    // No need to manually load data as useEffect will handle it
+
+    // إصلاح التمرير على الهواتف عند تغيير التبويب
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      setTimeout(() => {
+        document.body.style.overflow = "auto";
+        document.body.style.position = "";
+        document.body.style.height = "";
+        document.documentElement.style.overflow = "auto";
+
+        // إجبار إعادة حساب layout
+        window.dispatchEvent(new Event("resize"));
+      }, 50);
+    }
   };
 
   const handleSearch = () => {
@@ -269,6 +508,7 @@ const OrdersManagement: React.FC = () => {
   const handleDeleteOrder = async () => {
     if (!orderToDelete) return;
 
+    setIsConfirmingOrder(true); // استخدام نفس حالة التأكيد
     try {
       const token = authService.getToken();
       if (!token) throw new Error("رمز المصادقة غير موجود");
@@ -287,8 +527,12 @@ const OrdersManagement: React.FC = () => {
 
       deleteOrderModal.closeModal();
       setOrderToDelete(null);
+      setSaveMessage("تم حذف الطلب بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
       setError(error instanceof Error ? error.message : "فشل في حذف الطلب");
+    } finally {
+      setIsConfirmingOrder(false); // إعادة تعيين حالة التأكيد
     }
   };
 
@@ -316,6 +560,8 @@ const OrdersManagement: React.FC = () => {
 
       confirmOrderModal.closeModal();
       setOrderToConfirm(null);
+      setSaveMessage("تم تأكيد الطلب بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
       setError(error instanceof Error ? error.message : "فشل في تأكيد الطلب");
     } finally {
@@ -352,6 +598,8 @@ const OrdersManagement: React.FC = () => {
       updateStatusModal.closeModal();
       setNewStatus("");
       setStatusNote("");
+      setSaveMessage("تم تحديث حالة الطلب بنجاح");
+      setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "فشل في تحديث حالة الطلب"
@@ -630,9 +878,8 @@ const OrdersManagement: React.FC = () => {
       </div>
     );
   };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mobile-scroll-container">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -660,6 +907,35 @@ const OrdersManagement: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Messages */}
+      <AnimatePresence>
+        {saveMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2"
+          >
+            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+            <span className="text-green-700 font-medium text-sm">
+              {saveMessage}
+            </span>
+          </motion.div>
+        )}
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+            <span className="text-red-700 font-medium text-sm">{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Statistics */}
       {stats && (
@@ -957,6 +1233,22 @@ const OrdersManagement: React.FC = () => {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
+
+                          <button
+                            onClick={() => handleCreateTemporaryLink(order.id)}
+                            disabled={isCreatingLink === order.id}
+                            className="text-purple-600 hover:text-purple-800 transition-colors disabled:opacity-50"
+                            title="إنشاء رابط مؤقت"
+                          >
+                            {isCreatingLink === order.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : copiedLinks.has(order.id) ? (
+                              <Check className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <LinkIcon className="w-4 h-4" />
+                            )}
+                          </button>
+
                           <button
                             onClick={() =>
                               navigate(`/admin/orders/${order.id}/edit`)
@@ -1045,6 +1337,76 @@ const OrdersManagement: React.FC = () => {
           </p>
         </div>
       )}
+
+      {/* Temporary Link Modal */}
+      <Modal
+        isOpen={linkModal.isOpen}
+        shouldRender={linkModal.shouldRender}
+        onClose={() => {
+          linkModal.closeModal();
+          setModalCopied(false); // إعادة تعيين حالة النسخ عند الإغلاق
+        }}
+        title="الرابط المؤقت"
+        size="md"
+        options={linkModal.options}
+      >
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-2">
+              <LinkIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-blue-800 font-medium mb-1">
+                  تم إنشاء الرابط المؤقت بنجاح
+                </h4>
+                <p className="text-blue-700 text-sm mb-3">
+                  يمكن للعميل استخدام هذا الرابط لعرض طلبه لمدة ساعة واحدة فقط.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              الرابط المؤقت
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={generatedLink}
+                readOnly
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm font-mono"
+              />
+              <button
+                onClick={() => copyToClipboard(generatedLink, "")}
+                className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors ${
+                  modalCopied
+                    ? "bg-green-600 text-white"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+                title={modalCopied ? "تم النسخ" : "نسخ الرابط"}
+              >
+                {modalCopied ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={() => {
+                linkModal.closeModal();
+                setModalCopied(false);
+              }}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              إغلاق
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Order Details Modal */}
       {selectedOrder && (
@@ -1237,7 +1599,7 @@ const OrdersManagement: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-2">
+            <div className="grid grid-cols-4 gap-2 pt-2">
               <button
                 onClick={() => {
                   setNewStatus(selectedOrder.status);
@@ -1249,6 +1611,20 @@ const OrdersManagement: React.FC = () => {
                 <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">تحديث</span>
                 <span className="sm:hidden">حالة</span>
+              </button>
+              <button
+                onClick={() => handleCreateTemporaryLink(selectedOrder.id)}
+                disabled={isCreatingLink === selectedOrder.id}
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-purple-50 text-purple-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50"
+              >
+                {isCreatingLink === selectedOrder.id ? (
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                ) : copiedLinks.has(selectedOrder.id) ? (
+                  <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                ) : (
+                  <LinkIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                )}
+                <span>رابط</span>
               </button>
               <button
                 onClick={() => handleDownloadPDF(selectedOrder)}
@@ -1266,7 +1642,7 @@ const OrdersManagement: React.FC = () => {
                 onClick={() =>
                   navigate(`/admin/orders/${selectedOrder.id}/edit`)
                 }
-                className="flex items-center justify-center gap-1 py-2 px-2 bg-purple-50 text-purple-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-purple-100 transition-colors"
+                className="flex items-center justify-center gap-1 py-2 px-2 bg-orange-50 text-orange-700 text-xs sm:text-sm font-medium rounded-lg hover:bg-orange-100 transition-colors"
               >
                 <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">تعديل</span>
@@ -1399,6 +1775,7 @@ const OrdersManagement: React.FC = () => {
         confirmText="نعم، احذف"
         cancelText="إلغاء"
         type="danger"
+        isLoading={isConfirmingOrder}
       />
     </div>
   );

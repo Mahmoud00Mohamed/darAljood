@@ -23,6 +23,7 @@ import ImageLibraryPage from "./pages/ImageLibraryPage";
 import AdminPanelPage from "./pages/AdminPanelPage";
 import OrderTrackingPage from "./pages/OrderTrackingPage";
 import OrderEditPage from "./pages/OrderEditPage";
+import TemporaryOrderEditPage from "./pages/TemporaryOrderEditPage";
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -75,6 +76,14 @@ function App() {
                   element={
                     <div className="min-h-screen">
                       <OrderEditPage />
+                    </div>
+                  }
+                />
+                <Route
+                  path="/edit-order/:token"
+                  element={
+                    <div className="min-h-screen">
+                      <TemporaryOrderEditPage />
                     </div>
                   }
                 />
