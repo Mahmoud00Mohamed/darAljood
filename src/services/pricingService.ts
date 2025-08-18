@@ -40,7 +40,7 @@ export interface ApiResponse<T> {
 }
 
 class PricingService {
-  private baseUrl = "http://localhost:5173/api/pricing";
+  private baseUrl = "https://server-algood-cw2j.onrender.com/api/pricing";
 
   /**
    * الحصول على بيانات التسعير الحالية
