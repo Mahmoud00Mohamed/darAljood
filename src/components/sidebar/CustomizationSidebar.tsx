@@ -23,6 +23,24 @@ interface CustomizationSidebarProps {
   isCapturingImages?: boolean;
 }
 
+interface SidebarState {
+  isOpen: boolean;
+  activeSection: string;
+  activeView: JacketView;
+  activeContent: "logos" | "texts";
+  productOptionsTab: "materials" | "sizes";
+  lastVisited: {
+    section: string;
+    view: JacketView;
+    content?: "logos" | "texts";
+    productTab?: "materials" | "sizes";
+  };
+}
+
+interface WindowWithSidebarState extends Window {
+  customizationSidebarState?: SidebarState;
+}
+
 const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
   isMobile,
   setIsSidebarOpen,
@@ -30,27 +48,97 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
   isCapturingImages = false,
 }) => {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("");
-  const [activeView, setActiveView] = useState<JacketView>("front");
-  const [activeContent, setActiveContent] = useState<"logos" | "texts">(
-    "logos"
-  );
-  const [productOptionsTab, setProductOptionsTab] = useState<
-    "materials" | "sizes"
-  >("materials");
   const { setCurrentView } = useJacket();
   const { items } = useCart();
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Load state from memory or use defaults
+  const loadSavedState = (): SidebarState => {
+    try {
+      const windowWithState = window as WindowWithSidebarState;
+      const savedState = windowWithState.customizationSidebarState;
+      if (savedState) {
+        return savedState;
+      }
+    } catch (error) {
+      console.warn("Error loading sidebar state:", error);
+    }
+
+    return {
+      isOpen: false,
+      activeSection: "",
+      activeView: "front",
+      activeContent: "logos",
+      productOptionsTab: "materials",
+      lastVisited: {
+        section: "",
+        view: "front",
+      },
+    };
+  };
+
+  // Save state to memory whenever it changes
+  const saveStateToMemory = React.useCallback(
+    (state: Partial<SidebarState>) => {
+      try {
+        const windowWithState = window as WindowWithSidebarState;
+        const currentState =
+          windowWithState.customizationSidebarState || loadSavedState();
+        const newState = { ...currentState, ...state };
+        windowWithState.customizationSidebarState = newState;
+      } catch (error) {
+        console.warn("Error saving sidebar state:", error);
+      }
+    },
+    []
+  );
+
+  const initialState = loadSavedState();
+
+  const [isOpen, setIsOpen] = useState(initialState.isOpen);
+  const [activeSection, setActiveSection] = useState<string>(
+    initialState.activeSection
+  );
+  const [activeView, setActiveView] = useState<JacketView>(
+    initialState.activeView
+  );
+  const [activeContent, setActiveContent] = useState<"logos" | "texts">(
+    initialState.activeContent
+  );
+  const [productOptionsTab, setProductOptionsTab] = useState<
+    "materials" | "sizes"
+  >(initialState.productOptionsTab);
   const [lastVisited, setLastVisited] = useState<{
     section: string;
     view: JacketView;
     content?: "logos" | "texts";
     productTab?: "materials" | "sizes";
-  }>({
-    section: "",
-    view: "front",
-  });
+  }>(initialState.lastVisited);
+
+  // Update memory state when local state changes
+  useEffect(() => {
+    saveStateToMemory({
+      isOpen,
+      activeSection,
+      activeView,
+      activeContent,
+      productOptionsTab,
+      lastVisited,
+    });
+  }, [
+    isOpen,
+    activeSection,
+    activeView,
+    activeContent,
+    productOptionsTab,
+    lastVisited,
+    saveStateToMemory,
+  ]);
+
+  // Set current view in jacket context when activeView changes
+  useEffect(() => {
+    setCurrentView(activeView);
+  }, [activeView, setCurrentView]);
 
   useEffect(() => {
     const handleResize = () => {

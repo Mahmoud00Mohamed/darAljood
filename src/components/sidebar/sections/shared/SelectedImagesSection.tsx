@@ -28,7 +28,7 @@ interface SelectedImagesSectionProps {
 const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
   onImageSelect,
   onImageSelectWithPosition,
-  title = "الصور المحددة",
+  title = "المحددة",
   className = "",
   showPositionSelector = false,
   availablePositions = [],

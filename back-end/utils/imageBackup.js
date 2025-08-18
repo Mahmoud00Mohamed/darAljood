@@ -17,6 +17,8 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
 
     const newPublicId = `dar-aljoud/orders/${orderNumber}/${fileName}`;
 
+    console.log(`🎯 المسار الجديد للصورة: ${newPublicId}`);
+
     // التحقق من وجود الصورة مسبقاً في مجلد الطلب
     try {
       const existingImage = await cloudinary.api.resource(newPublicId);
@@ -38,24 +40,33 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
         `📋 الصورة غير موجودة في مجلد الطلب، سيتم نسخها: ${newPublicId}`
       );
     }
-    // نسخ الصورة باستخدام Cloudinary transformation
-    const result = await cloudinary.uploader.upload(
-      cloudinary.url(originalPublicId, {
-        fetch_format: "auto",
-        quality: "auto:good",
-      }),
-      {
-        public_id: newPublicId,
-        resource_type: "image",
-        overwrite: false, // لا تستبدل إذا كانت موجودة
-        invalidate: true, // تحديث الكاش
-        tags: [`order_${orderNumber}`, "order_backup"], // إضافة tags للتنظيم
-      }
-    );
+
+    // الحصول على URL الأصلي للصورة
+    const originalImageUrl = cloudinary.url(originalPublicId, {
+      secure: true,
+      fetch_format: "auto",
+      quality: "auto:good",
+    });
+
+    console.log(`🔗 رابط الصورة الأصلي: ${originalImageUrl}`);
+
+    // نسخ الصورة باستخدام Cloudinary upload مع تحديد المجلد بوضوح
+    const result = await cloudinary.uploader.upload(originalImageUrl, {
+      public_id: newPublicId,
+      folder: `dar-aljoud/orders/${orderNumber}`, // تحديد المجلد بوضوح
+      resource_type: "image",
+      overwrite: false, // لا تستبدل إذا كانت موجودة
+      invalidate: true, // تحديث الكاش
+      tags: [`order_${orderNumber}`, "order_backup"], // إضافة tags للتنظيم
+      use_filename: false, // استخدام public_id المحدد
+      unique_filename: false, // عدم إضافة أرقام عشوائية لاسم الملف
+    });
 
     console.log(
       `✅ تم نسخ الصورة بنجاح: ${originalPublicId} -> ${result.public_id}`
     );
+    console.log(`📁 المجلد المنشأ: dar-aljoud/orders/${orderNumber}`);
+
     return {
       success: true,
       originalPublicId,
@@ -65,7 +76,7 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
       format: result.format,
     };
   } catch (error) {
-    console.error(`Error copying image ${originalPublicId}:`, error);
+    console.error(`❌ خطأ في نسخ الصورة ${originalPublicId}:`, error);
     return {
       success: false,
       originalPublicId,
@@ -90,7 +101,7 @@ export const copyImagesToOrderFolder = async (imagePublicIds, orderNumber) => {
       results.push(result);
 
       // تقليل التأخير لتسريع العملية
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
 
@@ -261,7 +272,7 @@ export const deleteOrderImages = async (orderNumber) => {
       `📊 نتائج الحذف: ${successfulDeletes.length} نجح، ${failedDeletes.length} فشل`
     );
 
-    // 4. محاولة حذف المجلد إذا كان فارغاً
+    // محاولة حذف المجلد إذا كان فارغاً
     console.log(`📁 محاولة حذف مجلد الطلب: dar-aljoud/orders/${orderNumber}`);
     try {
       await cloudinary.api.delete_folder(`dar-aljoud/orders/${orderNumber}`);

@@ -24,7 +24,7 @@ const LeftLogoSection: React.FC = () => {
     leftSideLogos >= (pricingData?.includedItems.leftSideLogos || 2);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-20">
       {/* قسم رفع الشعارات التقليدي */}
       <LogoUploadSection
         positions={logoPositions}

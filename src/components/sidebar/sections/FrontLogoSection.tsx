@@ -27,7 +27,7 @@ const FrontLogoSection: React.FC = () => {
     totalFrontItems >= (pricingData?.includedItems.frontItems || 1);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-20">
       {/* قسم رفع الشعارات التقليدي */}
       <LogoUploadSection
         positions={logoPositions}
