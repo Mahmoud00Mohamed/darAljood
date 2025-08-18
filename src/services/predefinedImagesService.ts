@@ -33,8 +33,7 @@ export interface ApiResponse<T> {
   data: T;
 }
 class PredefinedImagesService {
-  private baseUrl =
-    "https://server-algood-cw2j.onrender.com/api/predefined-images";
+  private baseUrl = "http://localhost:5173/api/predefined-images";
 
   /**
    * تحميل الشعارات الجاهزة من الباك إند

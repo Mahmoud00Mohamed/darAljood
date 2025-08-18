@@ -34,7 +34,7 @@ export interface ApiResponse<T> {
 }
 
 class CategoryService {
-  private baseUrl = "https://server-algood-cw2j.onrender.com/api/categories";
+  private baseUrl = "http://localhost:5173/api/categories";
 
   /**
    * الحصول على جميع التصنيفات
