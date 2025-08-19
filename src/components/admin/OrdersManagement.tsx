@@ -944,7 +944,7 @@ const OrdersManagement: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-100 text-sm">الطلبات المؤكدة</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
+                <p className="text-2xl font-bold">{totalOrders}</p>
               </div>
               <Package className="w-8 h-8 text-blue-200" />
             </div>

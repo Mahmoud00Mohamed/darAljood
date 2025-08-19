@@ -9,7 +9,6 @@ export const createOrder = async (req, res) => {
   try {
     const { customerInfo, items, totalPrice } = req.body;
 
-    // التحقق من البيانات المطلوبة
     if (!customerInfo || !customerInfo.name || !customerInfo.phone) {
       return res.status(400).json({
         success: false,
@@ -44,7 +43,6 @@ export const createOrder = async (req, res) => {
       });
     }
 
-    // إنشاء الطلب
     const newOrder = await OrderModel.createOrder({
       customerInfo: {
         name: customerInfo.name.trim(),
@@ -54,29 +52,12 @@ export const createOrder = async (req, res) => {
       totalPrice,
     });
 
-    // نسخ الصور في الخلفية بدون انتظار (لا نريد تأخير استجابة إنشاء الطلب)
     setImmediate(async () => {
       try {
-        console.log(
-          `🔄 بدء نسخ صور الطلب ${newOrder.orderNumber} في الخلفية...`
-        );
         const imageBackupResult = await OrderImageManager.backupOrderImages(
           newOrder
         );
-
-        if (imageBackupResult.success) {
-          console.log(`📸 ${imageBackupResult.message}`);
-        } else {
-          console.error(
-            `❌ فشل في نسخ صور الطلب: ${imageBackupResult.message}`
-          );
-        }
-      } catch (error) {
-        console.error(
-          `❌ خطأ في نسخ صور الطلب ${newOrder.orderNumber}:`,
-          error
-        );
-      }
+      } catch (error) {}
     });
 
     res.status(201).json({
@@ -85,8 +66,6 @@ export const createOrder = async (req, res) => {
       data: newOrder,
     });
   } catch (error) {
-    console.error("Error creating order:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء إنشاء الطلب",
@@ -108,23 +87,18 @@ export const trackOrderByCode = async (req, res) => {
       });
     }
 
-    // تنظيف القيمة المدخلة
     const cleanSearchValue = searchValue.trim().toUpperCase();
 
-    // تحديد نوع البحث تلقائياً
     let order = null;
 
-    // محاولة البحث برمز التتبع أولاً
     if (/^[A-Z0-9]{8}$/.test(cleanSearchValue)) {
       order = await OrderModel.getOrderByTrackingCode(cleanSearchValue);
     }
 
-    // إذا لم نجد نتيجة، محاولة البحث برقم الطلب
     if (!order && /^\d{9}$/.test(cleanSearchValue)) {
       order = await OrderModel.getOrderByNumber(cleanSearchValue);
     }
 
-    // إذا لم نجد نتيجة، محاولة البحث في كلا الحقلين
     if (!order) {
       order =
         (await OrderModel.getOrderByTrackingCode(cleanSearchValue)) ||
@@ -139,7 +113,6 @@ export const trackOrderByCode = async (req, res) => {
       });
     }
 
-    // إرجاع معلومات محدودة للعميل (بدون معلومات حساسة)
     const publicOrderInfo = {
       orderNumber: order.orderNumber,
       trackingCode: order.trackingCode,
@@ -165,8 +138,6 @@ export const trackOrderByCode = async (req, res) => {
       data: publicOrderInfo,
     });
   } catch (error) {
-    console.error("Error tracking order:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء البحث عن الطلب",
@@ -174,14 +145,11 @@ export const trackOrderByCode = async (req, res) => {
     });
   }
 };
-
 // تتبع الطلب بواسطة رمز التتبع (للتوافق مع النسخة القديمة)
 export const trackOrder = trackOrderByCode;
-
 // الحصول على جميع الطلبات (يتطلب مصادقة المدير)
 export const getAllOrders = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -197,30 +165,25 @@ export const getAllOrders = async (req, res) => {
       search,
       dateFrom,
       dateTo,
-      includePending = false, // معامل جديد لتحديد ما إذا كان يجب تضمين الطلبات قيد المراجعة
+      includePending = false,
     } = req.query;
 
-    // إعداد الفلاتر
     const filters = {};
     if (status) filters.status = status;
     if (dateFrom) filters.dateFrom = dateFrom;
     if (dateTo) filters.dateTo = dateTo;
 
-    // البحث والفلترة
     const allOrders = await OrderModel.searchOrders(search || "", filters);
 
-    // فلترة الطلبات حسب معامل includePending
     const filteredOrders =
       includePending === "true"
         ? allOrders
         : allOrders.filter((order) => order.status !== "pending");
 
-    // تطبيق pagination
     const startIndex = (parseInt(page) - 1) * parseInt(limit);
     const endIndex = startIndex + parseInt(limit);
     const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
 
-    // إضافة أسماء الحالات
     const ordersWithStatusNames = paginatedOrders.map((order) => ({
       ...order,
       statusName: STATUS_NAMES[order.status],
@@ -245,8 +208,6 @@ export const getAllOrders = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error getting orders:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على الطلبات",
@@ -254,11 +215,9 @@ export const getAllOrders = async (req, res) => {
     });
   }
 };
-
 // الحصول على طلب واحد (يتطلب مصادقة المدير)
 export const getOrderById = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -288,7 +247,6 @@ export const getOrderById = async (req, res) => {
       });
     }
 
-    // إضافة أسماء الحالات
     const orderWithStatusNames = {
       ...order,
       statusName: STATUS_NAMES[order.status],
@@ -304,8 +262,6 @@ export const getOrderById = async (req, res) => {
       data: orderWithStatusNames,
     });
   } catch (error) {
-    console.error("Error getting order:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على الطلب",
@@ -317,7 +273,6 @@ export const getOrderById = async (req, res) => {
 // تحديث بيانات الطلب (يتطلب مصادقة المدير)
 export const updateOrder = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -337,7 +292,6 @@ export const updateOrder = async (req, res) => {
       });
     }
 
-    // الحصول على التكوين القديم للمقارنة
     const orders = await OrderModel.getOrders();
     const existingOrder = orders.find((o) => o.id === orderId);
 
@@ -349,7 +303,6 @@ export const updateOrder = async (req, res) => {
       });
     }
 
-    // التحقق من البيانات المطلوبة
     if (!customerInfo || !jacketConfig) {
       return res.status(400).json({
         success: false,
@@ -358,48 +311,15 @@ export const updateOrder = async (req, res) => {
       });
     }
 
-    // الحصول على التكوين القديم للمقارنة
     const oldJacketConfig = existingOrder.items[0]?.jacketConfig;
 
-    // مزامنة صور الطلب إذا تغير التكوين
     let imageSyncResult = null;
     if (oldJacketConfig && jacketConfig) {
-      console.log(`🔄 بدء مزامنة صور الطلب ${orderId} بعد التعديل...`);
-      console.log(
-        `📋 التكوين القديم - عدد الشعارات: ${
-          oldJacketConfig.logos?.length || 0
-        }`
-      );
-      console.log(
-        `📋 التكوين الجديد - عدد الشعارات: ${jacketConfig.logos?.length || 0}`
-      );
-
       imageSyncResult = await OrderImageSyncService.syncOrderImages(
         orderId,
         oldJacketConfig,
         jacketConfig
       );
-
-      if (imageSyncResult.success) {
-        console.log(`✅ ${imageSyncResult.message}`);
-
-        // طباعة تفاصيل المزامنة
-        if (imageSyncResult.imageChanges) {
-          console.log(`📊 تفاصيل المزامنة:`);
-          console.log(
-            `   🗑️ صور محذوفة: ${imageSyncResult.imageChanges.removed.length}`
-          );
-          console.log(
-            `   ➕ صور مضافة: ${imageSyncResult.imageChanges.added.length}`
-          );
-          console.log(
-            `   ✅ صور محتفظ بها: ${imageSyncResult.imageChanges.retained.length}`
-          );
-        }
-      } else {
-        console.error(`❌ فشل في مزامنة الصور: ${imageSyncResult.message}`);
-        // نتابع العملية حتى لو فشلت المزامنة
-      }
     }
 
     const updatedOrder = await OrderModel.updateOrder(
@@ -413,7 +333,6 @@ export const updateOrder = async (req, res) => {
       req.admin.username
     );
 
-    // إضافة أسماء الحالات
     const orderWithStatusNames = {
       ...updatedOrder,
       statusName: STATUS_NAMES[updatedOrder.status],
@@ -423,14 +342,12 @@ export const updateOrder = async (req, res) => {
       })),
     };
 
-    // إضافة معلومات مزامنة الصور إلى الاستجابة
     const responseData = {
       success: true,
       message: "تم تحديث الطلب بنجاح",
       data: orderWithStatusNames,
     };
 
-    // إضافة معلومات المزامنة إذا كانت متوفرة
     if (imageSyncResult) {
       responseData.imageSync = {
         success: imageSyncResult.success,
@@ -449,8 +366,6 @@ export const updateOrder = async (req, res) => {
 
     res.status(200).json(responseData);
   } catch (error) {
-    console.error("Error updating order:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء تحديث الطلب",
@@ -461,7 +376,6 @@ export const updateOrder = async (req, res) => {
 // تحديث حالة الطلب (يتطلب مصادقة المدير)
 export const updateOrderStatus = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -489,7 +403,6 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // التحقق من صحة الحالة
     if (!Object.values(ORDER_STATUSES).includes(status)) {
       return res.status(400).json({
         success: false,
@@ -506,7 +419,6 @@ export const updateOrderStatus = async (req, res) => {
       req.admin.username
     );
 
-    // إضافة أسماء الحالات
     const orderWithStatusNames = {
       ...updatedOrder,
       statusName: STATUS_NAMES[updatedOrder.status],
@@ -522,8 +434,6 @@ export const updateOrderStatus = async (req, res) => {
       data: orderWithStatusNames,
     });
   } catch (error) {
-    console.error("Error updating order status:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء تحديث حالة الطلب",
@@ -535,7 +445,6 @@ export const updateOrderStatus = async (req, res) => {
 // إضافة ملاحظة للطلب (يتطلب مصادقة المدير)
 export const addOrderNote = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -575,8 +484,6 @@ export const addOrderNote = async (req, res) => {
       data: updatedOrder,
     });
   } catch (error) {
-    console.error("Error adding order note:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء إضافة الملاحظة",
@@ -584,11 +491,9 @@ export const addOrderNote = async (req, res) => {
     });
   }
 };
-
 // الحصول على إحصائيات الطلبات (يتطلب مصادقة المدير)
 export const getOrderStats = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -605,8 +510,6 @@ export const getOrderStats = async (req, res) => {
       data: stats,
     });
   } catch (error) {
-    console.error("Error getting order stats:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على الإحصائيات",
@@ -618,7 +521,6 @@ export const getOrderStats = async (req, res) => {
 // حذف طلب (يتطلب مصادقة المدير)
 export const deleteOrder = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -637,9 +539,6 @@ export const deleteOrder = async (req, res) => {
       });
     }
 
-    console.log(`🗑️ بدء عملية حذف شاملة للطلب: ${orderId}`);
-
-    // الحصول على بيانات الطلب أولاً
     const orders = await OrderModel.getOrders();
     const orderToDelete = orders.find((o) => o.id === orderId);
 
@@ -651,14 +550,11 @@ export const deleteOrder = async (req, res) => {
       });
     }
 
-    // استخدام خدمة التنظيف الشاملة
     const cleanupResult =
       await OrderCleanupService.performCompleteOrderDeletion(orderToDelete);
 
-    // حذف الطلب من قاعدة البيانات (الخطوة الأخيرة)
     await OrderModel.deleteOrder(orderId);
 
-    // إضافة خطوة حذف قاعدة البيانات للسجل
     cleanupResult.log.steps.push({
       step: cleanupResult.log.steps.length + 1,
       name: "حذف من قاعدة البيانات",
@@ -692,8 +588,6 @@ export const deleteOrder = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error deleting order:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء حذف الطلب وبياناته المرتبطة",
@@ -705,7 +599,6 @@ export const deleteOrder = async (req, res) => {
 // الحصول على صور الطلب (يتطلب مصادقة المدير)
 export const getOrderImages = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -724,7 +617,6 @@ export const getOrderImages = async (req, res) => {
       });
     }
 
-    // الحصول على رقم الطلب أولاً
     const orders = await OrderModel.getOrders();
     const order = orders.find((o) => o.id === orderId);
 
@@ -760,8 +652,6 @@ export const getOrderImages = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error getting order images:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على صور الطلب",
@@ -773,7 +663,6 @@ export const getOrderImages = async (req, res) => {
 // التحقق من تطابق صور الطلب (يتطلب مصادقة المدير)
 export const validateOrderImageSync = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -801,8 +690,6 @@ export const validateOrderImageSync = async (req, res) => {
       data: validationResult,
     });
   } catch (error) {
-    console.error("Error validating order image sync:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء التحقق من تطابق صور الطلب",
@@ -814,7 +701,6 @@ export const validateOrderImageSync = async (req, res) => {
 // إصلاح تلقائي لتطابق صور الطلب (يتطلب مصادقة المدير)
 export const autoFixOrderImageSync = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -843,8 +729,6 @@ export const autoFixOrderImageSync = async (req, res) => {
       data: fixResult,
     });
   } catch (error) {
-    console.error("Error auto-fixing order image sync:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء إصلاح تطابق صور الطلب",
@@ -856,7 +740,6 @@ export const autoFixOrderImageSync = async (req, res) => {
 // تقرير شامل عن حالة صور جميع الطلبات (يتطلب مصادقة المدير)
 export const getOrderImagesReport = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -874,8 +757,6 @@ export const getOrderImagesReport = async (req, res) => {
       data: reportResult,
     });
   } catch (error) {
-    console.error("Error generating order images report:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء إنشاء تقرير صور الطلبات",
@@ -898,8 +779,6 @@ export const getOrderStatuses = async (req, res) => {
       data: statuses,
     });
   } catch (error) {
-    console.error("Error getting order statuses:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على حالات الطلب",

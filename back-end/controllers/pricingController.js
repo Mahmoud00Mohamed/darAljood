@@ -11,8 +11,6 @@ export const getPricing = async (req, res) => {
       data: pricing,
     });
   } catch (error) {
-    console.error("Error getting pricing:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على بيانات التسعير",
@@ -32,7 +30,6 @@ export const calculatePrice = async (req, res) => {
       quantity = 1,
     } = req.body;
 
-    // التحقق من صحة البيانات
     if (quantity < 1) {
       return res.status(400).json({
         success: false,
@@ -68,8 +65,6 @@ export const calculatePrice = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error calculating price:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء حساب السعر",
@@ -77,11 +72,9 @@ export const calculatePrice = async (req, res) => {
     });
   }
 };
-
 // تحديث بيانات التسعير (يتطلب مصادقة المدير)
 export const updatePricing = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -93,7 +86,6 @@ export const updatePricing = async (req, res) => {
     const updates = req.body;
     const updatedBy = req.admin.username;
 
-    // التحقق من صحة البيانات
     if (!updates || typeof updates !== "object") {
       return res.status(400).json({
         success: false,
@@ -102,7 +94,6 @@ export const updatePricing = async (req, res) => {
       });
     }
 
-    // التحقق من صحة الحقول المطلوبة
     const requiredFields = ["basePrice", "includedItems", "additionalCosts"];
     const missingFields = requiredFields.filter((field) => !(field in updates));
 
@@ -114,7 +105,6 @@ export const updatePricing = async (req, res) => {
       });
     }
 
-    // التحقق من صحة الأسعار (يجب أن تكون أرقام موجبة)
     if (
       updates.basePrice &&
       (typeof updates.basePrice !== "number" || updates.basePrice <= 0)
@@ -134,8 +124,6 @@ export const updatePricing = async (req, res) => {
       data: updatedPricing,
     });
   } catch (error) {
-    console.error("Error updating pricing:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء تحديث التسعير",
@@ -143,11 +131,9 @@ export const updatePricing = async (req, res) => {
     });
   }
 };
-
 // إعادة تعيين الأسعار إلى القيم الافتراضية (يتطلب مصادقة المدير)
 export const resetPricing = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -165,8 +151,6 @@ export const resetPricing = async (req, res) => {
       data: resetPricing,
     });
   } catch (error) {
-    console.error("Error resetting pricing:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء إعادة تعيين الأسعار",
@@ -178,7 +162,6 @@ export const resetPricing = async (req, res) => {
 // الحصول على تاريخ التحديثات (يتطلب مصادقة المدير)
 export const getPricingHistory = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -199,8 +182,6 @@ export const getPricingHistory = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error getting pricing history:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على تاريخ التحديثات",

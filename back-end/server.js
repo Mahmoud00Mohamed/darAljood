@@ -147,78 +147,44 @@ app.use(errorHandler);
 // بدء الخادم
 const startServer = async () => {
   try {
-    // الاتصال بقاعدة البيانات
-    console.log("🔧 جاري الاتصال بقاعدة البيانات...");
     await connectDatabase();
-
-    // تهيئة البيانات الافتراضية
-    console.log("🔧 جاري تهيئة البيانات الافتراضية...");
     await CategoryModel.initializeDefaultCategories();
     await PricingModel.initializeDefaultPricing();
     await initializeDefaultImages();
-
-    // تنظيف الروابط المنتهية الصلاحية عند بدء الخادم
-    console.log("🔧 جاري تنظيف الروابط المنتهية الصلاحية...");
     const { default: TemporaryLinkModel } = await import(
       "./models/TemporaryLink.js"
     );
     await TemporaryLinkModel.cleanupExpiredLinks();
-
-    // تهيئة Cloudinary
-    console.log("🔧 جاري تهيئة Cloudinary...");
     await initializeCloudinary();
-
-    // بدء جدولة تنظيف الروابط المؤقتة
     scheduleTemporaryLinkCleanup();
 
-    // بدء الخادم
-    app.listen(PORT, () => {
-      console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
-      console.log(`📡 API متاح على: http://localhost:${PORT}/api`);
-      console.log(`🏥 فحص الصحة: http://localhost:${PORT}/health`);
-      console.log(`📋 معلومات API: http://localhost:${PORT}/api/info`);
-      console.log(`🗄️ قاعدة البيانات: MongoDB Atlas`);
-
-      if (process.env.NODE_ENV === "development") {
-        console.log("🔧 وضع التطوير مفعل");
-      }
-    });
+    app.listen(PORT, () => {});
   } catch (error) {
-    console.error("❌ فشل في بدء الخادم:", error.message);
     process.exit(1);
   }
 };
 
 // معالجة إغلاق الخادم بشكل صحيح
 process.on("SIGTERM", async () => {
-  console.log("🛑 تم استلام إشارة SIGTERM، جاري إغلاق الخادم...");
   try {
     const { disconnectDatabase } = await import("./config/database.js");
     await disconnectDatabase();
-  } catch (error) {
-    console.error("خطأ في قطع الاتصال مع قاعدة البيانات:", error);
-  }
+  } catch (error) {}
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
-  console.log("🛑 تم استلام إشارة SIGINT، جاري إغلاق الخادم...");
   try {
     const { disconnectDatabase } = await import("./config/database.js");
     await disconnectDatabase();
-  } catch (error) {
-    console.error("خطأ في قطع الاتصال مع قاعدة البيانات:", error);
-  }
+  } catch (error) {}
   process.exit(0);
 });
 
 // معالجة الأخطاء غير المعالجة
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
-});
+process.on("unhandledRejection", (reason, promise) => {});
 
 process.on("uncaughtException", (error) => {
-  console.error("❌ Uncaught Exception:", error);
   process.exit(1);
 });
 

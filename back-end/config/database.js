@@ -20,30 +20,14 @@ const mongooseOptions = {
  */
 export const connectDatabase = async () => {
   try {
-    console.log("🔗 جاري الاتصال بقاعدة البيانات MongoDB...");
-
     const connection = await mongoose.connect(MONGODB_URI, mongooseOptions);
 
-    console.log(
-      `✅ تم الاتصال بقاعدة البيانات بنجاح: ${connection.connection.host}`
-    );
-
-    // معالجة أحداث الاتصال
-    mongoose.connection.on("error", (error) => {
-      console.error("❌ خطأ في قاعدة البيانات:", error);
-    });
-
-    mongoose.connection.on("disconnected", () => {
-      console.warn("⚠️ تم قطع الاتصال مع قاعدة البيانات");
-    });
-
-    mongoose.connection.on("reconnected", () => {
-      console.log("🔄 تم إعادة الاتصال بقاعدة البيانات");
-    });
+    mongoose.connection.on("error", (error) => {});
+    mongoose.connection.on("disconnected", () => {});
+    mongoose.connection.on("reconnected", () => {});
 
     return connection;
   } catch (error) {
-    console.error("❌ فشل في الاتصال بقاعدة البيانات:", error);
     throw error;
   }
 };
@@ -54,9 +38,7 @@ export const connectDatabase = async () => {
 export const disconnectDatabase = async () => {
   try {
     await mongoose.disconnect();
-    console.log("✅ تم قطع الاتصال مع قاعدة البيانات بنجاح");
   } catch (error) {
-    console.error("❌ خطأ في قطع الاتصال:", error);
     throw error;
   }
 };

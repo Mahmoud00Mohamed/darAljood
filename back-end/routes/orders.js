@@ -46,8 +46,6 @@ router.get("/images/report", authenticateAdmin, getOrderImagesReport);
 
 // معالج الأخطاء للمسارات
 router.use((error, req, res, next) => {
-  console.error("خطأ في مسار الطلبات:", error);
-
   res.status(500).json({
     success: false,
     message: "حدث خطأ داخلي في نظام الطلبات",

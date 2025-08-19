@@ -25,8 +25,6 @@ router.post("/reset", authenticateAdmin, resetCategories);
 
 // معالج الأخطاء للمسارات
 router.use((error, req, res, next) => {
-  console.error("خطأ في مسار التصنيفات:", error);
-
   res.status(500).json({
     success: false,
     message: "حدث خطأ داخلي في نظام التصنيفات",

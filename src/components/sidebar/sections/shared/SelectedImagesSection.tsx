@@ -10,7 +10,7 @@ import {
   Star,
   User,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useImageLibrary } from "../../../../context/ImageLibraryContext";
 import ImageModal from "../../../ui/ImageModal";
 import Modal from "../../../ui/Modal";
@@ -33,6 +33,7 @@ const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
   showPositionSelector = false,
   availablePositions = [],
 }) => {
+  const location = useLocation();
   const { selectedImages } = useImageLibrary();
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedImageForView, setSelectedImageForView] = useState<string>("");
@@ -91,6 +92,7 @@ const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
 
         <Link
           to="/image-library"
+          state={{ from: location.pathname }}
           className="flex items-center gap-1 text-xs text-[#563660] hover:text-[#4b2e55] transition-colors"
         >
           <Plus className="w-3 h-3" />
@@ -117,6 +119,7 @@ const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
                 </p>
                 <Link
                   to="/image-library"
+                  state={{ from: location.pathname }}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[#563660] text-white text-sm rounded-lg hover:bg-[#4b2e55] transition-colors"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -213,10 +216,11 @@ const SelectedImagesSection: React.FC<SelectedImagesSectionProps> = ({
                 <div className="pt-4 border-t border-gray-200">
                   <Link
                     to="/image-library"
+                    state={{ from: location.pathname }}
                     className="w-full flex items-center justify-center gap-2 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    إدارة المكتبة
+                    ادارة المكتبة
                   </Link>
                 </div>
               </div>

@@ -99,7 +99,7 @@ class OrderModel {
         ],
         estimatedDelivery: this.calculateEstimatedDelivery(),
         notes: [],
-        backupImages: [], // سيتم تحديثها بعد نسخ الصور
+        backupImages: [],
       });
 
       const savedOrder = await newOrder.save();
@@ -109,7 +109,6 @@ class OrderModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error creating order:", error);
       throw new Error("فشل في إنشاء الطلب");
     }
   }
@@ -125,7 +124,6 @@ class OrderModel {
         throw new Error("الطلب غير موجود");
       }
 
-      // إضافة معلومات الصور المنسوخة
       order.backupImages = backupImagesInfo.map((info) => ({
         originalPublicId: info.originalPublicId,
         backupPublicId: info.newPublicId,
@@ -144,7 +142,6 @@ class OrderModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error updating order backup images:", error);
       throw new Error("فشل في تحديث معلومات الصور المنسوخة");
     }
   }
@@ -164,7 +161,6 @@ class OrderModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error getting order by number:", error);
       return null;
     }
   }
@@ -185,7 +181,6 @@ class OrderModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error getting order by tracking code:", error);
       return null;
     }
   }
@@ -201,7 +196,6 @@ class OrderModel {
         _id: undefined,
       }));
     } catch (error) {
-      console.error("Error getting orders:", error);
       throw new Error("فشل في الحصول على الطلبات");
     }
   }
@@ -217,16 +211,13 @@ class OrderModel {
         throw new Error("الطلب غير موجود");
       }
 
-      // التحقق من صحة الحالة الجديدة
       if (!Object.values(ORDER_STATUSES).includes(newStatus)) {
         throw new Error("حالة الطلب غير صحيحة");
       }
 
-      // تحديث الحالة
       order.status = newStatus;
       order.updatedAt = new Date();
 
-      // إضافة إلى تاريخ الحالات
       order.statusHistory.push({
         status: newStatus,
         timestamp: new Date(),
@@ -234,13 +225,11 @@ class OrderModel {
         updatedBy,
       });
 
-      // تحديث التاريخ المتوقع للتسليم إذا تم الشحن
       if (newStatus === ORDER_STATUSES.SHIPPED) {
         order.shippedAt = new Date();
         order.estimatedDelivery = this.calculateDeliveryDate();
       }
 
-      // تحديث تاريخ التسليم إذا تم التسليم
       if (newStatus === ORDER_STATUSES.DELIVERED) {
         order.deliveredAt = new Date();
       }
@@ -252,7 +241,6 @@ class OrderModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error updating order status:", error);
       throw new Error(error.message || "فشل في تحديث حالة الطلب");
     }
   }
@@ -268,7 +256,6 @@ class OrderModel {
         throw new Error("الطلب غير موجود");
       }
 
-      // تحديث معلومات العميل
       if (updateData.customerInfo) {
         order.customerInfo = {
           ...order.customerInfo,
@@ -276,7 +263,6 @@ class OrderModel {
         };
       }
 
-      // تحديث تكوين الجاكيت
       if (updateData.jacketConfig && order.items.length > 0) {
         order.items[0].jacketConfig = {
           ...order.items[0].jacketConfig,
@@ -284,7 +270,6 @@ class OrderModel {
         };
       }
 
-      // تحديث الكمية والسعر
       if (updateData.quantity && order.items.length > 0) {
         order.items[0].quantity = updateData.quantity;
         order.items[0].price = updateData.totalPrice || order.items[0].price;
@@ -294,10 +279,8 @@ class OrderModel {
         order.totalPrice = updateData.totalPrice;
       }
 
-      // تحديث تاريخ التعديل
       order.updatedAt = new Date();
 
-      // إضافة ملاحظة في تاريخ الحالات
       order.statusHistory.push({
         status: order.status,
         timestamp: new Date(),
@@ -312,7 +295,6 @@ class OrderModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error updating order:", error);
       throw new Error(error.message || "فشل في تحديث الطلب");
     }
   }
@@ -345,7 +327,6 @@ class OrderModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error adding order note:", error);
       throw new Error("فشل في إضافة الملاحظة");
     }
   }
@@ -381,12 +362,10 @@ class OrderModel {
     try {
       let searchQuery = {};
 
-      // فلترة حسب الحالة
       if (filters.status) {
         searchQuery.status = filters.status;
       }
 
-      // فلترة حسب التاريخ
       if (filters.dateFrom || filters.dateTo) {
         searchQuery.createdAt = {};
         if (filters.dateFrom) {
@@ -397,7 +376,6 @@ class OrderModel {
         }
       }
 
-      // البحث النصي
       if (query) {
         const searchRegex = new RegExp(query, "i");
         searchQuery.$or = [
@@ -417,11 +395,9 @@ class OrderModel {
         _id: undefined,
       }));
     } catch (error) {
-      console.error("Error searching orders:", error);
       throw new Error("فشل في البحث عن الطلبات");
     }
   }
-
   /**
    * الحصول على إحصائيات الطلبات
    */
@@ -429,7 +405,6 @@ class OrderModel {
     try {
       const totalOrders = await OrderSchema.countDocuments();
 
-      // إحصائيات حسب الحالة
       const statusStats = await OrderSchema.aggregate([
         {
           $group: {
@@ -440,7 +415,6 @@ class OrderModel {
         },
       ]);
 
-      // تحويل النتائج إلى كائن
       const stats = {
         total: totalOrders,
         pending: 0,
@@ -460,7 +434,6 @@ class OrderModel {
         },
       };
 
-      // ملء الإحصائيات
       statusStats.forEach((stat) => {
         switch (stat._id) {
           case ORDER_STATUSES.PENDING:
@@ -490,12 +463,10 @@ class OrderModel {
         }
       });
 
-      // حساب متوسط قيمة الطلب
       const validOrdersCount = totalOrders - stats.pending - stats.cancelled;
       stats.averageOrderValue =
         validOrdersCount > 0 ? stats.totalRevenue / validOrdersCount : 0;
 
-      // حساب طلبات هذا الشهر والشهر الماضي
       const now = new Date();
       const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -522,7 +493,6 @@ class OrderModel {
 
       return stats;
     } catch (error) {
-      console.error("Error getting order stats:", error);
       throw new Error("فشل في الحصول على إحصائيات الطلبات");
     }
   }
@@ -540,7 +510,6 @@ class OrderModel {
 
       return true;
     } catch (error) {
-      console.error("Error deleting order:", error);
       throw new Error("فشل في حذف الطلب");
     }
   }

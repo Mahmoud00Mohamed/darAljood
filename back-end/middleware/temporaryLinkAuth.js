@@ -15,7 +15,6 @@ export const validateTemporaryLinkMiddleware = async (req, res, next) => {
       });
     }
 
-    // الحصول على معلومات إضافية للتتبع
     const userAgent = req.get("User-Agent") || "";
     const ipAddress = req.ip || req.connection.remoteAddress || "";
 
@@ -33,13 +32,10 @@ export const validateTemporaryLinkMiddleware = async (req, res, next) => {
       });
     }
 
-    // إضافة معلومات الرابط إلى الطلب
     req.temporaryLink = validation.link;
     req.orderId = validation.orderId;
     next();
   } catch (error) {
-    console.error("Temporary link validation error:", error);
-
     return res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء التحقق من الرابط",
@@ -52,17 +48,6 @@ export const validateTemporaryLinkMiddleware = async (req, res, next) => {
  * Middleware لتسجيل الوصول للرابط المؤقت
  */
 export const logTemporaryLinkAccess = (req, res, next) => {
-  // تسجيل معلومات الوصول للمراقبة
-  const accessInfo = {
-    token: req.params.token,
-    userAgent: req.get("User-Agent"),
-    ipAddress: req.ip || req.connection.remoteAddress,
-    timestamp: new Date(),
-    method: req.method,
-    path: req.path,
-  };
-
-  console.log("Temporary link access:", accessInfo);
   next();
 };
 

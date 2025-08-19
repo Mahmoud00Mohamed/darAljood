@@ -25,7 +25,6 @@ router.put(
   generalRateLimit,
   async (req, res, next) => {
     try {
-      // الحصول على التكوين القديم قبل التحديث
       const { token } = req.params;
       const orderData = await import(
         "../controllers/temporaryLinkController.js"
@@ -38,12 +37,10 @@ router.put(
         )
         .catch(() => null);
 
-      // تمرير الطلب للمعالج الأصلي
       req.oldJacketConfig = orderData?.order?.items?.[0]?.jacketConfig;
       next();
     } catch (error) {
-      console.error("Error preparing order update:", error);
-      next(); // متابعة العملية حتى لو فشل الحصول على التكوين القديم
+      next();
     }
   },
   updateOrderByTemporaryLink
@@ -58,8 +55,6 @@ router.post("/cleanup", authenticateAdmin, cleanupExpiredLinks);
 
 // معالج الأخطاء للمسارات
 router.use((error, req, res, next) => {
-  console.error("خطأ في مسار الروابط المؤقتة:", error);
-
   res.status(500).json({
     success: false,
     message: "حدث خطأ داخلي في نظام الروابط المؤقتة",

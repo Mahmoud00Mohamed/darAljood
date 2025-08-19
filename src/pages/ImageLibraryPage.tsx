@@ -15,7 +15,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   useImageLibrary,
   PredefinedImage,
@@ -29,6 +29,8 @@ import ConfirmationModal from "../components/ui/ConfirmationModal";
 import Modal from "../components/ui/Modal";
 
 const ImageLibraryPage: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const {
     predefinedImages,
     categories,
@@ -64,6 +66,37 @@ const ImageLibraryPage: React.FC = () => {
   const [imageToDelete, setImageToDelete] =
     useState<CloudinaryImageData | null>(null);
 
+  // تحديد الصفحة المرجعية للعودة إليها
+  const getReturnPath = (): string => {
+    // فحص الـ referrer أو state من التنقل
+    const state = location.state as { from?: string } | null;
+    const referrer = state?.from || document.referrer;
+
+    // إذا كان هناك referrer، فحص إذا كان من الصفحات المسموحة
+    if (referrer) {
+      const url = new URL(referrer, window.location.origin);
+      const pathname = url.pathname;
+
+      // فحص الصفحات المسموحة
+      if (pathname === "/customizer") {
+        return "/customizer";
+      }
+      if (pathname.startsWith("/edit-order/")) {
+        return pathname;
+      }
+      if (pathname.startsWith("/admin/orders/") && pathname.endsWith("/edit")) {
+        return pathname;
+      }
+    }
+
+    // إذا لم نجد صفحة مرجعية صحيحة، العودة للـ customizer كافتراضي
+    return "/customizer";
+  };
+
+  const handleNavigateToDesign = () => {
+    const returnPath = getReturnPath();
+    navigate(returnPath);
+  };
   useEffect(() => {
     const preloadVisibleImages = async () => {
       const visiblePredefined = predefinedImages.slice(0, 12);
@@ -228,13 +261,13 @@ const ImageLibraryPage: React.FC = () => {
                   عرض المحددة
                   <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
-                <Link
-                  to="/customizer"
+                <button
+                  onClick={handleNavigateToDesign}
                   className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors text-xs sm:text-sm"
                 >
                   انتقل للتصميم
                   <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -628,13 +661,13 @@ const ImageLibraryPage: React.FC = () => {
 
               {selectedImages.length > 0 && (
                 <div className="mt-6 space-y-3">
-                  <Link
-                    to="/customizer"
+                  <button
+                    onClick={handleNavigateToDesign}
                     className="w-full flex items-center justify-center gap-2 py-3 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors"
                   >
                     استخدم في التصميم
                     <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  </button>
                   <button
                     onClick={() => {
                       selectedImages.forEach((image) =>
@@ -737,14 +770,16 @@ const ImageLibraryPage: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Link
-                        to="/customizer"
+                      <button
+                        onClick={() => {
+                          handleNavigateToDesign();
+                          setShowSelectedSidebar(false);
+                        }}
                         className="w-full flex items-center justify-center gap-2 py-2 bg-[#563660] text-white font-medium rounded-lg hover:bg-[#4b2e55] transition-colors text-sm"
-                        onClick={() => setShowSelectedSidebar(false)}
                       >
                         استخدم في التصميم
                         <ArrowRight className="w-4 h-4" />
-                      </Link>
+                      </button>
                       <button
                         onClick={() => {
                           selectedImages.forEach((image) =>

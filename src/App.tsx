@@ -69,7 +69,10 @@ function App() {
                   element={<CloudinaryTestPage />}
                 />
                 <Route path="/image-library" element={<ImageLibraryPage />} />
-                <Route path="/admin" element={<AdminPanelPage />} />
+                <Route
+                  path="/x9qPzRwT3mY2kV8nL5jF6hD4cB"
+                  element={<AdminPanelPage />}
+                />
                 <Route path="/track-order" element={<OrderTrackingPage />} />
                 <Route
                   path="/admin/orders/:orderId/edit"

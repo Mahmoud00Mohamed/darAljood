@@ -32,10 +32,8 @@ const validateCloudinaryConfig = () => {
 export const testCloudinaryConnection = async () => {
   try {
     await cloudinary.api.ping();
-    console.log("✅ Cloudinary connection successful");
     return true;
   } catch (error) {
-    console.error("❌ Cloudinary connection failed:", error.message);
     return false;
   }
 };
@@ -52,7 +50,6 @@ export const initializeCloudinary = async () => {
 
     return cloudinary;
   } catch (error) {
-    console.error("Failed to initialize Cloudinary:", error.message);
     throw error;
   }
 };

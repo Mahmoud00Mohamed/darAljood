@@ -437,7 +437,7 @@ const OrderEditContent: React.FC = () => {
   };
 
   const handleExit = () => {
-    navigate("/admin");
+    navigate("/x9qPzRwT3mY2kV8nL5jF6hD4cB");
   };
 
   const toggleMobileDetails = () => {
@@ -468,7 +468,7 @@ const OrderEditContent: React.FC = () => {
           </h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate("/x9qPzRwT3mY2kV8nL5jF6hD4cB")}
             className="px-6 py-2 bg-[#563660] text-white rounded-lg hover:bg-[#4b2e55] transition-colors"
           >
             العودة للوحة التحكم
@@ -1002,6 +1002,8 @@ const OrderEditContent: React.FC = () => {
             isMobile
             setIsSidebarOpen={setIsSidebarOpen}
             onAddToCart={() => {}} // تعطيل زر إضافة للسلة
+            onSaveChanges={saveConfirmModal.openModal}
+            isSaving={isSaving}
           />
         </div>
       </div>

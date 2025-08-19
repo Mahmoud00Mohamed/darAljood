@@ -76,25 +76,37 @@ export const generateOrderPDFWithImages = async (
   // النصوص داخل الشريط الأسود
   pdf.setTextColor(255, 255, 255);
 
-  // متجر دار الجود على اليمين
-  pdf.setFontSize(16); // أكبر ليكون بارز
-  pdf.text("متجر دار الجود", pageWidth - margin, topStripHeight / 2, {
-    align: "right",
-    baseline: "middle",
-  });
-
-  // رقم الواتساب على اليسار
-  pdf.setFontSize(14); // كبير وواضح
-  pdf.text("0536065766 واتساب", margin, topStripHeight / 2, {
+  // النص على الشمال: متجر دار الجود | واتساب 0536065766
+  pdf.setFontSize(14);
+  pdf.text("متجر دار الجود | واتساب 0536065766", 10, topStripHeight / 2, {
     align: "left",
     baseline: "middle",
   });
+
+  // النص على اليمين: اسم العميل ورقم الهاتف
+  if (options.customerInfo.name && options.customerInfo.phone) {
+    const customerText = `${options.customerInfo.name} | ${options.customerInfo.phone}`;
+    pdf.text(customerText, pageWidth - 10, topStripHeight / 2, {
+      align: "right",
+      baseline: "middle",
+    });
+  } else if (options.customerInfo.name) {
+    pdf.text(options.customerInfo.name, pageWidth - 10, topStripHeight / 2, {
+      align: "right",
+      baseline: "middle",
+    });
+  } else if (options.customerInfo.phone) {
+    pdf.text(options.customerInfo.phone, pageWidth - 10, topStripHeight / 2, {
+      align: "right",
+      baseline: "middle",
+    });
+  }
 
   const sizeBgWidthTop = 150 * pxToMm;
   const sizeBgWidthBottom = 80 * pxToMm;
   const sizeBgHeight = 60 * pxToMm;
   pdf.setFillColor(0, 0, 0);
-  // (101, 61, 112)
+
   pdf.triangle(
     (pageWidth - sizeBgWidthTop) / 2,
     topStripHeight,
@@ -169,6 +181,7 @@ export const generateOrderPDFWithImages = async (
     },
   ];
 
+  // باقي الكود يبقى كما هو...
   if (jacketImages && jacketImages.length > 0) {
     for (let i = 0; i < Math.min(jacketImages.length, 4); i++) {
       if (
@@ -459,15 +472,14 @@ export const generateOrderPDFWithImages = async (
   const head2Y = arrowTipY - Math.sin(headAngle2) * headSize;
 
   pdf.triangle(arrowTipX, arrowTipY, head1X, head1Y, head2X, head2Y, "F");
+
   // Footer
-  const footerHeight = 40 * pxToMm; // 40px
+  const footerHeight = 40 * pxToMm;
   pdf.setFillColor(0, 0, 0);
   pdf.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
 
-  // نص الفوتر باللون الأبيض
   pdf.setTextColor(255, 255, 255);
 
-  // النص في المنتصف فقط
   const footerTextCenter = "شكرًا لاختيارك دار الجود… وفخورين بتخرجك";
   const footerTextY = pageHeight - footerHeight / 2;
 

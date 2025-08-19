@@ -1141,6 +1141,8 @@ const TemporaryOrderEditContent: React.FC = () => {
             setIsSidebarOpen={setIsSidebarOpen}
             onAddToCart={() => {}} // تعطيل زر إضافة للسلة
             isCapturingImages={false}
+            onSaveChanges={saveConfirmModal.openModal}
+            isSaving={isSaving}
           />
         </div>
       </div>

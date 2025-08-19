@@ -1,8 +1,5 @@
 // معالج الأخطاء العام
 export const errorHandler = (err, req, res, next) => {
-  console.error("خطأ في الخادم:", err);
-
-  // خطأ CORS
   if (err.message && err.message.includes("CORS")) {
     return res.status(403).json({
       success: false,
@@ -11,7 +8,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // خطأ في تحليل JSON
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
     return res.status(400).json({
       success: false,
@@ -20,7 +16,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // خطأ في الشبكة أو الاتصال
   if (err.code === "ECONNREFUSED" || err.code === "ENOTFOUND") {
     return res.status(503).json({
       success: false,
@@ -29,7 +24,6 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // خطأ عام
   res.status(500).json({
     success: false,
     message: "حدث خطأ داخلي في الخادم",

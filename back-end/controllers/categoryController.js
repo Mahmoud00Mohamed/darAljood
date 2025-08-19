@@ -11,8 +11,6 @@ export const getCategories = async (req, res) => {
       data: categories,
     });
   } catch (error) {
-    console.error("Error getting categories:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على التصنيفات",
@@ -24,7 +22,6 @@ export const getCategories = async (req, res) => {
 // إنشاء تصنيف جديد (يتطلب مصادقة المدير)
 export const createCategory = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -43,7 +40,6 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    // التحقق من طول الاسم
     if (name.trim().length < 2 || name.trim().length > 50) {
       return res.status(400).json({
         success: false,
@@ -68,8 +64,6 @@ export const createCategory = async (req, res) => {
       data: newCategory,
     });
   } catch (error) {
-    console.error("Error creating category:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء إنشاء التصنيف",
@@ -81,7 +75,6 @@ export const createCategory = async (req, res) => {
 // تحديث تصنيف (يتطلب مصادقة المدير)
 export const updateCategory = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -101,8 +94,10 @@ export const updateCategory = async (req, res) => {
       });
     }
 
-    // التحقق من صحة البيانات المحدثة
-    if (updates.name && (updates.name.trim().length < 2 || updates.name.trim().length > 50)) {
+    if (
+      updates.name &&
+      (updates.name.trim().length < 2 || updates.name.trim().length > 50)
+    ) {
       return res.status(400).json({
         success: false,
         message: "اسم التصنيف يجب أن يكون بين 2 و 50 حرف",
@@ -122,8 +117,6 @@ export const updateCategory = async (req, res) => {
       data: updatedCategory,
     });
   } catch (error) {
-    console.error("Error updating category:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء تحديث التصنيف",
@@ -131,11 +124,9 @@ export const updateCategory = async (req, res) => {
     });
   }
 };
-
 // حذف تصنيف (يتطلب مصادقة المدير)
 export const deleteCategory = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -162,8 +153,6 @@ export const deleteCategory = async (req, res) => {
       data: { categoryId },
     });
   } catch (error) {
-    console.error("Error deleting category:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء حذف التصنيف",
@@ -175,7 +164,6 @@ export const deleteCategory = async (req, res) => {
 // إعادة ترتيب التصنيفات (يتطلب مصادقة المدير)
 export const reorderCategories = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -205,8 +193,6 @@ export const reorderCategories = async (req, res) => {
       data: reorderedCategories,
     });
   } catch (error) {
-    console.error("Error reordering categories:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء إعادة ترتيب التصنيفات",
@@ -214,7 +200,6 @@ export const reorderCategories = async (req, res) => {
     });
   }
 };
-
 // الحصول على تصنيف واحد (عام - بدون مصادقة)
 export const getCategoryById = async (req, res) => {
   try {
@@ -244,8 +229,6 @@ export const getCategoryById = async (req, res) => {
       data: category,
     });
   } catch (error) {
-    console.error("Error getting category:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على التصنيف",
@@ -257,7 +240,6 @@ export const getCategoryById = async (req, res) => {
 // إعادة تعيين التصنيفات إلى القيم الافتراضية (يتطلب مصادقة المدير)
 export const resetCategories = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -276,8 +258,6 @@ export const resetCategories = async (req, res) => {
       data: resetCategories,
     });
   } catch (error) {
-    console.error("Error resetting categories:", error);
-
     res.status(500).json({
       success: false,
       message: error.message || "حدث خطأ أثناء إعادة تعيين التصنيفات",

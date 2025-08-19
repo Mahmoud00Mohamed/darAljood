@@ -10,7 +10,16 @@ import RightLogoSection from "./sections/RightLogoSection";
 import LeftLogoSection from "./sections/LeftLogoSection";
 import FrontTextSection from "./sections/FrontTextSection";
 import BackTextSection from "./sections/BackTextSection";
-import { Palette, Settings, ImagePlus, ShoppingCart } from "lucide-react";
+import {
+  Palette,
+  ImagePlus,
+  Save,
+  Loader2,
+  RotateCcw,
+  ShoppingBag,
+  ShoppingBasket,
+  Package,
+} from "lucide-react";
 import { useJacket, JacketView } from "../../context/JacketContext";
 import { useCart } from "../../context/CartContext";
 import { Link } from "react-router-dom";
@@ -21,6 +30,8 @@ interface CustomizationSidebarProps {
   setIsSidebarOpen?: (isOpen: boolean) => void;
   onAddToCart?: () => void;
   isCapturingImages?: boolean;
+  onSaveChanges?: () => void;
+  isSaving?: boolean;
 }
 
 interface SidebarState {
@@ -46,6 +57,8 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
   setIsSidebarOpen,
   onAddToCart,
   isCapturingImages = false,
+  onSaveChanges,
+  isSaving = false,
 }) => {
   const location = useLocation();
   const { setCurrentView } = useJacket();
@@ -325,7 +338,11 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-white shadow-md border-t border-gray-200 z-50 mobile-sidebar">
         {/* Bottom Navigation Bar */}
-        <div className="flex justify-around items-center h-16 px-2 bg-white sticky bottom-0 z-60 border-t border-gray-200">
+        <div
+          className={`flex ${
+            isOrderEditPage ? "justify-evenly" : "justify-around"
+          } items-center h-16 px-2 bg-white sticky bottom-0 z-60 border-t border-gray-200`}
+        >
           <button
             onClick={() => handleSectionClick("colors")}
             className={`flex flex-col items-center p-2 ${
@@ -343,7 +360,7 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
                 : "text-gray-600"
             }`}
           >
-            <Settings size={18} />
+            <Package size={18} />
             <span className="text-xs mt-1">خيارات المنتج</span>
           </button>
           <button
@@ -364,8 +381,27 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
             <ImagePlus size={18} />
             <span className="text-xs mt-1">الإضافات</span>
           </button>
-          {/* إخفاء أزرار السلة في صفحة تعديل الطلب */}
-          {!isOrderEditPage && (
+          {/* إخفاء أزرار السلة في صفحة تعديل الطلب وإضافة زر الحفظ */}
+          {isOrderEditPage ? (
+            <button
+              onClick={onSaveChanges}
+              disabled={isSaving}
+              className={`flex flex-col items-center p-2 transition-colors ${
+                isSaving
+                  ? "text-gray-400 opacity-50"
+                  : "text-green-600 hover:text-green-700"
+              }`}
+            >
+              {isSaving ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Save size={18} />
+              )}
+              <span className="text-xs mt-1">
+                {isSaving ? "جاري الحفظ..." : "حفظ"}
+              </span>
+            </button>
+          ) : (
             <>
               <button
                 onClick={handleAddToCartClick}
@@ -378,7 +414,13 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
                     : "text-[#563660]"
                 }`}
               >
-                <ShoppingCart size={18} />
+                {isCapturingImages ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : items.length > 0 ? (
+                  <RotateCcw size={18} />
+                ) : (
+                  <ShoppingBag size={18} />
+                )}
                 <span className="text-xs mt-1">
                   {isCapturingImages
                     ? "جاري الحفظ..."
@@ -391,7 +433,7 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
                 to="/cart"
                 className="flex flex-col items-center p-2 text-[#563660] hover:text-[#4b2e55] transition-colors"
               >
-                <ShoppingCart size={18} />
+                <ShoppingBasket size={18} />
                 <span className="text-xs mt-1">الذهاب للسلة</span>
               </Link>
             </>
@@ -505,7 +547,7 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
               : "h-full"
           }`}
         >
-          <div className="w-[60px] bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-4 border-r border-gray-100">
+          <div className="w-[60px] bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-6 border-r border-gray-100">
             <button
               onClick={() => handleSectionClick("colors")}
               className={`p-3 rounded-xl mb-3 ${
@@ -526,7 +568,7 @@ const CustomizationSidebar: React.FC<CustomizationSidebarProps> = ({
               } hover:bg-gray-300 transition-all`}
               title="خيارات المنتج"
             >
-              <Settings size={18} />
+              <Package size={18} />
             </button>
             <button
               onClick={() => {

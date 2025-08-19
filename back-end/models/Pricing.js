@@ -25,16 +25,15 @@ class PricingModel {
    */
   async initializeDefaultPricing() {
     try {
-      const existingPricing = await PricingSchema.findOne({ id: "pricing_config" });
-      
+      const existingPricing = await PricingSchema.findOne({
+        id: "pricing_config",
+      });
+
       if (!existingPricing) {
-        console.log("🔧 إنشاء بيانات التسعير الافتراضية...");
         const newPricing = new PricingSchema(DEFAULT_PRICING);
         await newPricing.save();
-        console.log("✅ تم إنشاء بيانات التسعير الافتراضية بنجاح");
       }
     } catch (error) {
-      console.error("❌ خطأ في تهيئة بيانات التسعير:", error);
       throw new Error("فشل في تهيئة بيانات التسعير");
     }
   }
@@ -44,12 +43,15 @@ class PricingModel {
    */
   async getPricing() {
     try {
-      const pricing = await PricingSchema.findOne({ id: "pricing_config" }).lean();
-      
+      const pricing = await PricingSchema.findOne({
+        id: "pricing_config",
+      }).lean();
+
       if (!pricing) {
-        // إنشاء البيانات الافتراضية إذا لم توجد
         await this.initializeDefaultPricing();
-        const newPricing = await PricingSchema.findOne({ id: "pricing_config" }).lean();
+        const newPricing = await PricingSchema.findOne({
+          id: "pricing_config",
+        }).lean();
         return {
           ...newPricing,
           _id: undefined,
@@ -61,7 +63,6 @@ class PricingModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error reading pricing data:", error);
       return DEFAULT_PRICING;
     }
   }
@@ -73,15 +74,15 @@ class PricingModel {
     try {
       const updatedPricing = await PricingSchema.findOneAndUpdate(
         { id: "pricing_config" },
-        { 
+        {
           ...updates,
           updatedBy,
           lastUpdated: new Date(),
         },
-        { 
-          new: true, 
-          upsert: true, // إنشاء إذا لم يوجد
-          lean: true 
+        {
+          new: true,
+          upsert: true,
+          lean: true,
         }
       );
 
@@ -90,7 +91,6 @@ class PricingModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error updating pricing:", error);
       throw new Error("فشل في تحديث بيانات التسعير");
     }
   }
@@ -109,16 +109,13 @@ class PricingModel {
       const pricing = await this.getPricing();
       let totalPrice = pricing.basePrice;
 
-      // حساب العناصر الأمامية الإضافية
       const totalFrontItems = frontLogos + frontTexts;
       if (totalFrontItems > pricing.includedItems.frontItems) {
         const extraFrontItems =
           totalFrontItems - pricing.includedItems.frontItems;
-        totalPrice +=
-          extraFrontItems * pricing.additionalCosts.frontExtraItem;
+        totalPrice += extraFrontItems * pricing.additionalCosts.frontExtraItem;
       }
 
-      // حساب الشعارات الإضافية في الجهة اليمنى
       if (rightSideLogos > pricing.includedItems.rightSideLogos) {
         const extraRightLogos =
           rightSideLogos - pricing.includedItems.rightSideLogos;
@@ -126,7 +123,6 @@ class PricingModel {
           extraRightLogos * pricing.additionalCosts.rightSideThirdLogo;
       }
 
-      // حساب الشعارات الإضافية في الجهة اليسرى
       if (leftSideLogos > pricing.includedItems.leftSideLogos) {
         const extraLeftLogos =
           leftSideLogos - pricing.includedItems.leftSideLogos;
@@ -134,12 +130,10 @@ class PricingModel {
           extraLeftLogos * pricing.additionalCosts.leftSideThirdLogo;
       }
 
-      // تطبيق خصومات الكمية
       const finalPrice = totalPrice * quantity;
 
       return Math.round(finalPrice);
     } catch (error) {
-      console.error("Error calculating price:", error);
       throw new Error("فشل في حساب السعر");
     }
   }
@@ -166,7 +160,6 @@ class PricingModel {
 
       let totalPrice = pricing.basePrice;
 
-      // حساب التكاليف الإضافية
       const totalFrontItems = frontLogos + frontTexts;
       if (totalFrontItems > pricing.includedItems.frontItems) {
         const extraFrontItems =
@@ -213,7 +206,6 @@ class PricingModel {
 
       return breakdown;
     } catch (error) {
-      console.error("Error calculating pricing breakdown:", error);
       throw new Error("فشل في حساب تفاصيل التسعير");
     }
   }
@@ -232,10 +224,10 @@ class PricingModel {
       const updatedPricing = await PricingSchema.findOneAndUpdate(
         { id: "pricing_config" },
         resetData,
-        { 
-          new: true, 
+        {
+          new: true,
           upsert: true,
-          lean: true 
+          lean: true,
         }
       );
 
@@ -244,7 +236,6 @@ class PricingModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error resetting pricing:", error);
       throw new Error("فشل في إعادة تعيين الأسعار");
     }
   }

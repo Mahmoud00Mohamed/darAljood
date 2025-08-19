@@ -11,32 +11,28 @@ export const uploadSingleImage = async (req, res) => {
       });
     }
 
-    // تحويل buffer إلى base64
     const fileStr = `data:${
       req.file.mimetype
     };base64,${req.file.buffer.toString("base64")}`;
 
-    // خيارات الرفع إلى Cloudinary
     const uploadOptions = {
-      folder: "dar-aljoud/logos", // مجلد منظم في Cloudinary
+      folder: "dar-aljoud/logos",
       resource_type: "image",
-      quality: "auto:good", // ضغط تلقائي مع الحفاظ على الجودة
-      fetch_format: "auto", // تحسين تلقائي لصيغة الصورة
-      flags: "progressive", // تحميل تدريجي
+      quality: "auto:good",
+      fetch_format: "auto",
+      flags: "progressive",
       transformation: [
         {
           width: 1000,
           height: 1000,
-          crop: "limit", // تقليل الحجم فقط إذا كان أكبر من الحد المحدد
+          crop: "limit",
           quality: "auto:good",
         },
       ],
     };
 
-    // رفع الصورة إلى Cloudinary
     const result = await cloudinary.uploader.upload(fileStr, uploadOptions);
 
-    // إرجاع معلومات الصورة
     res.status(200).json({
       success: true,
       message: "تم رفع الصورة بنجاح",
@@ -51,9 +47,6 @@ export const uploadSingleImage = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("خطأ في رفع الصورة:", error);
-
-    // معالجة أخطاء Cloudinary المحددة
     if (error.http_code) {
       return res.status(error.http_code).json({
         success: false,
@@ -123,8 +116,6 @@ export const uploadMultipleImages = async (req, res) => {
       data: uploadResults,
     });
   } catch (error) {
-    console.error("خطأ في رفع الصور:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء رفع الصور",
@@ -146,7 +137,6 @@ export const deleteImage = async (req, res) => {
       });
     }
 
-    // حذف الصورة من Cloudinary
     const result = await cloudinary.uploader.destroy(publicId);
 
     if (result.result === "ok") {
@@ -163,8 +153,6 @@ export const deleteImage = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("خطأ في حذف الصورة:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء حذف الصورة",
@@ -172,7 +160,6 @@ export const deleteImage = async (req, res) => {
     });
   }
 };
-
 // الحصول على معلومات صورة
 export const getImageInfo = async (req, res) => {
   try {
@@ -186,7 +173,6 @@ export const getImageInfo = async (req, res) => {
       });
     }
 
-    // الحصول على معلومات الصورة من Cloudinary
     const result = await cloudinary.api.resource(publicId);
 
     res.status(200).json({
@@ -203,8 +189,6 @@ export const getImageInfo = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("خطأ في الحصول على معلومات الصورة:", error);
-
     if (error.http_code === 404) {
       return res.status(404).json({
         success: false,

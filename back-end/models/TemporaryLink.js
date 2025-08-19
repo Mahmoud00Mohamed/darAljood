@@ -14,7 +14,6 @@ class TemporaryLinkModel {
    */
   async createTemporaryLink(orderId, createdBy = "admin", durationHours = 1) {
     try {
-      // إلغاء أي روابط مؤقتة سابقة لنفس الطلب
       await this.invalidateOrderLinks(orderId);
 
       const token = this.generateSecureToken();
@@ -37,7 +36,6 @@ class TemporaryLinkModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error creating temporary link:", error);
       throw new Error("فشل في إنشاء الرابط المؤقت");
     }
   }
@@ -61,7 +59,6 @@ class TemporaryLinkModel {
         };
       }
 
-      // تحديث إحصائيات الوصول
       await TemporaryLinkSchema.findOneAndUpdate(
         { _id: link._id },
         {
@@ -83,7 +80,6 @@ class TemporaryLinkModel {
         },
       };
     } catch (error) {
-      console.error("Error validating temporary link:", error);
       return {
         isValid: false,
         reason: "VALIDATION_ERROR",
@@ -115,7 +111,6 @@ class TemporaryLinkModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error marking link as used:", error);
       throw new Error("فشل في تحديث حالة الرابط");
     }
   }
@@ -143,7 +138,6 @@ class TemporaryLinkModel {
         _id: undefined,
       };
     } catch (error) {
-      console.error("Error incrementing access count:", error);
       throw new Error("فشل في تحديث عدد مرات الوصول");
     }
   }
@@ -158,16 +152,8 @@ class TemporaryLinkModel {
         { isUsed: true, usedAt: new Date() }
       );
 
-      console.log(
-        `🔗 تم إلغاء ${result.modifiedCount} رابط مؤقت للطلب ${orderId}`
-      );
-      return result.modifiedCount;
-      console.log(
-        `🔗 تم إلغاء ${result.modifiedCount} رابط مؤقت للطلب ${orderId}`
-      );
       return result.modifiedCount;
     } catch (error) {
-      console.error("Error invalidating order links:", error);
       throw new Error("فشل في إلغاء الروابط المؤقتة");
     }
   }
@@ -178,12 +164,8 @@ class TemporaryLinkModel {
   async deleteOrderLinks(orderId) {
     try {
       const result = await TemporaryLinkSchema.deleteMany({ orderId });
-      console.log(
-        `🗑️ تم حذف ${result.deletedCount} رابط مؤقت للطلب ${orderId} نهائياً`
-      );
       return result.deletedCount;
     } catch (error) {
-      console.error("Error deleting order links:", error);
       throw new Error("فشل في حذف الروابط المؤقتة");
     }
   }
@@ -193,12 +175,8 @@ class TemporaryLinkModel {
   async deleteOrderLinks(orderId) {
     try {
       const result = await TemporaryLinkSchema.deleteMany({ orderId });
-      console.log(
-        `🗑️ تم حذف ${result.deletedCount} رابط مؤقت للطلب ${orderId} نهائياً`
-      );
       return result.deletedCount;
     } catch (error) {
-      console.error("Error deleting order links:", error);
       throw new Error("فشل في حذف الروابط المؤقتة");
     }
   }
@@ -216,7 +194,6 @@ class TemporaryLinkModel {
         _id: undefined,
       }));
     } catch (error) {
-      console.error("Error getting order links:", error);
       throw new Error("فشل في الحصول على الروابط المؤقتة");
     }
   }
@@ -230,10 +207,8 @@ class TemporaryLinkModel {
         expiresAt: { $lt: new Date() },
       });
 
-      console.log(`تم حذف ${result.deletedCount} رابط منتهي الصلاحية`);
       return result.deletedCount;
     } catch (error) {
-      console.error("Error cleaning up expired links:", error);
       return 0;
     }
   }
@@ -263,7 +238,6 @@ class TemporaryLinkModel {
         expired: expiredLinks,
       };
     } catch (error) {
-      console.error("Error getting link stats:", error);
       throw new Error("فشل في الحصول على إحصائيات الروابط");
     }
   }

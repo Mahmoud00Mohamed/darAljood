@@ -19,8 +19,6 @@ router.post("/logout", authenticateAdmin, adminLogout);
 
 // معالج الأخطاء للمسارات
 router.use((error, req, res, next) => {
-  console.error("خطأ في مسار المصادقة:", error);
-
   res.status(500).json({
     success: false,
     message: "حدث خطأ داخلي في نظام المصادقة",

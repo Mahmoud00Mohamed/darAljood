@@ -5,25 +5,15 @@ import cloudinary from "../config/cloudinary.js";
  */
 export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
   try {
-    console.log(
-      `📋 بدء نسخ الصورة ${originalPublicId} إلى مجلد الطلب ${orderNumber}`
-    );
-
-    // إنشاء public_id جديد للصورة في مجلد الطلبات باستخدام رقم الطلب
-    // استخراج اسم الملف من originalPublicId بشكل صحيح
     const fileName = originalPublicId.includes("/")
       ? originalPublicId.split("/").pop()
       : originalPublicId;
 
     const newPublicId = `dar-aljoud/orders/${orderNumber}/${fileName}`;
 
-    console.log(`🎯 المسار الجديد للصورة: ${newPublicId}`);
-
-    // التحقق من وجود الصورة مسبقاً في مجلد الطلب
     try {
       const existingImage = await cloudinary.api.resource(newPublicId);
       if (existingImage) {
-        console.log(`ℹ️ الصورة موجودة مسبقاً في مجلد الطلب: ${newPublicId}`);
         return {
           success: true,
           originalPublicId,
@@ -36,36 +26,24 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
       }
     } catch (checkError) {
       // الصورة غير موجودة، نتابع عملية النسخ
-      console.log(
-        `📋 الصورة غير موجودة في مجلد الطلب، سيتم نسخها: ${newPublicId}`
-      );
     }
 
-    // الحصول على URL الأصلي للصورة
     const originalImageUrl = cloudinary.url(originalPublicId, {
       secure: true,
       fetch_format: "auto",
       quality: "auto:good",
     });
 
-    console.log(`🔗 رابط الصورة الأصلي: ${originalImageUrl}`);
-
-    // نسخ الصورة باستخدام Cloudinary upload مع تحديد المجلد بوضوح
     const result = await cloudinary.uploader.upload(originalImageUrl, {
       public_id: newPublicId,
-      folder: `dar-aljoud/orders/${orderNumber}`, // تحديد المجلد بوضوح
+      folder: `dar-aljoud/orders/${orderNumber}`,
       resource_type: "image",
-      overwrite: false, // لا تستبدل إذا كانت موجودة
-      invalidate: true, // تحديث الكاش
-      tags: [`order_${orderNumber}`, "order_backup"], // إضافة tags للتنظيم
-      use_filename: false, // استخدام public_id المحدد
-      unique_filename: false, // عدم إضافة أرقام عشوائية لاسم الملف
+      overwrite: false,
+      invalidate: true,
+      tags: [`order_${orderNumber}`, "order_backup"],
+      use_filename: false,
+      unique_filename: false,
     });
-
-    console.log(
-      `✅ تم نسخ الصورة بنجاح: ${originalPublicId} -> ${result.public_id}`
-    );
-    console.log(`📁 المجلد المنشأ: dar-aljoud/orders/${orderNumber}`);
 
     return {
       success: true,
@@ -76,7 +54,6 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
       format: result.format,
     };
   } catch (error) {
-    console.error(`❌ خطأ في نسخ الصورة ${originalPublicId}:`, error);
     return {
       success: false,
       originalPublicId,
@@ -91,23 +68,13 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
 export const copyImagesToOrderFolder = async (imagePublicIds, orderNumber) => {
   const results = [];
 
-  console.log(
-    `🔄 بدء نسخ ${imagePublicIds.length} صورة إلى مجلد الطلب ${orderNumber}`
-  );
-
   for (const publicId of imagePublicIds) {
     if (publicId && publicId.trim()) {
       const result = await copyImageToOrderFolder(publicId, orderNumber);
       results.push(result);
-
-      // تقليل التأخير لتسريع العملية
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
-
-  const successCount = results.filter((r) => r.success).length;
-  const failCount = results.filter((r) => !r.success).length;
-  console.log(`📊 نتائج النسخ: ${successCount} نجح، ${failCount} فشل`);
 
   return results;
 };
@@ -120,13 +87,11 @@ export const extractPublicIdsFromUrls = (imageUrls) => {
     .filter((url) => url && typeof url === "string")
     .map((url) => {
       try {
-        // استخراج public_id من Cloudinary URL
         const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
         if (match) {
           return match[1];
         }
 
-        // إذا كان URL يحتوي على transformations
         const transformMatch = url.match(/\/upload\/[^/]+\/(.+)\.[^.]+$/);
         if (transformMatch) {
           return transformMatch[1];
@@ -134,7 +99,6 @@ export const extractPublicIdsFromUrls = (imageUrls) => {
 
         return null;
       } catch (error) {
-        console.error("Error extracting public ID from URL:", url, error);
         return null;
       }
     })
@@ -148,7 +112,6 @@ export const extractImagePublicIdsFromJacketConfig = (jacketConfig) => {
   const publicIds = [];
 
   try {
-    // استخراج من الشعارات
     if (jacketConfig.logos && Array.isArray(jacketConfig.logos)) {
       jacketConfig.logos.forEach((logo) => {
         if (logo.image) {
@@ -160,7 +123,6 @@ export const extractImagePublicIdsFromJacketConfig = (jacketConfig) => {
       });
     }
 
-    // استخراج من الصور المرفوعة
     if (
       jacketConfig.uploadedImages &&
       Array.isArray(jacketConfig.uploadedImages)
@@ -173,22 +135,19 @@ export const extractImagePublicIdsFromJacketConfig = (jacketConfig) => {
           }
         }
 
-        // إذا كان publicId موجود مباشرة
         if (uploadedImage.publicId) {
           publicIds.push(uploadedImage.publicId);
         }
       });
     }
 
-    // إزالة المكررات وتنظيف القيم الفارغة
     const cleanedIds = publicIds
-      .filter(Boolean) // إزالة القيم الفارغة
-      .filter((id) => typeof id === "string" && id.trim().length > 0) // التأكد من أن القيم نصوص صحيحة
-      .map((id) => id.trim()); // إزالة المسافات الزائدة
+      .filter(Boolean)
+      .filter((id) => typeof id === "string" && id.trim().length > 0)
+      .map((id) => id.trim());
 
     return [...new Set(cleanedIds)];
   } catch (error) {
-    console.error("Error extracting public IDs from jacket config:", error);
     return [];
   }
 };
@@ -198,21 +157,13 @@ export const extractImagePublicIdsFromJacketConfig = (jacketConfig) => {
  */
 export const deleteOrderImages = async (orderNumber) => {
   try {
-    console.log(`🔍 البحث عن صور الطلب رقم ${orderNumber} في Cloudinary...`);
-
-    // البحث عن جميع الصور في مجلد الطلب
     const searchResult = await cloudinary.search
       .expression(`folder:dar-aljoud/orders/${orderNumber}`)
       .sort_by("public_id", "desc")
       .max_results(100)
       .execute();
 
-    console.log(
-      `📊 تم العثور على ${searchResult.resources.length} صورة في مجلد الطلب`
-    );
-
     if (searchResult.resources.length === 0) {
-      console.log(`ℹ️ لا توجد صور للحذف في مجلد الطلب رقم ${orderNumber}`);
       return {
         success: true,
         deletedCount: 0,
@@ -224,11 +175,8 @@ export const deleteOrderImages = async (orderNumber) => {
 
     const deleteResults = [];
 
-    // حذف كل صورة مع تسجيل مفصل
-    console.log(`🗑️ بدء حذف ${searchResult.resources.length} صورة...`);
     for (const resource of searchResult.resources) {
       try {
-        console.log(`   🗑️ حذف الصورة: ${resource.public_id}`);
         const deleteResult = await cloudinary.uploader.destroy(
           resource.public_id
         );
@@ -239,19 +187,7 @@ export const deleteOrderImages = async (orderNumber) => {
           size: resource.bytes,
           format: resource.format,
         });
-
-        if (deleteResult.result === "ok") {
-          console.log(`     ✅ نجح حذف: ${resource.public_id}`);
-        } else {
-          console.warn(
-            `     ⚠️ فشل حذف: ${resource.public_id} - النتيجة: ${deleteResult.result}`
-          );
-        }
       } catch (error) {
-        console.error(
-          `     ❌ خطأ في حذف الصورة ${resource.public_id}:`,
-          error
-        );
         deleteResults.push({
           publicId: resource.public_id,
           success: false,
@@ -261,35 +197,23 @@ export const deleteOrderImages = async (orderNumber) => {
         });
       }
 
-      // تأخير قصير بين العمليات لتجنب إرهاق Cloudinary
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     const successfulDeletes = deleteResults.filter((r) => r.success);
     const failedDeletes = deleteResults.filter((r) => !r.success);
 
-    console.log(
-      `📊 نتائج الحذف: ${successfulDeletes.length} نجح، ${failedDeletes.length} فشل`
-    );
-
-    // محاولة حذف المجلد إذا كان فارغاً
-    console.log(`📁 محاولة حذف مجلد الطلب: dar-aljoud/orders/${orderNumber}`);
     try {
       await cloudinary.api.delete_folder(`dar-aljoud/orders/${orderNumber}`);
-      console.log(`✅ تم حذف مجلد الطلب بنجاح`);
     } catch (error) {
-      // تجاهل خطأ حذف المجلد - قد يكون غير فارغ أو غير موجود أو محمي
-      console.warn(`⚠️ لم يتم حذف مجلد الطلب ${orderNumber}: ${error.message}`);
+      // تجاهل خطأ حذف المجلد
     }
 
-    // تجميع الإحصائيات
     const totalDeletedSize = successfulDeletes.reduce(
       (sum, result) => sum + (result.size || 0),
       0
     );
     const totalDeletedSizeMB = (totalDeletedSize / (1024 * 1024)).toFixed(2);
-
-    console.log(`💾 تم توفير ${totalDeletedSizeMB} ميجابايت من مساحة التخزين`);
 
     return {
       success: true,
@@ -301,15 +225,11 @@ export const deleteOrderImages = async (orderNumber) => {
         totalSizeDeletedMB: parseFloat(totalDeletedSizeMB),
         successfulDeletes: successfulDeletes.length,
         failedDeletes: failedDeletes.length,
-        folderDeleted: true, // نفترض النجاح إذا لم يكن هناك خطأ كبير
+        folderDeleted: true,
       },
       message: `تم حذف ${successfulDeletes.length} من أصل ${deleteResults.length} صورة بنجاح`,
     };
   } catch (error) {
-    console.error(
-      `Error deleting order images for order ${orderNumber}:`,
-      error
-    );
     return {
       success: false,
       error: error.message,
@@ -347,10 +267,6 @@ export const getOrderImagesInfo = async (orderNumber) => {
       totalCount: searchResult.total_count,
     };
   } catch (error) {
-    console.error(
-      `Error getting order images info for order ${orderNumber}:`,
-      error
-    );
     return {
       success: false,
       error: error.message,

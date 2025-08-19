@@ -230,12 +230,9 @@ export const initializeDefaultImages = async () => {
     const existingCount = await PredefinedImageSchema.countDocuments();
 
     if (existingCount === 0) {
-      console.log("🔧 إنشاء الشعارات الجاهزة الافتراضية...");
       await PredefinedImageSchema.insertMany(DEFAULT_PREDEFINED_IMAGES);
-      console.log("✅ تم إنشاء الشعارات الجاهزة الافتراضية بنجاح");
     }
   } catch (error) {
-    console.error("❌ خطأ في تهيئة الشعارات الجاهزة:", error);
     throw new Error("فشل في تهيئة الشعارات الجاهزة");
   }
 };
@@ -258,8 +255,6 @@ export const getPredefinedImages = async (req, res) => {
       data: cleanImages,
     });
   } catch (error) {
-    console.error("Error getting predefined images:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على الشعارات الجاهزة",
@@ -271,7 +266,6 @@ export const getPredefinedImages = async (req, res) => {
 // إضافة شعار جاهز جديد (يتطلب مصادقة المدير)
 export const addPredefinedImage = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -298,7 +292,6 @@ export const addPredefinedImage = async (req, res) => {
       });
     }
 
-    // التحقق من وجود التصنيف
     const category = await CategoryModel.getCategoryById(categoryId);
     if (!category) {
       return res.status(400).json({
@@ -308,12 +301,10 @@ export const addPredefinedImage = async (req, res) => {
       });
     }
 
-    // تحويل buffer إلى base64
     const fileStr = `data:${
       req.file.mimetype
     };base64,${req.file.buffer.toString("base64")}`;
 
-    // خيارات الرفع إلى Cloudinary
     const uploadOptions = {
       folder: "dar-aljoud/predefined-logos",
       resource_type: "image",
@@ -330,10 +321,8 @@ export const addPredefinedImage = async (req, res) => {
       ],
     };
 
-    // رفع الصورة إلى Cloudinary
     const result = await cloudinary.uploader.upload(fileStr, uploadOptions);
 
-    // إنشاء شعار جديد في قاعدة البيانات
     const newImage = new PredefinedImageSchema({
       id: `logo-${Date.now()}`,
       url: result.secure_url,
@@ -359,9 +348,6 @@ export const addPredefinedImage = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error adding predefined image:", error);
-
-    // معالجة أخطاء Cloudinary المحددة
     if (error.http_code) {
       return res.status(error.http_code).json({
         success: false,
@@ -381,7 +367,6 @@ export const addPredefinedImage = async (req, res) => {
 // حذف شعار جاهز (يتطلب مصادقة المدير)
 export const deletePredefinedImage = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -400,7 +385,6 @@ export const deletePredefinedImage = async (req, res) => {
       });
     }
 
-    // البحث عن الشعار
     const imageToDelete = await PredefinedImageSchema.findOne({ id: imageId });
 
     if (!imageToDelete) {
@@ -411,15 +395,10 @@ export const deletePredefinedImage = async (req, res) => {
       });
     }
 
-    // حذف الصورة من Cloudinary
     try {
       await cloudinary.uploader.destroy(imageToDelete.publicId);
-    } catch (cloudinaryError) {
-      console.warn("Failed to delete from Cloudinary:", cloudinaryError);
-      // نتابع العملية حتى لو فشل حذف الصورة من Cloudinary
-    }
+    } catch (cloudinaryError) {}
 
-    // حذف الشعار من قاعدة البيانات
     await PredefinedImageSchema.deleteOne({ id: imageId });
 
     res.status(200).json({
@@ -434,8 +413,6 @@ export const deletePredefinedImage = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error deleting predefined image:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء حذف الشعار الجاهز",
@@ -447,7 +424,6 @@ export const deletePredefinedImage = async (req, res) => {
 // تحديث معلومات شعار جاهز (يتطلب مصادقة المدير)
 export const updatePredefinedImage = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -467,7 +443,6 @@ export const updatePredefinedImage = async (req, res) => {
       });
     }
 
-    // البحث عن الشعار
     const existingImage = await PredefinedImageSchema.findOne({ id: imageId });
 
     if (!existingImage) {
@@ -478,7 +453,6 @@ export const updatePredefinedImage = async (req, res) => {
       });
     }
 
-    // تحديث بيانات الشعار
     const updatedImage = await PredefinedImageSchema.findOneAndUpdate(
       { id: imageId },
       {
@@ -500,8 +474,6 @@ export const updatePredefinedImage = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error updating predefined image:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء تحديث الشعار الجاهز",
@@ -513,7 +485,6 @@ export const updatePredefinedImage = async (req, res) => {
 // إعادة تعيين الشعارات الجاهزة إلى القيم الافتراضية (يتطلب مصادقة المدير)
 export const resetPredefinedImages = async (req, res) => {
   try {
-    // التحقق الإضافي من صلاحيات المدير
     if (!req.admin || req.admin.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -524,10 +495,8 @@ export const resetPredefinedImages = async (req, res) => {
 
     const updatedBy = req.admin?.username || "admin";
 
-    // حذف جميع الشعارات الموجودة
     await PredefinedImageSchema.deleteMany({});
 
-    // إنشاء الشعارات الافتراضية مع تحديث updatedBy
     const defaultImages = DEFAULT_PREDEFINED_IMAGES.map((img) => ({
       ...img,
       updatedAt: new Date(),
@@ -549,8 +518,6 @@ export const resetPredefinedImages = async (req, res) => {
       data: cleanImages,
     });
   } catch (error) {
-    console.error("Error resetting predefined images:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء إعادة تعيين الشعارات الجاهزة",
@@ -587,8 +554,6 @@ export const getPredefinedImagesByCategory = async (req, res) => {
       data: cleanImages,
     });
   } catch (error) {
-    console.error("Error getting images by category:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على الشعارات",
@@ -596,7 +561,6 @@ export const getPredefinedImagesByCategory = async (req, res) => {
     });
   }
 };
-
 // الحصول على الشعارات مع معلومات التصنيفات (عام - بدون مصادقة)
 export const getPredefinedImagesWithCategories = async (req, res) => {
   try {
@@ -605,7 +569,6 @@ export const getPredefinedImagesWithCategories = async (req, res) => {
       .lean();
     const categories = await CategoryModel.getCategories();
 
-    // إضافة معلومات التصنيف لكل صورة
     const imagesWithCategories = images.map((image) => {
       const category = categories.find((cat) => cat.id === image.categoryId);
       return {
@@ -631,8 +594,6 @@ export const getPredefinedImagesWithCategories = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error getting images with categories:", error);
-
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء الحصول على الشعارات",

@@ -315,9 +315,9 @@ const CategoryManagement: React.FC = () => {
                           <span>الترتيب: {category.order}</span>
                           <span>
                             آخر تحديث:{" "}
-                            {new Date(
-                              category.updatedAt || category.createdAt
-                            ).toLocaleDateString("ar-SA")}
+                            {new Date(category.updatedAt || category.createdAt)
+                              .toLocaleDateString("sv-SE")
+                              .replace(/-/g, "/")}
                           </span>
                           <span>بواسطة: {category.updatedBy}</span>
                         </div>

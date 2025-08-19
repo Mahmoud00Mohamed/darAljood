@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useJacket, LogoPosition } from "../../../../context/JacketContext";
 import { Upload, Trash2, AlertCircle, Crop, Images } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import CloudinaryImageUpload from "../../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../../services/imageUploadService";
 import { Gallery } from "../../../../gallery-system/src";
@@ -33,6 +33,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
   pricingInfo,
   enablePositionSelector = false,
 }) => {
+  const location = useLocation();
   const {
     jacketState,
     addLogo,
@@ -558,6 +559,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
             <div className="flex items-center gap-2">
               <Link
                 to="/image-library"
+                state={{ from: location.pathname }}
                 className="flex items-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors"
               >
                 <Images size={14} />
@@ -580,6 +582,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
             <div className="flex items-center gap-2">
               <Link
                 to="/image-library"
+                state={{ from: location.pathname }}
                 className="flex items-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors"
               >
                 <Images size={14} />
@@ -604,6 +607,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
             <div className="flex flex-col gap-2 w-full">
               <Link
                 to="/image-library"
+                state={{ from: location.pathname }}
                 className="flex items-center justify-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors w-full"
               >
                 <Images size={14} />
