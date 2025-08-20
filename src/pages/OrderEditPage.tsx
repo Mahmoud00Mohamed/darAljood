@@ -79,7 +79,7 @@ const OrderEditContent: React.FC = () => {
   const exitConfirmModal = useModal();
   const pdfConfirmModal = useModal();
 
-  // تنظيف البيانات عند دخول الصفحة
+  // تم التعديل هنا: حذف دالة return()
   useEffect(() => {
     // حفظ نسخة احتياطية من بيانات الـ customizer
     const customizerState = localStorage.getItem("jacketState");
@@ -95,27 +95,6 @@ const OrderEditContent: React.FC = () => {
     // مسح بيانات التعديل السابقة إذا كانت موجودة
     localStorage.removeItem("orderEditJacketState");
     localStorage.removeItem("orderEditCart");
-
-    return () => {
-      // عند الخروج من صفحة التعديل، مسح بيانات التعديل
-      localStorage.removeItem("orderEditJacketState");
-      localStorage.removeItem("orderEditCart");
-
-      // استعادة بيانات الـ customizer إذا كانت موجودة
-      const customizerBackup = sessionStorage.getItem("customizerBackup");
-      const customizerCartBackup = sessionStorage.getItem(
-        "customizerCartBackup"
-      );
-
-      if (customizerBackup) {
-        localStorage.setItem("jacketState", customizerBackup);
-        sessionStorage.removeItem("customizerBackup");
-      }
-      if (customizerCartBackup) {
-        localStorage.setItem("cart", customizerCartBackup);
-        sessionStorage.removeItem("customizerCartBackup");
-      }
-    };
   }, []);
 
   const loadOrderData = useCallback(async () => {
@@ -478,6 +457,7 @@ const OrderEditContent: React.FC = () => {
     );
   }
 
+  // ... ( باقي الكود JSX لم يتغير)
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-white jacket-customizer-container order-edit-page">
       {/* الشريط العلوي */}

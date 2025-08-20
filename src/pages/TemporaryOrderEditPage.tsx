@@ -84,7 +84,7 @@ const TemporaryOrderEditContent: React.FC = () => {
   const exitConfirmModal = useModal();
   const pdfConfirmModal = useModal();
 
-  // تنظيف البيانات عند دخول الصفحة
+  // تم التعديل هنا: حذف دالة return()
   useEffect(() => {
     // حفظ نسخة احتياطية من بيانات الـ customizer
     const customizerState = localStorage.getItem("jacketState");
@@ -100,25 +100,6 @@ const TemporaryOrderEditContent: React.FC = () => {
     // مسح بيانات التعديل المؤقت السابقة إذا كانت موجودة
     localStorage.removeItem("temporaryOrderEditJacketState");
     localStorage.removeItem("temporaryOrderEditCart");
-
-    return () => {
-      // عند الخروج من صفحة التعديل المؤقت، مسح بيانات التعديل المؤقت
-      localStorage.removeItem("temporaryOrderEditJacketState");
-      localStorage.removeItem("temporaryOrderEditCart");
-
-      // استعادة بيانات الـ customizer إذا كانت موجودة
-      const customizerBackup = sessionStorage.getItem("tempEditBackup");
-      const customizerCartBackup = sessionStorage.getItem("tempEditCartBackup");
-
-      if (customizerBackup) {
-        localStorage.setItem("jacketState", customizerBackup);
-        sessionStorage.removeItem("tempEditBackup");
-      }
-      if (customizerCartBackup) {
-        localStorage.setItem("cart", customizerCartBackup);
-        sessionStorage.removeItem("tempEditCartBackup");
-      }
-    };
   }, []);
 
   // عداد الوقت المتبقي
@@ -557,6 +538,7 @@ const TemporaryOrderEditContent: React.FC = () => {
     );
   }
 
+  // ... ( باقي الكود JSX لم يتغير)
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-white jacket-customizer-container order-edit-page">
       {/* الشريط العلوي */}

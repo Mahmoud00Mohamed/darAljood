@@ -550,7 +550,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
           </div>
         )}
 
-      <div className="mb-4">
+      <div className="mb-4 relative z-50">
         <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
           <span className="text-sm font-medium text-gray-700 truncate">
             الشعارات الحالية
@@ -838,7 +838,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
 
       {/* تخصيص الشعار المحدد */}
       {selectedLogo && (
-        <div className="border-t pt-4 mt-4">
+        <div className="border-t pt-4 mt-4 relative z-50">
           <h4 className="text-sm font-medium text-gray-700 mb-3 truncate">
             تخصيص الشعار
           </h4>

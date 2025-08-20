@@ -89,6 +89,7 @@ export interface JacketState {
 
 export interface JacketContextType {
   jacketState: JacketState;
+  setJacketState: React.Dispatch<React.SetStateAction<JacketState>>; // <-- تم التعديل هنا
   setColor: (part: JacketPart, color: string) => void;
   setMaterial: (part: JacketPart, material: JacketMaterial) => void;
   setSize: (size: JacketSize) => void;
@@ -120,7 +121,9 @@ const defaultMaterials: Record<JacketPart, JacketMaterial> = {
   trim: "cotton",
 };
 
-const initialState: JacketState = {
+// تم التعديل هنا: إضافة export
+// eslint-disable-next-line react-refresh/only-export-components
+export const initialState: JacketState = {
   colors: defaultColors,
   materials: defaultMaterials,
   size: "M",
@@ -435,6 +438,7 @@ export const JacketProvider: React.FC<{ children: React.ReactNode }> = ({
     <JacketContext.Provider
       value={{
         jacketState,
+        setJacketState, // <-- تم التعديل هنا
         setColor,
         setMaterial,
         setSize,

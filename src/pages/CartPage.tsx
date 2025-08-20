@@ -324,13 +324,18 @@ const CartPage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-3 mb-4">
                           <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
-                            }
+                            onClick={() => {
+                              if (item.quantity === 1) {
+                                handleDeleteClick(item.id);
+                              } else {
+                                updateQuantity(item.id, item.quantity - 1);
+                              }
+                            }}
                             className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                           >
                             <Minus size={14} />
                           </button>
+
                           <span className="text-lg font-medium w-8 text-center">
                             {item.quantity}
                           </span>

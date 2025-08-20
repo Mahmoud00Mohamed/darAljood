@@ -287,7 +287,7 @@ const JacketCustomizer: React.FC = () => {
         <div
           className={`${
             window.innerWidth > 1250 ? "flex" : "hidden"
-          } w-80 bg-white shadow-xl p-6 flex-col border-l border-gray-200 rounded-l-2xl`}
+          } w-80 bg-white shadow-xl p-6 flex-col border-l border-gray-200 rounded-l-2xl overflow-y-auto max-h-screen`}
         >
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -441,12 +441,12 @@ const JacketCustomizer: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-3 mt-auto">
+            <div className="space-y-3 mt-auto relative z-10">
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={handleAddToCart}
                 disabled={isCapturingImages}
-                className="w-full py-3 gold-gradient text-white rounded-xl font-semibold shadow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-50"
+                className="w-full py-3 gold-gradient text-white rounded-xl font-semibold shadow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-50 "
               >
                 {isCapturingImages
                   ? "جاري الحفظ..."
@@ -458,7 +458,7 @@ const JacketCustomizer: React.FC = () => {
               {/* زر الانتقال إلى عربة التسوق */}
               <Link
                 to="/cart"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium "
               >
                 <ShoppingCart className="w-4 h-4" />
                 الذهاب إلى السلة
@@ -467,7 +467,7 @@ const JacketCustomizer: React.FC = () => {
               {/* زر العودة للرئيسية */}
               <Link
                 to="/"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative z-10"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-md hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium  "
               >
                 <ArrowLeft className="w-4 h-4" />
                 العودة للرئيسية

@@ -759,6 +759,7 @@ const OrdersManagement: React.FC = () => {
     return icons[status] || <Package className="w-4 h-4" />;
   };
 
+  // الحل الأول: إخفاء النص تماماً في وضع الهواتف
   const PaginationComponent = ({
     currentPageProp,
     totalPagesProp,
@@ -809,11 +810,19 @@ const OrdersManagement: React.FC = () => {
 
     return (
       <div className="flex items-center justify-between mt-6 p-4 bg-gray-50 rounded-lg">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        {/* الحل الأول: إخفاء تماماً في الهواتف */}
+        <div className="hidden md:flex items-center gap-2 text-sm text-gray-600">
           <span>
             عرض {(currentPageProp - 1) * ordersPerPage + 1} إلى{" "}
             {Math.min(currentPageProp * ordersPerPage, totalOrdersProp)} من{" "}
             {totalOrdersProp} طلب
+          </span>
+        </div>
+
+        {/* الحل الثاني: نسخة مختصرة للهواتف */}
+        <div className="md:hidden flex items-center gap-2 text-xs text-gray-600">
+          <span>
+            {currentPageProp} / {totalPagesProp}
           </span>
         </div>
 
