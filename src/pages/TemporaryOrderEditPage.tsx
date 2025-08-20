@@ -1067,7 +1067,7 @@ const TemporaryOrderEditContent: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 pb-24">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
