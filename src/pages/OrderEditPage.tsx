@@ -30,7 +30,6 @@ import { useModal } from "../hooks/useModal";
 import fontPreloader from "../utils/fontPreloader";
 import { cleanupJacketData, validateDataIntegrity } from "../utils/dataCleanup";
 import { generateOrderPDFWithImages } from "../utils/pdfGenerator";
-import LoadingOverlay from "../components/ui/LoadingOverlay";
 
 // دالة مساعدة لتحويل التاريخ إلى الصيغة المطلوبة YYYY/MM/DD
 const formatDate = (dateString: string): string => {
@@ -68,10 +67,6 @@ const OrderEditContent: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [pdfLoadingStage, setPdfLoadingStage] = useState<
-    "capturing" | "generating" | "completed"
-  >("capturing");
-  const [showPdfLoadingOverlay, setShowPdfLoadingOverlay] = useState(false);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -299,8 +294,6 @@ const OrderEditContent: React.FC = () => {
     if (!orderData) return;
 
     setIsGeneratingPDF(true);
-    setShowPdfLoadingOverlay(true);
-    setPdfLoadingStage("capturing");
 
     try {
       // التأكد من تحميل الخطوط قبل بدء العملية
@@ -317,10 +310,6 @@ const OrderEditContent: React.FC = () => {
           jacketImages = [];
         }
       }
-
-      // الانتقال لمرحلة إنشاء PDF
-      setPdfLoadingStage("generating");
-      await new Promise((resolve) => setTimeout(resolve, 800));
 
       // إنشاء PDF
       const pdfBlob = await generateOrderPDFWithImages(
@@ -386,10 +375,6 @@ const OrderEditContent: React.FC = () => {
         jacketImages
       );
 
-      // مرحلة الإكمال
-      setPdfLoadingStage("completed");
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
       // تحميل الملف
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement("a");
@@ -405,10 +390,6 @@ const OrderEditContent: React.FC = () => {
     } finally {
       setIsGeneratingPDF(false);
     }
-  };
-
-  const handlePdfLoadingComplete = () => {
-    setShowPdfLoadingOverlay(false);
   };
 
   const handleCustomerInfoUpdate = (field: string, value: string) => {
@@ -539,13 +520,6 @@ const OrderEditContent: React.FC = () => {
         <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
           <JacketImageCapture ref={jacketImageCaptureRef} />
         </div>
-
-        {/* Loading Overlay for PDF Generation */}
-        <LoadingOverlay
-          isVisible={showPdfLoadingOverlay}
-          stage={pdfLoadingStage}
-          onComplete={handlePdfLoadingComplete}
-        />
 
         {/* Mobile Back to Admin Button */}
         <button
@@ -761,7 +735,7 @@ const OrderEditContent: React.FC = () => {
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                تحميل PDF
+                {isGeneratingPDF ? "جاري إنشاء PDF..." : "تحميل PDF"}
               </button>
             </div>
           </motion.div>
@@ -964,7 +938,7 @@ const OrderEditContent: React.FC = () => {
                     ) : (
                       <Download className="w-4 h-4" />
                     )}
-                    تحميل PDF
+                    {isGeneratingPDF ? "جاري إنشاء PDF..." : "تحميل PDF"}
                   </button>
                 </div>
               </div>

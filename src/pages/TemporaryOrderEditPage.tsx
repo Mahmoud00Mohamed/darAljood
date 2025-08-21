@@ -33,7 +33,6 @@ import ConfirmationModal from "../components/ui/ConfirmationModal";
 import { useModal } from "../hooks/useModal";
 import { cleanupJacketData, validateDataIntegrity } from "../utils/dataCleanup";
 import { generateOrderPDFWithImages } from "../utils/pdfGenerator";
-import LoadingOverlay from "../components/ui/LoadingOverlay";
 import fontPreloader from "../utils/fontPreloader";
 
 // دالة مساعدة لتحويل التاريخ إلى الصيغة المطلوبة YYYY/MM/DD
@@ -74,10 +73,6 @@ const TemporaryOrderEditContent: React.FC = () => {
   const [linkExpired, setLinkExpired] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [pdfLoadingStage, setPdfLoadingStage] = useState<
-    "capturing" | "generating" | "completed"
-  >("capturing");
-  const [showPdfLoadingOverlay, setShowPdfLoadingOverlay] = useState(false);
 
   const jacketImageCaptureRef = useRef<JacketImageCaptureRef>(null);
   const saveConfirmModal = useModal();
@@ -330,8 +325,6 @@ const TemporaryOrderEditContent: React.FC = () => {
     if (!orderData) return;
 
     setIsGeneratingPDF(true);
-    setShowPdfLoadingOverlay(true);
-    setPdfLoadingStage("capturing");
 
     try {
       // التأكد من تحميل الخطوط قبل بدء العملية
@@ -348,10 +341,6 @@ const TemporaryOrderEditContent: React.FC = () => {
           jacketImages = [];
         }
       }
-
-      // الانتقال لمرحلة إنشاء PDF
-      setPdfLoadingStage("generating");
-      await new Promise((resolve) => setTimeout(resolve, 800));
 
       // إنشاء PDF
       const pdfBlob = await generateOrderPDFWithImages(
@@ -417,10 +406,6 @@ const TemporaryOrderEditContent: React.FC = () => {
         jacketImages
       );
 
-      // مرحلة الإكمال
-      setPdfLoadingStage("completed");
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
       // تحميل الملف
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement("a");
@@ -436,10 +421,6 @@ const TemporaryOrderEditContent: React.FC = () => {
     } finally {
       setIsGeneratingPDF(false);
     }
-  };
-
-  const handlePdfLoadingComplete = () => {
-    setShowPdfLoadingOverlay(false);
   };
   const handleCustomerInfoUpdate = (field: string, value: string) => {
     setCustomerInfo((prev) => ({ ...prev, [field]: value }));
@@ -647,12 +628,6 @@ const TemporaryOrderEditContent: React.FC = () => {
           <JacketImageCapture ref={jacketImageCaptureRef} />
         </div>
 
-        {/* Loading Overlay for PDF Generation */}
-        <LoadingOverlay
-          isVisible={showPdfLoadingOverlay}
-          stage={pdfLoadingStage}
-          onComplete={handlePdfLoadingComplete}
-        />
         {/* Mobile Back to Home Button */}
         <button
           onClick={exitConfirmModal.openModal}
@@ -880,7 +855,7 @@ const TemporaryOrderEditContent: React.FC = () => {
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                تحميل PDF
+                {isGeneratingPDF ? "جاري إنشاء PDF..." : "تحميل PDF"}
               </button>
               <button
                 onClick={exitConfirmModal.openModal}
@@ -1094,7 +1069,7 @@ const TemporaryOrderEditContent: React.FC = () => {
                     ) : (
                       <Download className="w-4 h-4" />
                     )}
-                    تحميل PDF
+                    {isGeneratingPDF ? "جاري إنشاء PDF..." : "تحميل PDF"}
                   </button>
                   <button
                     onClick={() => {

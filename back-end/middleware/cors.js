@@ -10,7 +10,8 @@ const corsOptions = {
     const allowedOrigins = [
       process.env.FRONTEND_URL || "https://dar-algood-seniorjacket.com/",
       // "http://localhost:3000",
-      // "http://localhost:5174",
+      "http://localhost:5174",
+      "http://localhost:5173",
       // "https://daraljoud.com",
       // "https://dar-algood.netlify.app",
       "https://dar-algood-seniorjacket.com/",
