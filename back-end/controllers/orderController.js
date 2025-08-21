@@ -1,5 +1,5 @@
 import OrderModel, { ORDER_STATUSES, STATUS_NAMES } from "../models/Order.js";
-import OrderImageManager from "../utils/orderImageManager.js";
+import R2ImageManager from "../utils/r2ImageManager.js";
 import TemporaryLinkModel from "../models/TemporaryLink.js";
 import OrderCleanupService from "../utils/orderCleanupService.js";
 import OrderImageSyncService from "../utils/orderImageSyncService.js";
@@ -54,10 +54,13 @@ export const createOrder = async (req, res) => {
 
     setImmediate(async () => {
       try {
-        const imageBackupResult = await OrderImageManager.backupOrderImages(
+        const imageBackupResult = await R2ImageManager.backupOrderImages(
           newOrder
         );
-      } catch (error) {}
+        console.log("R2 backup result:", imageBackupResult);
+      } catch (error) {
+        console.warn("R2 backup failed:", error);
+      }
     });
 
     res.status(201).json({
@@ -628,14 +631,14 @@ export const getOrderImages = async (req, res) => {
       });
     }
 
-    const imagesInfo = await OrderImageManager.getOrderImagesInfo(
+    const imagesInfo = await R2ImageManager.getOrderImagesInfo(
       order.orderNumber
     );
 
     if (!imagesInfo.success) {
       return res.status(500).json({
         success: false,
-        message: "فشل في الحصول على صور الطلب",
+        message: "فشل في الحصول على صور الطلب من R2",
         error: "GET_ORDER_IMAGES_FAILED",
         details: imagesInfo.error,
       });

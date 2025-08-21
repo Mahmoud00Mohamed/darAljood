@@ -230,7 +230,7 @@ export interface ApiResponse<T> {
 }
 
 class OrderService {
-  private baseUrl = "https://server-algood.onrender.com/api/orders";
+  private baseUrl = "http://localhost:3001/api/orders";
 
   /**
    * إنشاء طلب جديد

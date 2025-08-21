@@ -1,11 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
-import CloudinaryImageManager from "../components/ui/CloudinaryImageManager";
+import R2ImageManager from "../components/ui/CloudinaryImageManager";
 import { CloudinaryImageData } from "../services/imageUploadService";
 
-const CloudinaryTestPage: React.FC = () => {
+const R2TestPage: React.FC = () => {
   const handleImageSelect = (imageData: CloudinaryImageData) => {
-    alert(`تم اختيار الصورة: ${imageData.publicId}`);
+    alert(`تم اختيار الصورة من R2: ${imageData.publicId}`);
   };
 
   return (
@@ -18,15 +18,15 @@ const CloudinaryTestPage: React.FC = () => {
         >
           <div className="text-center mb-8">
             <h1 className="text-3xl font-light text-gray-900 mb-4">
-              اختبار تكامل Cloudinary
+              اختبار تكامل Cloudflare R2
             </h1>
             <p className="text-lg text-gray-600">
-              صفحة اختبار لرفع وإدارة الصور عبر Cloudinary
+              صفحة اختبار لرفع وإدارة الصور عبر Cloudflare R2
             </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <CloudinaryImageManager
+            <R2ImageManager
               onImageSelect={handleImageSelect}
               showUploadSection={true}
               autoAddToLibrary={false}
@@ -38,11 +38,12 @@ const CloudinaryTestPage: React.FC = () => {
               معلومات التكامل
             </h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• يتم رفع الصور مباشرة إلى Cloudinary عبر الباك إند</li>
+              <li>• يتم رفع الصور مباشرة إلى Cloudflare R2 عبر الباك إند</li>
               <li>• يمكن رفع صورة واحدة أو عدة صور في نفس الوقت</li>
-              <li>• يتم حفظ معلومات الصور (URL, Public ID, الأبعاد، إلخ)</li>
-              <li>• يمكن حذف الصور من Cloudinary مباشرة</li>
+              <li>• يتم حفظ معلومات الصور (URL, Key, الحجم، إلخ)</li>
+              <li>• يمكن حذف الصور من R2 مباشرة</li>
               <li>• يمكن عرض تفاصيل كاملة لكل صورة</li>
+              <li>• تخزين آمن وسريع مع Cloudflare R2</li>
             </ul>
           </div>
         </motion.div>
@@ -51,4 +52,4 @@ const CloudinaryTestPage: React.FC = () => {
   );
 };
 
-export default CloudinaryTestPage;
+export default R2TestPage;

@@ -33,7 +33,7 @@ export interface ApiResponse<T> {
   data: T;
 }
 class PredefinedImagesService {
-  private baseUrl = "https://server-algood.onrender.com/api/predefined-images";
+  private baseUrl = "http://localhost:3001/api/predefined-images";
 
   /**
    * تحميل الشعارات الجاهزة من الباك إند
@@ -341,11 +341,12 @@ class PredefinedImagesService {
    * البيانات الاحتياطية في حالة فشل الباك إند (تحويل إلى النوع الجديد)
    */
   private getFallbackImages(): PredefinedImageData[] {
+    const r2BaseUrl = "https://pub-YOUR_ACCOUNT_ID.r2.dev"; // يجب تحديث هذا بـ URL الفعلي
     return [
       {
         id: "logo1",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078448/16_b1rjss.png",
-        publicId: "16_b1rjss",
+        url: `${r2BaseUrl}/dar-aljoud/predefined-logos/16_b1rjss.png`,
+        publicId: "dar-aljoud/predefined-logos/16_b1rjss.png",
         name: "شعار 1",
         categoryId: "logos",
         description: "شعار جاهز للاستخدام",
@@ -354,8 +355,8 @@ class PredefinedImagesService {
       },
       {
         id: "logo2",
-        url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078378/15_v4cfc5.png",
-        publicId: "15_v4cfc5",
+        url: `${r2BaseUrl}/dar-aljoud/predefined-logos/15_v4cfc5.png`,
+        publicId: "dar-aljoud/predefined-logos/15_v4cfc5.png",
         name: "شعار 2",
         categoryId: "logos",
         description: "شعار جاهز للاستخدام",

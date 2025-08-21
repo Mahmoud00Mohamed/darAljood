@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useJacket, LogoPosition } from "../../../../context/JacketContext";
 import { Upload, Trash2, AlertCircle, Crop, Images } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import CloudinaryImageUpload from "../../../forms/CloudinaryImageUpload";
+import R2ImageUpload from "../../../forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../../../services/imageUploadService";
 import { Gallery } from "../../../../gallery-system/src";
 import type { Photo } from "../../../../gallery-system/src/types";
@@ -60,15 +60,16 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
   });
 
   // الشعارات الجاهزة - فقط للقسم الخلفي
+  const r2BaseUrl = "https://pub-YOUR_ACCOUNT_ID.r2.dev"; // يجب تحديث هذا
   const availableLogos = [
     {
       id: "logo1",
-      url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078450/18_djpzcl.png",
+      url: `${r2BaseUrl}/dar-aljoud/predefined-logos/18_djpzcl.png`,
       name: "شعار 1",
     },
     {
       id: "logo2",
-      url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078448/16_b1rjss.png",
+      url: `${r2BaseUrl}/dar-aljoud/predefined-logos/16_b1rjss.png`,
       name: "شعار 2",
     },
     {
@@ -806,7 +807,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
         showCloseButton={!isUploading}
         options={uploadModal.options}
       >
-        <CloudinaryImageUpload
+        <R2ImageUpload
           onImageSelect={handleLogoUpload}
           acceptedFormats={[
             "image/jpeg",
@@ -815,7 +816,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
             "image/webp",
           ]}
           maxFileSize={5}
-          placeholder="اختر صورة الشعار"
+          placeholder="اختر صورة الشعار (سيتم رفعها إلى R2)"
           className="mb-4"
           aspectRatio={1}
           cropTitle={`اقتطاع شعار ${
@@ -832,7 +833,7 @@ const LogoUploadSection: React.FC<LogoUploadSectionProps> = ({
         />
 
         <div className="text-xs text-gray-500 text-center">
-          <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP</p>
+          <p>• الحد الأقصى: 5MB | الأنواع: JPG, PNG, WEBP | التخزين: Cloudflare R2</p>
         </div>
       </Modal>
 

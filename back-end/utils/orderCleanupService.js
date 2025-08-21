@@ -1,9 +1,9 @@
 /**
- * خدمة تنظيف شاملة للطلبات المحذوفة
+ * خدمة تنظيف شاملة للطلبات المحذوفة مع دعم R2
  * تضمن حذف جميع البيانات والملفات المرتبطة بالطلب
  */
 
-import OrderImageManager from "./orderImageManager.js";
+import R2ImageManager from "./r2ImageManager.js";
 import TemporaryLinkModel from "../models/TemporaryLink.js";
 import { deleteOrderImages } from "./imageBackup.js";
 
@@ -30,12 +30,12 @@ class OrderCleanupService {
       // الخطوة 1: حذف صور الطلب من Cloudinary
       deletionLog.steps.push({
         step: 1,
-        name: "حذف صور Cloudinary",
+        name: "حذف صور R2",
         startTime: new Date(),
       });
 
       try {
-        const imageDeleteResult = await OrderImageManager.deleteOrderImages(
+        const imageDeleteResult = await R2ImageManager.deleteOrderImages(
           orderData.orderNumber
         );
 
@@ -52,7 +52,7 @@ class OrderCleanupService {
         } else {
           deletionLog.summary.failedSteps++;
           deletionLog.summary.errors.push(
-            `فشل في حذف الصور: ${imageDeleteResult.error}`
+            `فشل في حذف الصور من R2: ${imageDeleteResult.error}`
           );
         }
       } catch (error) {
@@ -60,7 +60,7 @@ class OrderCleanupService {
         deletionLog.steps[0].success = false;
         deletionLog.steps[0].error = error.message;
         deletionLog.summary.failedSteps++;
-        deletionLog.summary.errors.push(`خطأ في حذف الصور: ${error.message}`);
+        deletionLog.summary.errors.push(`خطأ في حذف الصور من R2: ${error.message}`);
       }
 
       // الخطوة 2: حذف الروابط المؤقتة

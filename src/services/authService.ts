@@ -18,8 +18,8 @@ export interface ApiResponse<T> {
 }
 
 class AuthService {
-  private baseUrl = "https://server-algood.onrender.com/api/auth";
-  // https://server-algood.onrender.com
+  private baseUrl = "http://localhost:3001/api/auth";
+  // http://localhost:3001
   private tokenKey = "admin_token";
 
   /**

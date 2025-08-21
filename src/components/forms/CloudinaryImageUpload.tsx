@@ -15,7 +15,7 @@ import imageUploadService, {
 import ImageCropModal from "../modals/ImageCropModal";
 import { useImageLibrary } from "../../context/ImageLibraryContext";
 
-interface CloudinaryImageUploadProps {
+interface R2ImageUploadProps {
   onImageSelect: (imageData: CloudinaryImageData, originalFile?: File) => void;
   acceptedFormats?: string[];
   maxFileSize?: number; // بالميجابايت
@@ -30,7 +30,7 @@ interface CloudinaryImageUploadProps {
   autoAddToLibrary?: boolean; // خيار لإضافة الصور تلقائياً للمكتبة
 }
 
-const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
+const R2ImageUpload: React.FC<R2ImageUploadProps> = ({
   onImageSelect,
   onMultipleImagesSelect,
   acceptedFormats = ["image/jpeg", "image/jpg", "image/png", "image/webp"],
@@ -104,10 +104,11 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
         // رفع الصورة المقتصة
         await handleFileUpload([croppedFile]);
       } else {
-        // إنشاء بيانات وهمية للمعاينة فقط
+        // إنشاء بيانات وهمية للمعاينة فقط (بدون رفع لـ R2)
         const mockImageData: CloudinaryImageData = {
           url: croppedImageUrl,
           publicId: `temp-${Date.now()}`,
+          key: `temp-${Date.now()}`,
           width: 400,
           height: 400,
           format: "png",
@@ -182,10 +183,10 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
         if (onMultipleImagesSelect) {
           onMultipleImagesSelect(uploadedData);
         }
-        setUploadProgress("تم رفع جميع الصور بنجاح!");
+        setUploadProgress("تم رفع جميع الصور بنجاح إلى R2!");
       } else {
         // رفع صورة واحدة
-        setUploadProgress("جاري رفع الصورة...");
+        setUploadProgress("جاري رفع الصورة إلى R2...");
         const uploadedData = await imageUploadService.uploadSingleImage(
           files[0]
         );
@@ -198,7 +199,7 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
 
         setUploadedImages([uploadedData]);
         onImageSelect(uploadedData, files[0]);
-        setUploadProgress("تم رفع الصورة بنجاح!");
+        setUploadProgress("تم رفع الصورة بنجاح إلى R2!");
       }
 
       // إعادة تعيين input
@@ -211,9 +212,9 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
         setUploadProgress("");
       }, 3000);
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("R2 upload error:", error);
       setError(
-        error instanceof Error ? error.message : "حدث خطأ أثناء رفع الصورة"
+        error instanceof Error ? error.message : "حدث خطأ أثناء رفع الصورة إلى R2"
       );
     } finally {
       setIsUploading(false);
@@ -281,11 +282,11 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
     imageData: CloudinaryImageData,
     index: number
   ) => {
-    // إذا كانت الصورة مؤقتة (لم ترفع للسيرفر بعد)، احذفها محلياً فقط
+    // إذا كانت الصورة مؤقتة (لم ترفع لـ R2 بعد)، احذفها محلياً فقط
     if (imageData.publicId.startsWith("temp-")) {
       setUploadedImages((prev) => prev.filter((_, i) => i !== index));
     } else {
-      // إذا كانت مرفوعة للسيرفر، احذفها من Cloudinary
+      // إذا كانت مرفوعة للسيرفر، احذفها من R2
       try {
         const success = await imageUploadService.deleteImage(
           imageData.publicId
@@ -293,10 +294,10 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
         if (success) {
           setUploadedImages((prev) => prev.filter((_, i) => i !== index));
         } else {
-          console.warn("Failed to delete image from Cloudinary");
+          console.warn("Failed to delete image from R2");
         }
       } catch (error) {
-        console.error("Error deleting image:", error);
+        console.error("Error deleting image from R2:", error);
       }
     }
   };
@@ -408,7 +409,7 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
               <p className="text-sm text-gray-600">
                 {autoAddToLibrary
                   ? uploadProgress
-                  : "جاري تحضير الصورة للمعاينة..."}
+                  : "جاري تحضير الصورة للمعاينة (بدون رفع لـ R2)..."}
               </p>
             </div>
           </div>
@@ -444,11 +445,11 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
                   </p>
                   {imageData.publicId.startsWith("temp-") ? (
                     <p className="text-xs text-blue-600 mt-1">
-                      جاهز للتأكيد ⏳
+                      جاهز للرفع إلى R2 ⏳
                     </p>
                   ) : (
                     <p className="text-xs text-green-600 mt-1">
-                      تم الرفع بنجاح ✓
+                      تم الرفع إلى R2 بنجاح ✓
                     </p>
                   )}
                 </div>
@@ -477,7 +478,7 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
           {!autoAddToLibrary && (
             <span className="flex items-center gap-1 text-blue-600">
               <AlertCircle className="w-3 h-3" />
-              معاينة فقط
+              معاينة فقط (بدون رفع لـ R2)
             </span>
           )}
         </div>
@@ -510,4 +511,4 @@ const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   );
 };
 
-export default CloudinaryImageUpload;
+export default R2ImageUpload;

@@ -1,12 +1,12 @@
 /**
- * خدمة مزامنة صور الطلبات المتقدمة
+ * خدمة مزامنة صور الطلبات المتقدمة مع R2
  * تدير التغييرات في الشعارات أثناء تعديل الطلبات
  */
 
-import cloudinary from "../config/cloudinary.js";
+import { deleteFromR2 } from "../config/cloudflareR2.js";
 import OrderModel from "../models/Order.js";
 import {
-  extractImagePublicIdsFromJacketConfig,
+  extractImageKeysFromJacketConfig,
   copyImageToOrderFolder,
   deleteOrderImages,
 } from "./imageBackup.js";
@@ -16,15 +16,15 @@ class OrderImageSyncService {
    * مقارنة الشعارات القديمة والجديدة واستخراج التغييرات
    */
   analyzeImageChanges(oldJacketConfig, newJacketConfig) {
-    const oldPublicIds = extractImagePublicIdsFromJacketConfig(oldJacketConfig);
-    const newPublicIds = extractImagePublicIdsFromJacketConfig(newJacketConfig);
+    const oldKeys = extractImageKeysFromJacketConfig(oldJacketConfig);
+    const newKeys = extractImageKeysFromJacketConfig(newJacketConfig);
 
-    const oldSet = new Set(oldPublicIds);
-    const newSet = new Set(newPublicIds);
+    const oldSet = new Set(oldKeys);
+    const newSet = new Set(newKeys);
 
-    const removedImages = oldPublicIds.filter((id) => !newSet.has(id));
-    const addedImages = newPublicIds.filter((id) => !oldSet.has(id));
-    const retainedImages = oldPublicIds.filter((id) => newSet.has(id));
+    const removedImages = oldKeys.filter((key) => !newSet.has(key));
+    const addedImages = newKeys.filter((key) => !oldSet.has(key));
+    const retainedImages = oldKeys.filter((key) => newSet.has(key));
 
     return {
       removed: removedImages,
@@ -35,31 +35,31 @@ class OrderImageSyncService {
   }
 
   /**
-   * الحصول على قائمة الصور الموجودة في مجلد الطلب
+   * الحصول على قائمة الصور الموجودة في مجلد الطلب في R2
    */
   async getOrderFolderImages(orderNumber) {
     try {
-      const searchResult = await cloudinary.search
-        .expression(`folder:dar-aljoud/orders/${orderNumber}`)
-        .sort_by("public_id", "desc")
-        .max_results(100)
-        .execute();
+      const imagesInfo = await getOrderImagesInfo(orderNumber);
+      
+      if (!imagesInfo.success) {
+        throw new Error(imagesInfo.error || "Failed to get order images");
+      }
 
-      const folderImages = searchResult.resources.map((resource) => ({
-        publicId: resource.public_id,
-        url: resource.secure_url,
-        originalPublicId: this.extractOriginalPublicId(resource.public_id),
-        size: resource.bytes,
-        format: resource.format,
-        createdAt: resource.created_at,
+      const folderImages = imagesInfo.images.map((image) => ({
+        publicId: image.publicId,
+        url: image.url,
+        originalKey: this.extractOriginalKey(image.publicId),
+        size: image.size,
+        format: image.format,
+        createdAt: image.createdAt,
       }));
-
       return {
         success: true,
         images: folderImages,
         totalCount: folderImages.length,
       };
     } catch (error) {
+      console.error("Error getting order folder images from R2:", error);
       return {
         success: false,
         error: error.message,
@@ -70,79 +70,50 @@ class OrderImageSyncService {
   }
 
   /**
-   * استخراج الـ public ID الأصلي من الصورة المنسوخة
+   * استخراج المفتاح الأصلي من الصورة المنسوخة
    */
-  extractOriginalPublicId(backupPublicId) {
+  extractOriginalKey(backupKey) {
     try {
-      const parts = backupPublicId.split("/");
+      const parts = backupKey.split("/");
       const fileName = parts[parts.length - 1];
       const nameWithoutExtension = fileName.split(".")[0];
 
       return nameWithoutExtension || fileName;
     } catch (error) {
-      return backupPublicId;
+      return backupKey;
     }
   }
 
   /**
-   * حذف صور محددة من مجلد الطلب
+   * حذف صور محددة من مجلد الطلب في R2
    */
-  async deleteSpecificImagesFromOrderFolder(orderNumber, publicIdsToDelete) {
+  async deleteSpecificImagesFromOrderFolder(orderNumber, keysToDelete) {
     const deleteResults = [];
 
-    for (const originalPublicId of publicIdsToDelete) {
+    for (const originalKey of keysToDelete) {
       try {
-        let backupPublicId = originalPublicId.includes("/")
-          ? `dar-aljoud/orders/${orderNumber}/${originalPublicId
+        let backupKey = originalKey.includes("/")
+          ? `dar-aljoud/orders/${orderNumber}/${originalKey
               .split("/")
               .pop()}`
-          : `dar-aljoud/orders/${orderNumber}/${originalPublicId}`;
+          : `dar-aljoud/orders/${orderNumber}/${originalKey}`;
 
-        try {
-          await cloudinary.api.resource(backupPublicId);
-        } catch (searchError) {
-          const searchResult = await cloudinary.search
-            .expression(`folder:dar-aljoud/orders/${orderNumber}`)
-            .sort_by("public_id", "desc")
-            .max_results(100)
-            .execute();
-
-          const fileName = originalPublicId.split("/").pop();
-          const foundImage = searchResult.resources.find(
-            (resource) =>
-              resource.public_id.includes(fileName) ||
-              resource.public_id.endsWith(fileName)
-          );
-
-          if (foundImage) {
-            backupPublicId = foundImage.public_id;
-          } else {
-            deleteResults.push({
-              originalPublicId,
-              backupPublicId: `dar-aljoud/orders/${orderNumber}/${fileName}`,
-              success: false,
-              error: "الصورة غير موجودة في مجلد الطلب",
-            });
-            continue;
-          }
-        }
-
-        const deleteResult = await cloudinary.uploader.destroy(backupPublicId);
+        const deleteResult = await deleteFromR2(backupKey);
 
         deleteResults.push({
-          originalPublicId,
-          backupPublicId,
-          success: deleteResult.result === "ok",
-          result: deleteResult.result,
+          originalKey,
+          backupKey,
+          success: deleteResult.success,
         });
 
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
+        console.error(`Error deleting image ${originalKey}:`, error);
         deleteResults.push({
-          originalPublicId,
-          backupPublicId:
-            backupPublicId ||
-            `dar-aljoud/orders/${orderNumber}/${originalPublicId
+          originalKey,
+          backupKey:
+            backupKey ||
+            `dar-aljoud/orders/${orderNumber}/${originalKey
               .split("/")
               .pop()}`,
           success: false,
@@ -159,31 +130,33 @@ class OrderImageSyncService {
       deletedCount: successfulDeletes.length,
       totalCount: deleteResults.length,
       results: deleteResults,
-      message: `تم حذف ${successfulDeletes.length} من أصل ${deleteResults.length} صورة`,
+      message: `تم حذف ${successfulDeletes.length} من أصل ${deleteResults.length} صورة من R2`,
     };
   }
 
   /**
-   * نسخ صور جديدة إلى مجلد الطلب
+   * نسخ صور جديدة إلى مجلد الطلب في R2
    */
-  async copyNewImagesToOrderFolder(orderNumber, publicIdsToAdd) {
+  async copyNewImagesToOrderFolder(orderNumber, keysToAdd) {
     const copyResults = [];
 
-    for (const originalPublicId of publicIdsToAdd) {
+    for (const originalKey of keysToAdd) {
       try {
-        try {
-          await cloudinary.api.resource(originalPublicId);
-        } catch (checkError) {
+        // التحقق من وجود الصورة الأصلية
+        const originalUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${originalKey}`;
+        const checkResponse = await fetch(originalUrl, { method: "HEAD" });
+        
+        if (!checkResponse.ok) {
           copyResults.push({
             success: false,
-            originalPublicId,
-            error: "الصورة الأصلية غير موجودة",
+            originalKey,
+            error: "الصورة الأصلية غير موجودة في R2",
           });
           continue;
         }
 
         const copyResult = await copyImageToOrderFolder(
-          originalPublicId,
+          originalKey,
           orderNumber
         );
 
@@ -191,9 +164,10 @@ class OrderImageSyncService {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
+        console.error(`Error copying image ${originalKey}:`, error);
         copyResults.push({
           success: false,
-          originalPublicId,
+          originalKey,
           error: error.message,
         });
       }
@@ -209,7 +183,7 @@ class OrderImageSyncService {
       results: copyResults,
       successfulCopies,
       failedCopies,
-      message: `تم نسخ ${successfulCopies.length} من أصل ${copyResults.length} صورة`,
+      message: `تم نسخ ${successfulCopies.length} من أصل ${copyResults.length} صورة إلى R2`,
     };
   }
 

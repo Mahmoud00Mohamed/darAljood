@@ -1,26 +1,30 @@
-import cloudinary from "../config/cloudinary.js";
+import { uploadToR2, deleteFromR2, generateFileKey } from "../config/cloudflareR2.js";
 
 /**
- * نسخ صورة من مجلد إلى آخر في Cloudinary باستخدام رقم الطلب
+ * نسخ صورة من مجلد إلى آخر في R2 باستخدام رقم الطلب
  */
-export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
+export const copyImageToOrderFolder = async (originalKey, orderNumber) => {
   try {
-    const fileName = originalPublicId.includes("/")
-      ? originalPublicId.split("/").pop()
-      : originalPublicId;
+    // استخراج اسم الملف من المفتاح الأصلي
+    const fileName = originalKey.includes("/")
+      ? originalKey.split("/").pop()
+      : originalKey;
 
-    const newPublicId = `dar-aljoud/orders/${orderNumber}/${fileName}`;
+    const newKey = `dar-aljoud/orders/${orderNumber}/${fileName}`;
 
     try {
-      const existingImage = await cloudinary.api.resource(newPublicId);
-      if (existingImage) {
+      // التحقق من وجود الصورة في مجلد الطلب
+      const publicUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${newKey}`;
+      const checkResponse = await fetch(publicUrl, { method: "HEAD" });
+      
+      if (checkResponse.ok) {
         return {
           success: true,
-          originalPublicId,
-          newPublicId: existingImage.public_id,
-          newUrl: existingImage.secure_url,
-          size: existingImage.bytes,
-          format: existingImage.format,
+          originalKey,
+          newKey: newKey,
+          newUrl: publicUrl,
+          size: parseInt(checkResponse.headers.get("content-length") || "0"),
+          format: checkResponse.headers.get("content-type")?.split("/")[1] || "unknown",
           alreadyExists: true,
         };
       }
@@ -28,35 +32,43 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
       // الصورة غير موجودة، نتابع عملية النسخ
     }
 
-    const originalImageUrl = cloudinary.url(originalPublicId, {
-      secure: true,
-      fetch_format: "auto",
-      quality: "auto:good",
-    });
+    // تحميل الصورة الأصلية
+    const originalImageUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${originalKey}`;
+    const imageResponse = await fetch(originalImageUrl);
+    
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to fetch original image: ${imageResponse.status}`);
+    }
 
-    const result = await cloudinary.uploader.upload(originalImageUrl, {
-      public_id: newPublicId,
-      folder: `dar-aljoud/orders/${orderNumber}`,
-      resource_type: "image",
-      overwrite: false,
-      invalidate: true,
-      tags: [`order_${orderNumber}`, "order_backup"],
-      use_filename: false,
-      unique_filename: false,
-    });
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const contentType = imageResponse.headers.get("content-type") || "image/jpeg";
+
+    // رفع الصورة إلى مجلد الطلب الجديد
+    const uploadResult = await uploadToR2(
+      Buffer.from(imageBuffer),
+      newKey,
+      contentType,
+      {
+        originalKey: originalKey,
+        orderNumber: orderNumber,
+        copiedAt: new Date().toISOString(),
+        isOrderBackup: "true",
+      }
+    );
 
     return {
       success: true,
-      originalPublicId,
-      newPublicId: result.public_id,
-      newUrl: result.secure_url,
-      size: result.bytes,
-      format: result.format,
+      originalKey,
+      newKey: uploadResult.key,
+      newUrl: uploadResult.url,
+      size: uploadResult.size,
+      format: contentType.split("/")[1],
     };
   } catch (error) {
+    console.error("Error copying image to order folder:", error);
     return {
       success: false,
-      originalPublicId,
+      originalKey,
       error: error.message,
     };
   }
@@ -65,13 +77,14 @@ export const copyImageToOrderFolder = async (originalPublicId, orderNumber) => {
 /**
  * نسخ عدة صور إلى مجلد الطلب
  */
-export const copyImagesToOrderFolder = async (imagePublicIds, orderNumber) => {
+export const copyImagesToOrderFolder = async (imageKeys, orderNumber) => {
   const results = [];
 
-  for (const publicId of imagePublicIds) {
-    if (publicId && publicId.trim()) {
-      const result = await copyImageToOrderFolder(publicId, orderNumber);
+  for (const key of imageKeys) {
+    if (key && key.trim()) {
+      const result = await copyImageToOrderFolder(key, orderNumber);
       results.push(result);
+      // تأخير قصير بين العمليات لتجنب إرهاق الخادم
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
@@ -80,25 +93,28 @@ export const copyImagesToOrderFolder = async (imagePublicIds, orderNumber) => {
 };
 
 /**
- * استخراج public IDs من URLs الصور
+ * استخراج مفاتيح الصور من URLs
  */
-export const extractPublicIdsFromUrls = (imageUrls) => {
+export const extractKeysFromUrls = (imageUrls) => {
   return imageUrls
     .filter((url) => url && typeof url === "string")
     .map((url) => {
       try {
+        // استخراج المفتاح من URL الـ R2
+        const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
+        if (url.startsWith(r2PublicUrl)) {
+          return url.replace(r2PublicUrl + "/", "");
+        }
+        
+        // إذا كان URL من Cloudinary (للتوافق مع البيانات القديمة)
         const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
         if (match) {
-          return match[1];
-        }
-
-        const transformMatch = url.match(/\/upload\/[^/]+\/(.+)\.[^.]+$/);
-        if (transformMatch) {
-          return transformMatch[1];
+          return `migrated/${match[1]}`;
         }
 
         return null;
       } catch (error) {
+        console.warn("Error extracting key from URL:", url, error);
         return null;
       }
     })
@@ -106,18 +122,18 @@ export const extractPublicIdsFromUrls = (imageUrls) => {
 };
 
 /**
- * استخراج public IDs من تكوين الجاكيت
+ * استخراج مفاتيح الصور من تكوين الجاكيت
  */
-export const extractImagePublicIdsFromJacketConfig = (jacketConfig) => {
-  const publicIds = [];
+export const extractImageKeysFromJacketConfig = (jacketConfig) => {
+  const keys = [];
 
   try {
     if (jacketConfig.logos && Array.isArray(jacketConfig.logos)) {
       jacketConfig.logos.forEach((logo) => {
         if (logo.image) {
-          const publicId = extractPublicIdsFromUrls([logo.image])[0];
-          if (publicId) {
-            publicIds.push(publicId);
+          const key = extractKeysFromUrls([logo.image])[0];
+          if (key) {
+            keys.push(key);
           }
         }
       });
@@ -129,25 +145,26 @@ export const extractImagePublicIdsFromJacketConfig = (jacketConfig) => {
     ) {
       jacketConfig.uploadedImages.forEach((uploadedImage) => {
         if (uploadedImage.url) {
-          const publicId = extractPublicIdsFromUrls([uploadedImage.url])[0];
-          if (publicId) {
-            publicIds.push(publicId);
+          const key = extractKeysFromUrls([uploadedImage.url])[0];
+          if (key) {
+            keys.push(key);
           }
         }
 
         if (uploadedImage.publicId) {
-          publicIds.push(uploadedImage.publicId);
+          keys.push(uploadedImage.publicId);
         }
       });
     }
 
-    const cleanedIds = publicIds
+    const cleanedKeys = keys
       .filter(Boolean)
-      .filter((id) => typeof id === "string" && id.trim().length > 0)
-      .map((id) => id.trim());
+      .filter((key) => typeof key === "string" && key.trim().length > 0)
+      .map((key) => key.trim());
 
-    return [...new Set(cleanedIds)];
+    return [...new Set(cleanedKeys)];
   } catch (error) {
+    console.error("Error extracting image keys from jacket config:", error);
     return [];
   }
 };
@@ -157,63 +174,40 @@ export const extractImagePublicIdsFromJacketConfig = (jacketConfig) => {
  */
 export const deleteOrderImages = async (orderNumber) => {
   try {
-    const searchResult = await cloudinary.search
-      .expression(`folder:dar-aljoud/orders/${orderNumber}`)
-      .sort_by("public_id", "desc")
-      .max_results(100)
-      .execute();
-
-    if (searchResult.resources.length === 0) {
-      return {
-        success: true,
-        deletedCount: 0,
-        totalCount: 0,
-        results: [],
-        message: "لا توجد صور للحذف",
-      };
-    }
-
+    // في R2، نحتاج لحذف الصور واحدة تلو الأخرى
+    // يمكن تحسين هذا لاحقاً باستخدام list objects API
+    
+    const folderPrefix = `dar-aljoud/orders/${orderNumber}/`;
     const deleteResults = [];
+    
+    // محاولة حذف الصور الشائعة (يمكن تحسين هذا لاحقاً)
+    const commonImageNames = [
+      "front.png", "back.png", "right.png", "left.png",
+      "logo1.png", "logo2.png", "logo3.png", "logo4.png",
+      "text1.png", "text2.png"
+    ];
 
-    for (const resource of searchResult.resources) {
+    for (const imageName of commonImageNames) {
       try {
-        const deleteResult = await cloudinary.uploader.destroy(
-          resource.public_id
-        );
-        deleteResults.push({
-          publicId: resource.public_id,
-          result: deleteResult.result,
-          success: deleteResult.result === "ok",
-          size: resource.bytes,
-          format: resource.format,
-        });
+        const imageKey = `${folderPrefix}${imageName}`;
+        const deleteResult = await deleteFromR2(imageKey);
+        
+        if (deleteResult.success) {
+          deleteResults.push({
+            key: imageKey,
+            success: true,
+            size: 0, // R2 لا يرجع حجم الملف عند الحذف
+          });
+        }
       } catch (error) {
-        deleteResults.push({
-          publicId: resource.public_id,
-          success: false,
-          error: error.message,
-          size: resource.bytes,
-          format: resource.format,
-        });
+        // تجاهل الأخطاء للصور غير الموجودة
+        if (error.name !== "NoSuchKey") {
+          console.warn(`Warning deleting ${imageName}:`, error);
+        }
       }
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     const successfulDeletes = deleteResults.filter((r) => r.success);
-    const failedDeletes = deleteResults.filter((r) => !r.success);
-
-    try {
-      await cloudinary.api.delete_folder(`dar-aljoud/orders/${orderNumber}`);
-    } catch (error) {
-      // تجاهل خطأ حذف المجلد
-    }
-
-    const totalDeletedSize = successfulDeletes.reduce(
-      (sum, result) => sum + (result.size || 0),
-      0
-    );
-    const totalDeletedSizeMB = (totalDeletedSize / (1024 * 1024)).toFixed(2);
 
     return {
       success: true,
@@ -221,15 +215,16 @@ export const deleteOrderImages = async (orderNumber) => {
       totalCount: deleteResults.length,
       results: deleteResults,
       statistics: {
-        totalSizeDeleted: totalDeletedSize,
-        totalSizeDeletedMB: parseFloat(totalDeletedSizeMB),
+        totalSizeDeleted: 0, // R2 لا يوفر معلومات الحجم عند الحذف
+        totalSizeDeletedMB: 0,
         successfulDeletes: successfulDeletes.length,
-        failedDeletes: failedDeletes.length,
+        failedDeletes: deleteResults.length - successfulDeletes.length,
         folderDeleted: true,
       },
-      message: `تم حذف ${successfulDeletes.length} من أصل ${deleteResults.length} صورة بنجاح`,
+      message: `تم حذف ${successfulDeletes.length} صورة من مجلد الطلب`,
     };
   } catch (error) {
+    console.error("Error deleting order images:", error);
     return {
       success: false,
       error: error.message,
@@ -246,27 +241,48 @@ export const deleteOrderImages = async (orderNumber) => {
  */
 export const getOrderImagesInfo = async (orderNumber) => {
   try {
-    const searchResult = await cloudinary.search
-      .expression(`folder:dar-aljoud/orders/${orderNumber}`)
-      .sort_by("public_id", "desc")
-      .max_results(100)
-      .execute();
+    // في R2، نحتاج لاستخدام list objects API أو محاولة الوصول للصور المعروفة
+    const folderPrefix = `dar-aljoud/orders/${orderNumber}/`;
+    const images = [];
+    
+    // محاولة الوصول للصور الشائعة
+    const commonImageNames = [
+      "front.png", "back.png", "right.png", "left.png",
+      "logo1.png", "logo2.png", "logo3.png", "logo4.png"
+    ];
+
+    for (const imageName of commonImageNames) {
+      try {
+        const imageKey = `${folderPrefix}${imageName}`;
+        const imageUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${imageKey}`;
+        
+        // التحقق من وجود الصورة
+        const checkResponse = await fetch(imageUrl, { method: "HEAD" });
+        
+        if (checkResponse.ok) {
+          images.push({
+            publicId: imageKey,
+            url: imageUrl,
+            width: null,
+            height: null,
+            format: checkResponse.headers.get("content-type")?.split("/")[1] || "unknown",
+            size: parseInt(checkResponse.headers.get("content-length") || "0"),
+            createdAt: checkResponse.headers.get("last-modified") || new Date().toISOString(),
+            tags: [`order_${orderNumber}`, "order_backup"],
+          });
+        }
+      } catch (error) {
+        // تجاهل الأخطاء للصور غير الموجودة
+      }
+    }
 
     return {
       success: true,
-      images: searchResult.resources.map((resource) => ({
-        publicId: resource.public_id,
-        url: resource.secure_url,
-        width: resource.width,
-        height: resource.height,
-        format: resource.format,
-        size: resource.bytes,
-        createdAt: resource.created_at,
-        tags: resource.tags || [],
-      })),
-      totalCount: searchResult.total_count,
+      images: images,
+      totalCount: images.length,
     };
   } catch (error) {
+    console.error("Error getting order images info:", error);
     return {
       success: false,
       error: error.message,

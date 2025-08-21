@@ -10,18 +10,18 @@ import {
 import imageUploadService, {
   CloudinaryImageData,
 } from "../../services/imageUploadService";
-import CloudinaryImageUpload from "../forms/CloudinaryImageUpload";
+import R2ImageUpload from "../forms/CloudinaryImageUpload";
 import Modal from "./Modal";
 import { useModal } from "../../hooks/useModal";
 
-interface CloudinaryImageManagerProps {
+interface R2ImageManagerProps {
   onImageSelect?: (imageData: CloudinaryImageData) => void;
   showUploadSection?: boolean;
   className?: string;
   autoAddToLibrary?: boolean;
 }
 
-const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
+const R2ImageManager: React.FC<R2ImageManagerProps> = ({
   onImageSelect,
   showUploadSection = true,
   className = "",
@@ -62,10 +62,10 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
           prev.filter((img) => img.publicId !== imageData.publicId)
         );
       } else {
-        setError("فشل في حذف الصورة من Cloudinary");
+        setError("فشل في حذف الصورة من R2");
       }
     } catch (error) {
-      console.error("Error deleting image:", error);
+      console.error("Error deleting image from R2:", error);
       setError("حدث خطأ أثناء حذف الصورة");
     } finally {
       setIsLoading(false);
@@ -106,13 +106,13 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
       {showUploadSection && (
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            رفع صور جديدة إلى Cloudinary
+            رفع صور جديدة إلى Cloudflare R2
           </h3>
-          <CloudinaryImageUpload
+          <R2ImageUpload
             onImageSelect={handleImageUpload}
             onMultipleImagesSelect={handleMultipleImagesUpload}
             multiple={true}
-            placeholder="اسحب الصور هنا أو انقر لاختيار عدة صور"
+            placeholder="اسحب الصور هنا أو انقر لاختيار عدة صور (سيتم رفعها إلى R2)"
             className="mb-4"
             cropTitle="اقتطاع الصورة"
             autoAddToLibrary={autoAddToLibrary}
@@ -174,7 +174,7 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
                   </p>
                   <div className="flex items-center gap-1 mt-2">
                     <CheckCircle className="w-3 h-3 text-green-500" />
-                    <span className="text-xs text-green-600">مرفوع بنجاح</span>
+                    <span className="text-xs text-green-600">مرفوع إلى R2 بنجاح</span>
                   </div>
                 </div>
 
@@ -198,7 +198,7 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
                     onClick={() => handleDeleteImage(imageData)}
                     disabled={isLoading}
                     className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50"
-                    title="حذف"
+                    title="حذف من R2"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
@@ -312,4 +312,4 @@ const CloudinaryImageManager: React.FC<CloudinaryImageManagerProps> = ({
   );
 };
 
-export default CloudinaryImageManager;
+export default R2ImageManager;

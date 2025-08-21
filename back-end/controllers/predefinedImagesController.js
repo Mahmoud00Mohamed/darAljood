@@ -1,4 +1,4 @@
-import cloudinary from "../config/cloudinary.js";
+import { uploadToR2, deleteFromR2, generateFileKey } from "../config/cloudflareR2.js";
 import PredefinedImageSchema from "../models/schemas/PredefinedImageSchema.js";
 import CategoryModel from "../models/Category.js";
 
@@ -6,8 +6,8 @@ import CategoryModel from "../models/Category.js";
 const DEFAULT_PREDEFINED_IMAGES = [
   {
     id: "logo1",
-    url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078450/18_djpzcl.png",
-    publicId: "18_djpzcl",
+    url: `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/dar-aljoud/predefined-logos/18_djpzcl.png`,
+    publicId: "dar-aljoud/predefined-logos/18_djpzcl.png",
     name: "شعار 1",
     categoryId: "logos",
     description: "شعار جاهز للاستخدام",
@@ -15,8 +15,8 @@ const DEFAULT_PREDEFINED_IMAGES = [
   },
   {
     id: "logo2",
-    url: "https://res.cloudinary.com/dnuthlqsb/image/upload/v1755078448/16_b1rjss.png",
-    publicId: "16_b1rjss",
+    url: `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/dar-aljoud/predefined-logos/16_b1rjss.png`,
+    publicId: "dar-aljoud/predefined-logos/16_b1rjss.png",
     name: "شعار 2",
     categoryId: "logos",
     description: "شعار جاهز للاستخدام",
@@ -301,40 +301,33 @@ export const addPredefinedImage = async (req, res) => {
       });
     }
 
-    const fileStr = `data:${
-      req.file.mimetype
-    };base64,${req.file.buffer.toString("base64")}`;
+    // توليد مفتاح فريد للملف
+    const fileKey = generateFileKey(req.file.originalname, "dar-aljoud/predefined-logos");
 
-    const uploadOptions = {
-      folder: "dar-aljoud/predefined-logos",
-      resource_type: "image",
-      quality: "auto:good",
-      fetch_format: "auto",
-      flags: "progressive",
-      transformation: [
-        {
-          width: 1000,
-          height: 1000,
-          crop: "limit",
-          quality: "auto:good",
-        },
-      ],
-    };
-
-    const result = await cloudinary.uploader.upload(fileStr, uploadOptions);
+    // رفع الصورة إلى R2
+    const uploadResult = await uploadToR2(
+      req.file.buffer,
+      fileKey,
+      req.file.mimetype,
+      {
+        originalName: req.file.originalname,
+        category: categoryId,
+        uploadedAt: new Date().toISOString(),
+      }
+    );
 
     const newImage = new PredefinedImageSchema({
       id: `logo-${Date.now()}`,
-      url: result.secure_url,
-      publicId: result.public_id,
+      url: uploadResult.url,
+      publicId: uploadResult.key,
       name: name.trim(),
       categoryId: categoryId.trim(),
       description: description?.trim() || "شعار جاهز للاستخدام",
       updatedBy: req.admin?.username || "admin",
-      width: result.width,
-      height: result.height,
-      format: result.format,
-      size: result.bytes,
+      width: null, // R2 لا يوفر معلومات الأبعاد تلقائياً
+      height: null,
+      format: req.file.mimetype.split("/")[1],
+      size: uploadResult.size,
     });
 
     const savedImage = await newImage.save();
@@ -396,7 +389,7 @@ export const deletePredefinedImage = async (req, res) => {
     }
 
     try {
-      await cloudinary.uploader.destroy(imageToDelete.publicId);
+      console.warn("Warning: Could not delete image from R2:", cloudinaryError);
     } catch (cloudinaryError) {}
 
     await PredefinedImageSchema.deleteOne({ id: imageId });

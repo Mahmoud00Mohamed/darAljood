@@ -2,12 +2,14 @@
 export interface CloudinaryImageData {
   url: string;
   publicId: string;
+  key?: string; // إضافة دعم لمفتاح R2
   width: number;
   height: number;
   format: string;
   size: number;
   createdAt: string;
   originalName?: string;
+  bucket?: string; // إضافة معلومات الـ bucket
 }
 
 export interface ApiResponse<T> {
@@ -23,10 +25,10 @@ export interface UploadError {
 }
 
 class ImageUploadService {
-  private baseUrl = "https://server-algood.onrender.com/api/upload";
+  private baseUrl = "http://localhost:3001/api/upload";
 
   /**
-   * رفع صورة واحدة إلى Cloudinary
+   * رفع صورة واحدة إلى Cloudflare R2
    */
   async uploadSingleImage(file: File): Promise<CloudinaryImageData> {
     try {
@@ -63,7 +65,7 @@ class ImageUploadService {
   }
 
   /**
-   * رفع عدة صور إلى Cloudinary
+   * رفع عدة صور إلى Cloudflare R2
    */
   async uploadMultipleImages(files: File[]): Promise<CloudinaryImageData[]> {
     try {
@@ -102,7 +104,7 @@ class ImageUploadService {
   }
 
   /**
-   * حذف صورة من Cloudinary
+   * حذف صورة من Cloudflare R2
    */
   async deleteImage(publicId: string): Promise<boolean> {
     try {
@@ -175,12 +177,11 @@ class ImageUploadService {
       );
       return response.ok;
     } catch (error) {
-      console.error("Backend connection failed:", error);
+      console.error("R2 backend connection failed:", error);
       return false;
     }
   }
 }
 
-// إنشاء instance واحد للاستخدام في جميع أنحاء التطبيق
 export const imageUploadService = new ImageUploadService();
 export default imageUploadService;

@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import { connectDatabase } from "./config/database.js";
-import { initializeCloudinary } from "./config/cloudinary.js";
+import { initializeR2 } from "./config/cloudflareR2.js";
 import CategoryModel from "./models/Category.js";
 import PricingModel from "./models/Pricing.js";
 import { initializeDefaultImages } from "./controllers/predefinedImagesController.js";
@@ -155,7 +155,7 @@ const startServer = async () => {
       "./models/TemporaryLink.js"
     );
     await TemporaryLinkModel.cleanupExpiredLinks();
-    await initializeCloudinary();
+    await initializeR2();
     scheduleTemporaryLinkCleanup();
 
     app.listen(PORT, () => {});

@@ -1,6 +1,6 @@
 import {
   copyImagesToOrderFolder,
-  extractImagePublicIdsFromJacketConfig,
+  extractImageKeysFromJacketConfig,
   deleteOrderImages,
   getOrderImagesInfo,
 } from "./imageBackup.js";
@@ -8,7 +8,7 @@ import OrderModel from "../models/Order.js";
 import OrderImageSyncService from "./orderImageSyncService.js";
 
 /**
- * معالج شامل لإدارة صور الطلبات
+ * معالج شامل لإدارة صور الطلبات في R2
  */
 class OrderImageManager {
   /**
@@ -16,20 +16,20 @@ class OrderImageManager {
    */
   async backupOrderImages(order) {
     try {
-      const allPublicIds = [];
+      const allKeys = [];
 
       order.items.forEach((item) => {
         if (item.jacketConfig) {
-          const itemPublicIds = extractImagePublicIdsFromJacketConfig(
+          const itemKeys = extractImageKeysFromJacketConfig(
             item.jacketConfig
           );
-          allPublicIds.push(...itemPublicIds);
+          allKeys.push(...itemKeys);
         }
       });
 
-      const uniquePublicIds = [...new Set(allPublicIds)];
+      const uniqueKeys = [...new Set(allKeys)];
 
-      if (uniquePublicIds.length === 0) {
+      if (uniqueKeys.length === 0) {
         return {
           success: true,
           message: "لا توجد صور للنسخ",
@@ -39,7 +39,7 @@ class OrderImageManager {
       }
 
       const copyResults = await copyImagesToOrderFolder(
-        uniquePublicIds,
+        uniqueKeys,
         order.orderNumber
       );
 
@@ -50,13 +50,13 @@ class OrderImageManager {
         try {
           await OrderModel.updateOrderBackupImages(order.id, successfulCopies);
         } catch (dbError) {
-          // لا نرمي خطأ، فقط نسجل
+          console.warn("Failed to update backup images in DB:", dbError);
         }
       }
 
       return {
         success: true,
-        message: `تم نسخ ${successfulCopies.length} من ${uniquePublicIds.length} صورة بنجاح`,
+        message: `تم نسخ ${successfulCopies.length} من ${uniqueKeys.length} صورة بنجاح إلى R2`,
         copiedCount: successfulCopies.length,
         failedCount: failedCopies.length,
         details: {
@@ -65,9 +65,10 @@ class OrderImageManager {
         },
       };
     } catch (error) {
+      console.error("Error backing up order images to R2:", error);
       return {
-        success: true,
-        message: "فشل في نسخ صور الطلب",
+        success: false,
+        message: "فشل في نسخ صور الطلب إلى R2",
         error: error.message,
         copiedCount: 0,
         failedCount: 0,

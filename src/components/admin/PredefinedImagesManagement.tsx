@@ -18,7 +18,7 @@ import predefinedImagesService, {
   PredefinedImageData,
 } from "../../services/predefinedImagesService";
 import { CategoryData } from "../../services/categoryService";
-import CloudinaryImageUpload from "../../components/forms/CloudinaryImageUpload";
+import R2ImageUpload from "../../components/forms/CloudinaryImageUpload";
 import { CloudinaryImageData } from "../../services/imageUploadService";
 import ConfirmationModal from "../../components/ui/ConfirmationModal";
 import Modal from "../../components/ui/Modal";
@@ -460,7 +460,7 @@ const PredefinedImagesManagement: React.FC = () => {
       >
         <div className="space-y-4">
           <div className="sm:hidden">
-            <CloudinaryImageUpload
+            <R2ImageUpload
               onImageSelect={handleImageSelect}
               acceptedFormats={[
                 "image/jpeg",
@@ -469,7 +469,7 @@ const PredefinedImagesManagement: React.FC = () => {
                 "image/webp",
               ]}
               maxFileSize={10}
-              placeholder="اختر الشعار"
+              placeholder="اختر الشعار (سيتم رفعه إلى R2)"
               aspectRatio={1}
               cropTitle="اقتطاع الشعار"
               autoAddToLibrary={false}
@@ -477,7 +477,7 @@ const PredefinedImagesManagement: React.FC = () => {
           </div>
 
           <div className="hidden sm:block">
-            <CloudinaryImageUpload
+            <R2ImageUpload
               onImageSelect={handleImageSelect}
               acceptedFormats={[
                 "image/jpeg",
@@ -486,7 +486,7 @@ const PredefinedImagesManagement: React.FC = () => {
                 "image/webp",
               ]}
               maxFileSize={10}
-              placeholder="اسحب الشعار هنا أو انقر للاختيار"
+              placeholder="اسحب الشعار هنا أو انقر للاختيار (سيتم رفعه إلى R2)"
               aspectRatio={1}
               cropTitle="اقتطاع الشعار الجاهز"
               autoAddToLibrary={false}
@@ -502,7 +502,7 @@ const PredefinedImagesManagement: React.FC = () => {
                   <li>• الحد الأقصى: 5MB</li>
                   <li>• الأنواع: JPG, PNG, WEBP</li>
                   <li>• يفضل الشكل المربع</li>
-                  <li>• لن يتم رفع الشعار للسيرفر إلا بعد التأكيد</li>
+                  <li>• لن يتم رفع الشعار إلى R2 إلا بعد التأكيد</li>
                 </ul>
               </div>
             </div>
@@ -544,10 +544,10 @@ const PredefinedImagesManagement: React.FC = () => {
               </p>
               <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs text-blue-700 font-medium">
-                  ⚠️ الشعار لم يتم رفعه للسيرفر بعد
+                  ⚠️ الشعار لم يتم رفعه إلى R2 بعد
                 </p>
                 <p className="text-xs text-blue-600">
-                  سيتم الرفع فقط بعد تأكيد البيانات والضغط على "تأكيد الرفع"
+                  سيتم الرفع إلى R2 فقط بعد تأكيد البيانات والضغط على "تأكيد الرفع"
                 </p>
               </div>
             </div>
@@ -639,6 +639,7 @@ const PredefinedImagesManagement: React.FC = () => {
                 <Upload className="w-4 h-4" />
               )}
               {isUploading ? "جاري الرفع للسيرفر..." : "تأكيد الرفع للسيرفر"}
+              {isUploading ? "جاري الرفع إلى R2..." : "تأكيد الرفع إلى R2"}
             </button>
             <button
               onClick={() => {

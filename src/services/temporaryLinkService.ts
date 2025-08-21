@@ -127,7 +127,7 @@ export interface ApiResponse<T> {
 }
 
 class TemporaryLinkService {
-  private baseUrl = "https://server-algood.onrender.com/api/temporary-links";
+  private baseUrl = "http://localhost:3001/api/temporary-links";
 
   /**
    * إنشاء رابط مؤقت لطلب (يتطلب مصادقة المدير)

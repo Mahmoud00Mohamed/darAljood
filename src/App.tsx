@@ -65,7 +65,7 @@ function App() {
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/return-policy" element={<ReturnPolicyPage />} />
                 <Route
-                  path="/cloudinary-test"
+                  path="/r2-test"
                   element={<CloudinaryTestPage />}
                 />
                 <Route path="/image-library" element={<ImageLibraryPage />} />
